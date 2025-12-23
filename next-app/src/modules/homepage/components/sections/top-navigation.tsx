@@ -16,7 +16,7 @@ export const TopNavigation = () => {
 	};
 
 	return (
-		<header className="bg-background sticky top-0 z-50 border-b border-neutral-medium flex flex-col items-center justify-center w-full">
+		<header className="bg-foreground backdrop-blur-2xl sticky top-0 z-50 border-b border-neutral-weak flex flex-col items-center justify-center w-full">
 			<div className="flex h-16 items-center justify-between max-w-[1024px] w-full px-4">
 				{/* Logo */}
 				<Logo />
