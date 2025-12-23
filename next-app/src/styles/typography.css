@@ -1,0 +1,138 @@
+/* Base styles */
+@theme {
+	--font-nunito: 'Nunito Sans', sans-serif;
+	--font-gilroy: 'Gilroy', sans-serif;
+}
+
+/* Base styles */
+@utility display-1 {
+	@apply font-gilroy font-extrabold;
+
+	@apply sm:text-[64px] sm:leading-[64px];
+	@apply text-[48px] leading-[48px];
+}
+
+@utility display-2 {
+	@apply font-gilroy font-extrabold;
+
+	@apply sm:text-[48px] sm:leading-[48px];
+	@apply text-[32px] leading-[32px];
+}
+
+@utility display-3 {
+	@apply font-gilroy font-extrabold;
+
+	@apply sm:text-[32px] sm:leading-[32px];
+	@apply text-[28px] leading-[28px];
+}
+
+/* Title */
+
+@utility title-1 {
+	@apply font-nunito font-bold;
+
+	/* Desktop */
+	@apply sm:text-[22px] sm:leading-[24px] sm:tracking-[-0.66px];
+	/* Mobile */
+	@apply text-[18px] leading-[24px] tracking-[-0.54px];
+}
+
+@utility title-2 {
+	@apply font-nunito font-bold;
+
+	/* Desktop */
+	@apply sm:text-[18px] sm:leading-[24px] sm:tracking-[-0.54px];
+	/* Mobile */
+	@apply text-[16px] leading-[24px] tracking-[-0.48px];
+}
+
+@utility title-3 {
+	@apply font-nunito font-bold;
+
+	/* Desktop */
+	@apply sm:text-[14px] sm:leading-[20px] sm:tracking-[-0.42px];
+	/* Mobile */
+	@apply text-[15px] leading-[20px] tracking-[-0.45px];
+}
+
+/* Body */
+
+@utility body-1 {
+	@apply font-nunito font-normal;
+
+	/* Desktop */
+	@apply sm:text-[18px] sm:leading-[24px];
+	/* Mobile */
+	@apply text-[16px] leading-[24px];
+}
+
+@utility body-2 {
+	@apply font-nunito font-normal;
+
+	/* Desktop */
+	@apply sm:text-[14px] sm:leading-[20px];
+	/* Mobile */
+	@apply text-[13px] leading-[20px];
+}
+
+@utility body-3 {
+	@apply font-nunito font-normal;
+
+	/* Desktop */
+	@apply sm:text-[12px] sm:leading-[16px];
+	/* Mobile */
+	@apply text-[11px] leading-[16px];
+}
+
+/* Caption */
+
+@utility caption {
+	@apply font-nunito font-extrabold;
+
+	@apply text-[11px] leading-[16px];
+}
+
+/* Overline */
+
+@utility overline {
+	text-decoration: none !important;
+
+	/* Desktop */
+	@apply font-nunito font-black uppercase;
+	/* Mobile */
+	@apply text-[8px] leading-[8px] tracking-[0.4px];
+}
+
+/* Input */
+
+@utility input {
+	@apply font-nunito font-normal;
+
+	/* Desktop */
+	@apply sm:text-[14px] sm:leading-[24px];
+	/* Mobile */
+	@apply text-[16px] leading-[24px];
+}
+
+/* Buttons */
+
+@utility button-lg {
+	@apply font-nunito font-bold;
+
+	@apply text-[15px] leading-[20px];
+}
+
+@utility button-md {
+	@apply font-nunito font-bold;
+
+	/* Desktop */
+	@apply sm:text-[13px] sm:leading-[16px];
+	/* Mobile */
+	@apply text-[12px] leading-[16px];
+}
+
+@utility button-sm {
+	@apply font-nunito font-bold;
+
+	@apply text-[11px] leading-[16px];
+}
