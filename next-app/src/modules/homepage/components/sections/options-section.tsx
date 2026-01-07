@@ -50,7 +50,7 @@ export const OptionsSection = () => {
 							<Button
 								theme="neutral"
 								variant="ghost"
-								size="sm"
+								size="md"
 								className="w-full justify-start"
 							>
 								<ArrowDown className="size-4" />
@@ -63,7 +63,7 @@ export const OptionsSection = () => {
 								<Button
 									theme="neutral"
 									variant="ghost"
-									size="sm"
+									size="md"
 									className="w-full justify-start"
 								>
 									<Expand className="size-4" />
@@ -85,7 +85,7 @@ export const OptionsSection = () => {
 							<Button
 								theme="neutral"
 								variant="ghost"
-								size="sm"
+								size="md"
 								className="w-full justify-start"
 							>
 								<ExternalLink className="size-4" />
@@ -104,7 +104,7 @@ export const OptionsSection = () => {
 							<Button
 								theme="neutral"
 								variant="ghost"
-								size="sm"
+								size="md"
 								className="w-full justify-start"
 							>
 								<ArrowDown className="size-4" />
@@ -116,7 +116,7 @@ export const OptionsSection = () => {
 							<Button
 								theme="neutral"
 								variant="ghost"
-								size="sm"
+								size="md"
 								className="w-full justify-start"
 							>
 								<ExternalLink className="size-4" />
@@ -135,7 +135,7 @@ export const OptionsSection = () => {
 							<Button
 								theme="neutral"
 								variant="ghost"
-								size="sm"
+								size="md"
 								className="w-full justify-start"
 							>
 								<ArrowDown className="size-4" />
@@ -147,7 +147,7 @@ export const OptionsSection = () => {
 							<Button
 								theme="neutral"
 								variant="ghost"
-								size="sm"
+								size="md"
 								className="w-full justify-start"
 							>
 								<ExternalLink className="size-4" />
@@ -166,7 +166,7 @@ export const OptionsSection = () => {
 							<Button
 								theme="neutral"
 								variant="ghost"
-								size="sm"
+								size="md"
 								className="w-full justify-start"
 							>
 								<ArrowDown className="size-4" />
