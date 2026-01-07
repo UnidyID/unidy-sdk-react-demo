@@ -32,6 +32,7 @@ export const LoginSimpleExample = () => {
 						title="Auth SDK / Email Input"
 						codeSnippet="<input type='email' />"
 						size="sm"
+						popoverPosition="left"
 					/>
 					<div className="flex flex-col gap-2">
 						<label className="caption text-[#364153]">Email Address</label>
@@ -55,6 +56,7 @@ export const LoginSimpleExample = () => {
 								title="Auth SDK / Password Input"
 								codeSnippet="<input type='password' />"
 								size="sm"
+								popoverPosition="left"
 							/>
 							<Lock className="size-5 text-neutral-medium shrink-0" />
 							<input
@@ -80,6 +82,7 @@ export const LoginSimpleExample = () => {
 						codeSnippet="<button type='submit'>Sign In</button>"
 						size="sm"
 						labelPosition="top-left"
+						popoverPosition="left"
 					/>
 					<Button theme="accent" variant="solid" size="lg" className="w-full">
 						Sign In

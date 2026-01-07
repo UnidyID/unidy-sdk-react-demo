@@ -10,6 +10,7 @@
 
 @import './colors.css';
 @import './typography.css';
+@import './animate.css';
 
 /* Base styles */
 @layer base {

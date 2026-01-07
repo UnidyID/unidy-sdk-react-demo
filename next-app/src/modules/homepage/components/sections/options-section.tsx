@@ -22,7 +22,7 @@ import {
 	User
 } from 'lucide-react';
 import Link from 'next/link';
-import { LoginSimpleExample } from '../examples/login-simple-example';
+import { LoginModalExample } from '../examples/login-modal-example';
 
 export const OptionsSection = () => {
 	return (
@@ -70,14 +70,14 @@ export const OptionsSection = () => {
 									Modal Demo
 								</Button>
 							</DialogTrigger>
-							<DialogContent>
-								<DialogHeader>
+							<DialogContent className="p-0">
+								<DialogHeader className="hidden">
 									<DialogTitle> Log in to FC Unidy</DialogTitle>
 									<DialogDescription>
 										Welcome back! Please enter your details.
 									</DialogDescription>
 								</DialogHeader>
-								<LoginSimpleExample />
+								<LoginModalExample />
 							</DialogContent>
 						</Dialog>
 

@@ -25,6 +25,7 @@ export const LoginSocialExample = () => {
 					codeSnippet="<button type='submit'>Continue</button>"
 					size="sm"
 					labelPosition="top-left"
+					popoverPosition="left"
 				/>
 				<Button theme="accent" variant="solid" size="lg" className="w-full">
 					Continue
@@ -47,6 +48,7 @@ export const LoginSocialExample = () => {
 						codeSnippet="<OAuthButton provider='google' />"
 						size="sm"
 						labelPosition="top-right"
+						popoverPosition="left"
 					/>
 					<Button
 						theme="neutral"

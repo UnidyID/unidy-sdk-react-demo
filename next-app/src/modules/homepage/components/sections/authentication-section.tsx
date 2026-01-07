@@ -2,18 +2,35 @@
 
 import { Card } from '@/components/card';
 import { FeatureItem } from '@/components/feature-item';
+import { IntegrationCode } from '@/components/integration-code';
 import { SectionHeading } from '@/components/section-heading';
-import { Button } from '@/components/shadcn/ui/button';
 import {
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger
 } from '@/components/shadcn/ui/tabs';
-import { Code, Mail, Shield, Users } from 'lucide-react';
+import { Mail, Shield, Users } from 'lucide-react';
 import { LoginExtrasExample } from '../examples/login-extras-example';
 import { LoginSimpleExample } from '../examples/login-simple-example';
 import { LoginSocialExample } from '../examples/login-social-example';
+
+const integrationCode = `import { UnidyAuth, UnidyNewsletter } from '@unidy/sdk';
+
+// Initialize authentication
+const auth = new UnidyAuth({
+  apiKey: 'your-api-key',
+  theme: {
+    primaryColor: '#DC2626',
+    brandName: 'FC United'
+  }
+});
+
+// Add newsletter signup
+const newsletter = new UnidyNewsletter({
+  apiKey: 'your-api-key',
+  lists: ['match-updates', 'player-news', 'shop-offers']
+});`;
 
 export const AuthenticationSection = () => {
 	const features = [
@@ -48,10 +65,7 @@ export const AuthenticationSection = () => {
 						title="Authentication SDK"
 						description="Multiple authentication methods in one unified SDK. Give your users the flexibility to login their way."
 					>
-						<Button theme="accent" variant="ghost" size="sm" className="w-fit">
-							<Code className="size-4" />
-							View Integration Code
-						</Button>
+						<IntegrationCode code={integrationCode} language="typescript" />
 					</SectionHeading>
 
 					{/* Feature Items */}

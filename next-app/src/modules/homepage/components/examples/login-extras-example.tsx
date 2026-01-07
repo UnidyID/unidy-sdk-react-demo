@@ -25,6 +25,7 @@ export const LoginExtrasExample = () => {
 					codeSnippet="<button type='submit'>Continue</button>"
 					size="sm"
 					labelPosition="top-left"
+					popoverPosition="left"
 				/>
 				<Button theme="accent" variant="solid" size="lg" className="flex-1">
 					Continue
@@ -54,6 +55,7 @@ export const LoginExtrasExample = () => {
 					codeSnippet="<PasscodeButton />"
 					size="sm"
 					labelPosition="top-right"
+					popoverPosition="left"
 				/>
 				<Button
 					theme="accent"

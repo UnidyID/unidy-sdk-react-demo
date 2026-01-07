@@ -34,6 +34,7 @@ export const TopNavigation = () => {
 									codeSnippet="<ProfileButton />"
 									size="sm"
 									labelPosition="bottom-right"
+									detatched
 								/>
 								<Link href="/profile">
 									<Button
@@ -68,6 +69,8 @@ export const TopNavigation = () => {
 									codeSnippet="<LoginButton />"
 									size="sm"
 									labelPosition="bottom-right"
+									popoverPosition="left"
+									detatched
 								/>
 								<Button
 									theme="accent"

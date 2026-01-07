@@ -52,6 +52,9 @@ export const NewsletterExample = () => {
 				title="Newsletter SDK / Subscription Form"
 				codeSnippet="<NewsletterForm />"
 				size="lg"
+				labelPosition="top-left"
+				detatched
+				popoverPosition="right"
 			/>
 			<div className="flex flex-col gap-6 w-full">
 				{/* Email Input */}
@@ -63,6 +66,7 @@ export const NewsletterExample = () => {
 								codeSnippet="<input type='email' />"
 								size="sm"
 								labelPosition="bottom-right"
+								popoverPosition="right"
 							/>
 							<Mail className="size-5 text-neutral-medium shrink-0" />
 							<input
@@ -96,6 +100,7 @@ export const NewsletterExample = () => {
 						title="Newsletter SDK / Submit"
 						codeSnippet="<button type='submit'>Subscribe</button>"
 						size="sm"
+						popoverPosition="right"
 					/>
 					<Button theme="accent" variant="solid" size="lg" className="w-full">
 						Subscribe to Selected Newsletters
