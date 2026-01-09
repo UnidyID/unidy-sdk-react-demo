@@ -70,7 +70,7 @@ export const OptionsSection = () => {
 									Modal Demo
 								</Button>
 							</DialogTrigger>
-							<DialogContent className="p-0">
+							<DialogContent className="p-0 border-none">
 								<DialogHeader className="hidden">
 									<DialogTitle> Log in to FC Unidy</DialogTitle>
 									<DialogDescription>
