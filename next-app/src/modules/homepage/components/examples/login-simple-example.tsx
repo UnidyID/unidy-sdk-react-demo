@@ -6,7 +6,7 @@ import {
 	ButtonTabsList,
 	ButtonTabsTrigger
 } from '@/components/shadcn/ui/button-tabs';
-import { SDKElement } from '@/modules/sdk-element/components/sdk-element';
+import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { Lock, Mail } from 'lucide-react';
 
 export const LoginSimpleExample = () => {
@@ -27,23 +27,23 @@ export const LoginSimpleExample = () => {
 			{/* Form */}
 			<div className="flex flex-col gap-4 w-full">
 				{/* Email Input */}
-				<div className="flex flex-col gap-2 relative">
-					<SDKElement
-						title="Auth SDK / Email Input"
-						codeSnippet="<input type='email' />"
-						size="sm"
-						popoverPosition="left"
-					/>
+				<div className="flex flex-col gap-2">
 					<div className="flex flex-col gap-2">
 						<label className="caption text-[#364153]">Email Address</label>
-						<div className="border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4">
+						<SDKWrapper
+							className="border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section"
+							title="Auth SDK / Email Input"
+							codeSnippet="<input type='email' />"
+							size="sm"
+							popoverPosition="left"
+						>
 							<Mail className="size-5 text-neutral-medium shrink-0" />
 							<input
 								type="email"
 								placeholder="you@example.com"
 								className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
 							/>
-						</div>
+						</SDKWrapper>
 					</div>
 				</div>
 
@@ -51,20 +51,20 @@ export const LoginSimpleExample = () => {
 				<div className="flex flex-col gap-2 relative">
 					<div className="flex flex-col gap-2">
 						<label className="caption text-[#364153]">Password</label>
-						<div className="border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4 relative">
-							<SDKElement
-								title="Auth SDK / Password Input"
-								codeSnippet="<input type='password' />"
-								size="sm"
-								popoverPosition="left"
-							/>
+						<SDKWrapper
+							title="Auth SDK / Password Input"
+							codeSnippet="<input type='password' />"
+							size="sm"
+							popoverPosition="left"
+							className="border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section"
+						>
 							<Lock className="size-5 text-neutral-medium shrink-0" />
 							<input
 								type="password"
 								placeholder="••••••••"
 								className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
 							/>
-						</div>
+						</SDKWrapper>
 					</div>
 				</div>
 
@@ -76,18 +76,17 @@ export const LoginSimpleExample = () => {
 				</div>
 
 				{/* Submit Button */}
-				<div className="relative">
-					<SDKElement
-						title="Auth SDK / Submit"
-						codeSnippet="<button type='submit'>Sign In</button>"
-						size="sm"
-						labelPosition="top-left"
-						popoverPosition="left"
-					/>
+				<SDKWrapper
+					title="Auth SDK / Submit"
+					codeSnippet="<button type='submit'>Sign In</button>"
+					size="sm"
+					labelPosition="top-left"
+					popoverPosition="left"
+				>
 					<Button theme="accent" variant="solid" size="lg" className="w-full">
 						Sign In
 					</Button>
-				</div>
+				</SDKWrapper>
 			</div>
 
 			{/* Sign Up Link */}

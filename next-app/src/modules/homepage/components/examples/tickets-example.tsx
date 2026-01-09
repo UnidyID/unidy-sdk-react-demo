@@ -1,6 +1,6 @@
 'use client';
 
-import { SDKElement } from '@/modules/sdk-element/components/sdk-element';
+import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import {
 	TicketCard,
 	TicketCardProps
@@ -37,17 +37,17 @@ export const TicketsExample = () => {
 	return (
 		<div className="flex flex-col gap-2 w-full">
 			{tickets.map((ticket, index) => (
-				<div key={ticket.id} className="relative">
-					<SDKElement
-						title="Tickets SDK / Ticket Card"
-						codeSnippet={`<TicketCard ticket={ticket} />`}
-						size="sm"
-					/>
+				<SDKWrapper
+					key={ticket.id}
+					title="Tickets SDK / Ticket Card"
+					codeSnippet={`<TicketCard ticket={ticket} />`}
+					size="sm"
+				>
 					<TicketCard
 						{...ticket}
 						onDownload={() => console.log('Download ticket', ticket.id)}
 					/>
-				</div>
+				</SDKWrapper>
 			))}
 		</div>
 	);

@@ -9,7 +9,7 @@ import {
 	ButtonTabsTrigger
 } from '@/components/shadcn/ui/button-tabs';
 import { DialogClose } from '@/components/shadcn/ui/dialog';
-import { SDKElement } from '@/modules/sdk-element/components/sdk-element';
+import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { Lock, Mail, X } from 'lucide-react';
 
 export const LoginModalExample = () => {
@@ -53,13 +53,13 @@ export const LoginModalExample = () => {
 					{/* Form */}
 					<div className="flex flex-col gap-4 w-full">
 						{/* Email Input */}
-						<div className="flex flex-col gap-2 relative">
-							<SDKElement
-								title="Auth SDK / Email Input"
-								codeSnippet="<input type='email' />"
-								size="sm"
-								labelPosition="top-right"
-							/>
+						<SDKWrapper
+							title="Auth SDK / Email Input"
+							codeSnippet="<input type='email' />"
+							size="sm"
+							labelPosition="top-right"
+							className="flex flex-col gap-2"
+						>
 							<div className="flex flex-col gap-2">
 								<label className="caption text-[#364153] h-5">
 									Email Address
@@ -73,16 +73,16 @@ export const LoginModalExample = () => {
 									/>
 								</div>
 							</div>
-						</div>
+						</SDKWrapper>
 
 						{/* Password Input */}
-						<div className="flex flex-col gap-2 relative">
-							<SDKElement
-								title="Auth SDK / Password Input"
-								codeSnippet="<input type='password' />"
-								size="sm"
-								labelPosition="top-right"
-							/>
+						<SDKWrapper
+							title="Auth SDK / Password Input"
+							codeSnippet="<input type='password' />"
+							size="sm"
+							labelPosition="top-right"
+							className="flex flex-col gap-2 relative"
+						>
 							<div className="flex flex-col gap-2">
 								<label className="caption text-[#364153] h-5">Password</label>
 								<div className="border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4 relative">
@@ -94,7 +94,7 @@ export const LoginModalExample = () => {
 									/>
 								</div>
 							</div>
-						</div>
+						</SDKWrapper>
 
 						{/* Forgot Password */}
 						<div className="flex items-center justify-end">
@@ -104,13 +104,12 @@ export const LoginModalExample = () => {
 						</div>
 
 						{/* Submit Button */}
-						<div className="relative">
-							<SDKElement
-								title="Auth SDK / Submit"
-								codeSnippet="<button type='submit'>Sign In</button>"
-								size="sm"
-								labelPosition="top-left"
-							/>
+						<SDKWrapper
+							title="Auth SDK / Submit"
+							codeSnippet="<button type='submit'>Sign In</button>"
+							size="sm"
+							labelPosition="top-left"
+						>
 							<Button
 								theme="accent"
 								variant="solid"
@@ -119,7 +118,7 @@ export const LoginModalExample = () => {
 							>
 								Sign In
 							</Button>
-						</div>
+						</SDKWrapper>
 					</div>
 
 					{/* Sign Up Link */}

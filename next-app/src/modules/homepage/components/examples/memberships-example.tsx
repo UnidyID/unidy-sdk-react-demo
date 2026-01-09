@@ -1,6 +1,6 @@
 'use client';
 
-import { SDKElement } from '@/modules/sdk-element/components/sdk-element';
+import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import {
 	SubscriptionCard,
 	SubscriptionCardProps
@@ -27,17 +27,18 @@ export const MembershipsExample = () => {
 	return (
 		<div className="flex flex-col gap-2 w-full">
 			{subscriptions.map((subscription) => (
-				<div key={subscription.id} className="relative flex flex-col gap-2">
-					<SDKElement
-						title="Tickets SDK / Subscription Card"
-						codeSnippet={`<SubscriptionCard subscription={subscription} />`}
-						size="sm"
-					/>
+				<SDKWrapper
+					key={subscription.id}
+					title="Tickets SDK / Subscription Card"
+					codeSnippet={`<SubscriptionCard subscription={subscription} />`}
+					size="sm"
+					className="flex flex-col gap-2"
+				>
 					<SubscriptionCard
 						{...subscription}
 						onRenew={() => console.log('Renew subscription', subscription.id)}
 					/>
-				</div>
+				</SDKWrapper>
 			))}
 		</div>
 	);

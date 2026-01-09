@@ -25,7 +25,7 @@ export const CardSelect: FC<CardSelectProps> = ({
 		<button
 			onClick={onClick}
 			className={cn(
-				'border-2 rounded-[12px] p-[18px] flex gap-4 items-start w-full text-left transition-all hover:border-neutral-medium',
+				'border-2 rounded-[12px] p-[18px] flex gap-4 items-start w-full text-left transition-all hover:border-neutral-medium bg-section',
 				selected ? 'border-neutral-strong' : 'border-neutral-weak',
 				className
 			)}

@@ -1,5 +1,5 @@
 import { Button } from '@/components/shadcn/ui/button';
-import { SDKElement } from '@/modules/sdk-element/components/sdk-element';
+import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { Apple, Facebook, Mail, Twitter } from 'lucide-react';
 
 export const LoginSocialExample = () => {
@@ -8,7 +8,7 @@ export const LoginSocialExample = () => {
 			{/* Email Input */}
 			<div className="flex flex-col gap-2">
 				<label className="caption text-[#364153]">Email Address</label>
-				<div className="border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4">
+				<div className="border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section">
 					<Mail className="size-5 text-neutral-medium shrink-0" />
 					<input
 						type="email"
@@ -19,18 +19,17 @@ export const LoginSocialExample = () => {
 			</div>
 
 			{/* Continue Button */}
-			<div className="relative">
-				<SDKElement
-					title="Auth SDK / Submit"
-					codeSnippet="<button type='submit'>Continue</button>"
-					size="sm"
-					labelPosition="top-left"
-					popoverPosition="left"
-				/>
+			<SDKWrapper
+				title="Auth SDK / Submit"
+				codeSnippet="<button type='submit'>Continue</button>"
+				size="sm"
+				labelPosition="top-left"
+				popoverPosition="left"
+			>
 				<Button theme="accent" variant="solid" size="lg" className="w-full">
 					Continue
 				</Button>
-			</div>
+			</SDKWrapper>
 
 			{/* Divider */}
 			<div className="flex items-center justify-center gap-2">
@@ -42,14 +41,13 @@ export const LoginSocialExample = () => {
 			{/* Social Buttons */}
 			<div className="flex flex-col gap-3 w-full">
 				{/* Google Button */}
-				<div className="relative">
-					<SDKElement
-						title="Auth SDK / OAuth2 Button"
-						codeSnippet="<OAuthButton provider='google' />"
-						size="sm"
-						labelPosition="top-right"
-						popoverPosition="left"
-					/>
+				<SDKWrapper
+					title="Auth SDK / OAuth2 Button"
+					codeSnippet="<OAuthButton provider='google' />"
+					size="sm"
+					labelPosition="top-right"
+					popoverPosition="left"
+				>
 					<Button
 						theme="neutral"
 						variant="outline"
@@ -81,7 +79,7 @@ export const LoginSocialExample = () => {
 						</svg>
 						Continue with Google
 					</Button>
-				</div>
+				</SDKWrapper>
 
 				{/* Apple Button */}
 				<Button theme="neutral" variant="outline" size="lg" className="w-full">

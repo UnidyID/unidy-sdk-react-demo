@@ -1,5 +1,5 @@
 import { Button } from '@/components/shadcn/ui/button';
-import { SDKElement } from '@/modules/sdk-element/components/sdk-element';
+import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { KeyRound, Mail, Send } from 'lucide-react';
 
 export const LoginExtrasExample = () => {
@@ -19,14 +19,14 @@ export const LoginExtrasExample = () => {
 			</div>
 
 			{/* Continue and Magic Link Buttons */}
-			<div className="flex gap-2 relative">
-				<SDKElement
-					title="Auth SDK / Submit"
-					codeSnippet="<button type='submit'>Continue</button>"
-					size="sm"
-					labelPosition="top-left"
-					popoverPosition="left"
-				/>
+			<SDKWrapper
+				title="Auth SDK / Submit"
+				codeSnippet="<button type='submit'>Continue</button>"
+				size="sm"
+				labelPosition="top-left"
+				popoverPosition="left"
+				className="flex gap-2 relative"
+			>
 				<Button theme="accent" variant="solid" size="lg" className="flex-1">
 					Continue
 				</Button>
@@ -39,7 +39,7 @@ export const LoginExtrasExample = () => {
 					<Send className="size-6" />
 					Send Magic Link
 				</Button>
-			</div>
+			</SDKWrapper>
 
 			{/* Divider */}
 			<div className="flex items-center justify-center gap-2">
@@ -49,14 +49,13 @@ export const LoginExtrasExample = () => {
 			</div>
 
 			{/* Passcode Button */}
-			<div className="relative">
-				<SDKElement
-					title="Auth SDK / Passcode Button"
-					codeSnippet="<PasscodeButton />"
-					size="sm"
-					labelPosition="top-right"
-					popoverPosition="left"
-				/>
+			<SDKWrapper
+				title="Auth SDK / Passcode Button"
+				codeSnippet="<PasscodeButton />"
+				size="sm"
+				labelPosition="top-right"
+				popoverPosition="left"
+			>
 				<Button
 					theme="accent"
 					variant="solid-weak"
@@ -66,7 +65,7 @@ export const LoginExtrasExample = () => {
 					<KeyRound className="size-6" />
 					Continue with Passcode
 				</Button>
-			</div>
+			</SDKWrapper>
 
 			{/* Terms & Conditions */}
 			<div className="flex items-center justify-center gap-2 px-[37px]">

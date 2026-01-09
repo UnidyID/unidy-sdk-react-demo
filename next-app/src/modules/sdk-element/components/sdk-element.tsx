@@ -8,7 +8,7 @@ import { Popover, PopoverContent } from '@/components/shadcn/ui/popover';
 import { cn } from '@/components/shadcn/utils';
 import { useViewportSize } from '@/lib/viewport-size';
 import { PopoverAnchor } from '@radix-ui/react-popover';
-import { useState } from 'react';
+import { FC, useState } from 'react';
 
 const sdkElementOutlineVariants = cva(
 	cn(
@@ -167,7 +167,11 @@ export function SDKElement({
 		<>
 			{/* Label with Popover */}
 			<button
-				className={sdkElementLabelVariants({ size, labelPosition, detatched })}
+				className={sdkElementLabelVariants({
+					size,
+					labelPosition,
+					detatched
+				})}
 				aria-label="View SDK code"
 				onClick={() => setOpen(true)}
 				{...{ 'data-active': open }}
@@ -223,3 +227,20 @@ export function SDKElement({
 		</>
 	);
 }
+
+export const SDKWrapper: FC<
+	SDKElementProps & { children: React.ReactNode; className?: string }
+> = ({ children, className, ...props }) => {
+	return (
+		<div
+			className={cn(
+				'relative',
+				'has-[>.sdk-label[data-active=true]]:z-1000',
+				className
+			)}
+		>
+			<SDKElement {...props} />
+			{children}
+		</div>
+	);
+};

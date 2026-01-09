@@ -3,7 +3,7 @@
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/shadcn/ui/button';
 import { ThemeToggler } from '@/lib/theme/components/theme-toggler';
-import { SDKElement } from '@/modules/sdk-element/components/sdk-element';
+import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { LogIn, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -28,14 +28,13 @@ export const TopNavigation = () => {
 					{isLoggedIn ? (
 						<>
 							{/* Profile Button with SDKElement */}
-							<div className="relative">
-								<SDKElement
-									title="Auth SDK"
-									codeSnippet="<ProfileButton />"
-									size="sm"
-									labelPosition="bottom-right"
-									detatched
-								/>
+							<SDKWrapper
+								title="Auth SDK"
+								codeSnippet="<ProfileButton />"
+								size="sm"
+								labelPosition="bottom-right"
+								detatched
+							>
 								<Link href="/profile">
 									<Button
 										theme="neutral"
@@ -47,7 +46,7 @@ export const TopNavigation = () => {
 										Profile
 									</Button>
 								</Link>
-							</div>
+							</SDKWrapper>
 
 							{/* Log Out Button */}
 							<Button
@@ -63,15 +62,14 @@ export const TopNavigation = () => {
 					) : (
 						<>
 							{/* Log In Button with SDKElement */}
-							<div className="relative">
-								<SDKElement
-									title="Auth SDK"
-									codeSnippet="<LoginButton />"
-									size="sm"
-									labelPosition="bottom-right"
-									popoverPosition="left"
-									detatched
-								/>
+							<SDKWrapper
+								title="Auth SDK"
+								codeSnippet="<LoginButton />"
+								size="sm"
+								labelPosition="bottom-right"
+								popoverPosition="left"
+								detatched
+							>
 								<Button
 									theme="accent"
 									variant="solid"
@@ -81,7 +79,7 @@ export const TopNavigation = () => {
 									<LogIn />
 									Log in
 								</Button>
-							</div>
+							</SDKWrapper>
 						</>
 					)}
 				</div>
