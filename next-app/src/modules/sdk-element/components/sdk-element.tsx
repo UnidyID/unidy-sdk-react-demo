@@ -12,14 +12,21 @@ import { useState } from 'react';
 
 const sdkElementOutlineVariants = cva(
 	cn(
-		'absolute duration-300 peer-hover:duration-100',
+		'absolute z-10 duration-300 peer-hover:duration-100',
+		'pointer-events-none rounded-[12px]',
+		// border
 		'border-2 peer-hover:border-4 peer-data-[active=true]:border-4',
-		'pointer-events-none',
+		// colors
 		'border-sdk',
 		'group-has-[.sdk-label:hover,.sdk-label[data-active=true]]/sdklabels:border-sdk-medium',
 		'peer-hover:border-sdk!',
+		// sizing
 		'peer-data-[active=true]:border-sdk!',
-		'inset-[calc(-1*var(--inset))] rounded-[12px]'
+		'inset-[calc(-1*var(--inset))]',
+		// z-index
+		'z-10',
+		'peer-hover:z-100',
+		'peer-data-[active=true]:z-100'
 	),
 	{
 		variants: {
@@ -56,7 +63,11 @@ const sdkElementLabelVariants = cva(
 		'px-3 hover:px-4 data-[active=true]:px-4',
 		'h-6 hover:h-7 data-[active=true]:h-7',
 		'[--offset-x:4px] hover:[--offset-x:0px] data-[active=true]:[--offset-x:0px]',
-		'[--offset-y:0px] hover:[--offset-y:2px] data-[active=true]:[--offset-y:2px]'
+		'[--offset-y:0px] hover:[--offset-y:2px] data-[active=true]:[--offset-y:2px]',
+		// z-index
+		'z-10',
+		'hover:z-100',
+		'data-[active=true]:z-100'
 	),
 	{
 		variants: {
