@@ -33,7 +33,7 @@ export const LoginSimpleExample = () => {
 						<SDKWrapper
 							className="border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section"
 							title="Auth SDK / Email Input"
-							codeSnippet="<input type='email' />"
+							codeSnippet={`import { useLogin } from '@unidy.io/sdk-react';\n\nconst login = useLogin();\nawait login.submitEmail(email);`}
 							size="sm"
 							popoverPosition="left"
 						>
@@ -53,7 +53,7 @@ export const LoginSimpleExample = () => {
 						<label className="caption text-[#364153]">Password</label>
 						<SDKWrapper
 							title="Auth SDK / Password Input"
-							codeSnippet="<input type='password' />"
+							codeSnippet={`const login = useLogin();\nawait login.submitPassword(password);`}
 							size="sm"
 							popoverPosition="left"
 							className="border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section"
@@ -78,7 +78,7 @@ export const LoginSimpleExample = () => {
 				{/* Submit Button */}
 				<SDKWrapper
 					title="Auth SDK / Submit"
-					codeSnippet="<button type='submit'>Sign In</button>"
+					codeSnippet={`const login = useLogin();\n// login.isLoading, login.isAuthenticated\nawait login.submitPassword(password);`}
 					size="sm"
 					labelPosition="top-left"
 					popoverPosition="left"

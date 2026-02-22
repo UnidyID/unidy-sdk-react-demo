@@ -55,7 +55,7 @@ export const LoginModalExample = () => {
 						{/* Email Input */}
 						<SDKWrapper
 							title="Auth SDK / Email Input"
-							codeSnippet="<input type='email' />"
+							codeSnippet={`import { useLogin } from '@unidy.io/sdk-react';\n\nconst login = useLogin();\nawait login.submitEmail(email);`}
 							size="sm"
 							labelPosition="top-right"
 							className="flex flex-col gap-2"
@@ -78,7 +78,7 @@ export const LoginModalExample = () => {
 						{/* Password Input */}
 						<SDKWrapper
 							title="Auth SDK / Password Input"
-							codeSnippet="<input type='password' />"
+							codeSnippet={`const login = useLogin();\nawait login.submitPassword(password);`}
 							size="sm"
 							labelPosition="top-right"
 							className="flex flex-col gap-2 relative"
@@ -106,7 +106,7 @@ export const LoginModalExample = () => {
 						{/* Submit Button */}
 						<SDKWrapper
 							title="Auth SDK / Submit"
-							codeSnippet="<button type='submit'>Sign In</button>"
+							codeSnippet={`const login = useLogin();\n// login.isLoading, login.isAuthenticated\nawait login.submitPassword(password);`}
 							size="sm"
 							labelPosition="top-left"
 						>
