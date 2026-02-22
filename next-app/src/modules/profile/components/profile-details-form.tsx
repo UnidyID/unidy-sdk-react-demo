@@ -6,7 +6,7 @@ import {
 	InputGroup,
 	InputGroupInput
 } from '@/components/shadcn/ui/input-group';
-import { useState, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 
 export interface ProfileDetailsFormData {
 	firstName: string;
@@ -19,17 +19,46 @@ export interface ProfileDetailsFormData {
 	dateOfBirth: string;
 }
 
+/** Maps form field keys to SDK field names for error lookup */
+const fieldToSdkKey: Record<keyof ProfileDetailsFormData, string> = {
+	firstName: 'first_name',
+	lastName: 'last_name',
+	email: 'email',
+	phone: 'phone_number',
+	streetAddress: 'address_line_1',
+	city: 'city',
+	country: 'country_code',
+	dateOfBirth: 'date_of_birth'
+};
+
 export interface ProfileDetailsFormProps {
 	initialData?: Partial<ProfileDetailsFormData>;
 	onSubmit?: (data: ProfileDetailsFormData) => void;
 	onCancel?: () => void;
+	fieldErrors?: Record<string, string>;
+	isMutating?: boolean;
 	className?: string;
+}
+
+function FieldError({
+	fieldKey,
+	fieldErrors
+}: {
+	fieldKey: keyof ProfileDetailsFormData;
+	fieldErrors?: Record<string, string>;
+}) {
+	const sdkKey = fieldToSdkKey[fieldKey];
+	const error = fieldErrors?.[sdkKey];
+	if (!error) return null;
+	return <p className="body-3 text-error mt-1">{error}</p>;
 }
 
 export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 	initialData = {},
 	onSubmit,
 	onCancel,
+	fieldErrors,
+	isMutating,
 	className
 }) => {
 	const [formData, setFormData] = useState<ProfileDetailsFormData>({
@@ -42,6 +71,28 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 		country: initialData.country || '',
 		dateOfBirth: initialData.dateOfBirth || ''
 	});
+
+	useEffect(() => {
+		setFormData({
+			firstName: initialData.firstName || '',
+			lastName: initialData.lastName || '',
+			email: initialData.email || '',
+			phone: initialData.phone || '',
+			streetAddress: initialData.streetAddress || '',
+			city: initialData.city || '',
+			country: initialData.country || '',
+			dateOfBirth: initialData.dateOfBirth || ''
+		});
+	}, [
+		initialData.firstName,
+		initialData.lastName,
+		initialData.email,
+		initialData.phone,
+		initialData.streetAddress,
+		initialData.city,
+		initialData.country,
+		initialData.dateOfBirth
+	]);
 
 	const handleChange =
 		(field: keyof ProfileDetailsFormData) =>
@@ -76,6 +127,10 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 									placeholder="Text"
 								/>
 							</InputGroup>
+							<FieldError
+								fieldKey="firstName"
+								fieldErrors={fieldErrors}
+							/>
 						</FormLabel>
 						<FormLabel title="Last Name" required className="flex-1">
 							<InputGroup>
@@ -87,6 +142,10 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 									placeholder="Text"
 								/>
 							</InputGroup>
+							<FieldError
+								fieldKey="lastName"
+								fieldErrors={fieldErrors}
+							/>
 						</FormLabel>
 					</div>
 				</div>
@@ -103,8 +162,13 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 									onChange={handleChange('email')}
 									className="text-neutral"
 									placeholder="Text"
+									readOnly
 								/>
 							</InputGroup>
+							<FieldError
+								fieldKey="email"
+								fieldErrors={fieldErrors}
+							/>
 						</FormLabel>
 						<FormLabel title="Phone Number" required>
 							<InputGroup>
@@ -116,6 +180,10 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 									placeholder="Text"
 								/>
 							</InputGroup>
+							<FieldError
+								fieldKey="phone"
+								fieldErrors={fieldErrors}
+							/>
 						</FormLabel>
 					</div>
 				</div>
@@ -134,6 +202,10 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 									placeholder="Text"
 								/>
 							</InputGroup>
+							<FieldError
+								fieldKey="streetAddress"
+								fieldErrors={fieldErrors}
+							/>
 						</FormLabel>
 						<div className="flex gap-3">
 							<FormLabel title="City" required className="flex-1">
@@ -146,6 +218,10 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 										placeholder="Text"
 									/>
 								</InputGroup>
+								<FieldError
+									fieldKey="city"
+									fieldErrors={fieldErrors}
+								/>
 							</FormLabel>
 							<FormLabel title="Country" required className="flex-1">
 								<InputGroup>
@@ -157,6 +233,10 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 										placeholder="Text"
 									/>
 								</InputGroup>
+								<FieldError
+									fieldKey="country"
+									fieldErrors={fieldErrors}
+								/>
 							</FormLabel>
 						</div>
 					</div>
@@ -174,13 +254,23 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 								className="text-neutral"
 							/>
 						</InputGroup>
+						<FieldError
+							fieldKey="dateOfBirth"
+							fieldErrors={fieldErrors}
+						/>
 					</FormLabel>
 				</div>
 
 				{/* Actions */}
 				<div className="flex gap-4 pt-4 border-t border-section">
-					<Button theme="accent" variant="solid" size="md" type="submit">
-						Save changes
+					<Button
+						theme="accent"
+						variant="solid"
+						size="md"
+						type="submit"
+						disabled={isMutating}
+					>
+						{isMutating ? 'Saving...' : 'Save changes'}
 					</Button>
 					<Button
 						theme="neutral"
