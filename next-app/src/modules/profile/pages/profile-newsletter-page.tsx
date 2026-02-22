@@ -1,9 +1,12 @@
 'use client';
 
 import { Button } from '@/components/shadcn/ui/button';
+import { toastCallbacks } from '@/lib/unidy/callbacks';
 import type { NewsletterCategory } from '@/modules/newsletter/components/newsletter-picker';
 import { NewsletterPicker } from '@/modules/newsletter/components/newsletter-picker';
-import { useState, type FC } from 'react';
+import { useNewsletterPreferenceCenter } from '@unidy.io/sdk-react';
+import { Loader2 } from 'lucide-react';
+import { useMemo, useState, type FC } from 'react';
 
 const newsletterCategories: NewsletterCategory[] = [
 	{
@@ -63,14 +66,51 @@ const newsletterCategories: NewsletterCategory[] = [
 ];
 
 export const ProfileNewsletterPage: FC = () => {
-	const [selectedIds, setSelectedIds] = useState<string[]>(['player-news']);
+	const {
+		subscriptions,
+		isLoading,
+		isMutating,
+		subscribe,
+		unsubscribe
+	} = useNewsletterPreferenceCenter({ callbacks: toastCallbacks });
 
-	const handleSave = () => {
-		console.log('Saving preferences:', selectedIds);
+	const subscribedIds = useMemo(
+		() => subscriptions.map((s) => s.newsletter_internal_name),
+		[subscriptions]
+	);
+
+	const [selectedIds, setSelectedIds] = useState<string[] | null>(null);
+
+	// Use subscribedIds as the source of truth until the user makes local changes
+	const effectiveSelectedIds = selectedIds ?? subscribedIds;
+
+	const allOptionIds = useMemo(
+		() => newsletterCategories.flatMap((c) => c.options.map((o) => o.id)),
+		[]
+	);
+	const isAnythingMutating = allOptionIds.some((id) => isMutating(id));
+
+	const handleSave = async () => {
+		const currentIds = effectiveSelectedIds;
+		const toSubscribe = currentIds.filter(
+			(id) => !subscribedIds.includes(id)
+		);
+		const toUnsubscribe = subscribedIds.filter(
+			(id) => !currentIds.includes(id)
+		);
+
+		await Promise.all([
+			...toSubscribe.map((id) => subscribe(id)),
+			...toUnsubscribe.map((id) => unsubscribe(id))
+		]);
+
+		// Reset local selection so it re-syncs from server state
+		setSelectedIds(null);
 	};
 
-	const handleUnsubscribeAll = () => {
-		setSelectedIds([]);
+	const handleUnsubscribeAll = async () => {
+		await Promise.all(subscriptions.map((s) => unsubscribe(s.newsletter_internal_name)));
+		setSelectedIds(null);
 	};
 
 	return (
@@ -89,11 +129,18 @@ export const ProfileNewsletterPage: FC = () => {
 						<p className="title-3 text-neutral-strong">
 							Subscribed Newsletters
 						</p>
-						<NewsletterPicker
-							categories={newsletterCategories}
-							selectedIds={selectedIds}
-							onChange={setSelectedIds}
-						/>
+						{isLoading ? (
+							<div className="flex items-center justify-center py-8">
+								<Loader2 className="size-6 animate-spin text-neutral-strong" />
+							</div>
+						) : (
+							<NewsletterPicker
+								categories={newsletterCategories}
+								selectedIds={effectiveSelectedIds}
+								onChange={setSelectedIds}
+								disabled={isAnythingMutating}
+							/>
+						)}
 					</div>
 
 					<div className="flex gap-4">
@@ -102,7 +149,11 @@ export const ProfileNewsletterPage: FC = () => {
 							variant="solid"
 							size="md"
 							onClick={handleSave}
+							disabled={isAnythingMutating}
 						>
+							{isAnythingMutating ? (
+								<Loader2 className="size-4 animate-spin" />
+							) : null}
 							Save Preferences
 						</Button>
 						<Button
@@ -110,6 +161,7 @@ export const ProfileNewsletterPage: FC = () => {
 							variant="outline"
 							size="md"
 							onClick={handleUnsubscribeAll}
+							disabled={isAnythingMutating}
 						>
 							Unsubscribe from All
 						</Button>

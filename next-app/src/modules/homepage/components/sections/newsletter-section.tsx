@@ -2,10 +2,29 @@
 
 import { Card } from '@/components/card';
 import { FeatureItem } from '@/components/feature-item';
+import { IntegrationCode } from '@/components/integration-code';
 import { SectionHeading } from '@/components/section-heading';
-import { Button } from '@/components/shadcn/ui/button';
-import { Check, Code } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { NewsletterExample } from '../examples/newsletter-example';
+
+const integrationCode = `import { useNewsletterSubscribe } from '@unidy.io/sdk-react';
+
+function SubscribeForm() {
+  const { subscribe, isLoading, fieldErrors } = useNewsletterSubscribe({
+    callbacks: {
+      onSuccess: (msg) => toast.success(msg),
+      onError: (err) => toast.error(err),
+    },
+  });
+
+  const handleSubmit = async () => {
+    const result = await subscribe({
+      email: 'user@example.com',
+      newsletters: [{ internalName: 'sports' }],
+      additionalFields: { first_name: 'John' },
+    });
+  };
+}`;
 
 export const NewsletterSection = () => {
 	const features = [
@@ -48,10 +67,7 @@ export const NewsletterSection = () => {
 						title="Newsletter Subscription"
 						description="Flexible newsletter management with multiple list options. Keep your fans engaged with personalized content."
 					>
-						<Button theme="accent" variant="ghost" size="sm" className="w-fit">
-							<Code className="size-4" />
-							View Integration Code
-						</Button>
+						<IntegrationCode code={integrationCode} language="typescript" />
 					</SectionHeading>
 
 					{/* Feature Items */}
