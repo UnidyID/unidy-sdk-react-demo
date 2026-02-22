@@ -1,16 +1,42 @@
 'use client';
 
+import { IntegrationCode } from '@/components/integration-code';
 import { SectionHeading } from '@/components/section-heading';
-import { Button } from '@/components/shadcn/ui/button';
 import {
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger
 } from '@/components/shadcn/ui/tabs';
-import { Code } from 'lucide-react';
 import { MembershipsExample } from '../examples/memberships-example';
 import { TicketsExample } from '../examples/tickets-example';
+
+const integrationCode = `import {
+  useSession,
+  usePagination,
+  useTicketables,
+} from '@unidy.io/sdk-react';
+
+// Tickets
+const { isAuthenticated } = useSession();
+const pagination = usePagination({ perPage: 10 });
+const { items, isLoading, getExportLink } = useTicketables({
+  type: 'ticket',
+  pagination,
+  filter: { orderBy: 'starts_at', orderDirection: 'desc' },
+  fetchOnMount: isAuthenticated,
+});
+
+// Download ticket as PDF
+const link = await getExportLink(ticket.id, 'pdf');
+window.open(link.url, '_blank');
+
+// Subscriptions
+const { items: subscriptions } = useTicketables({
+  type: 'subscription',
+  pagination,
+  fetchOnMount: isAuthenticated,
+});`;
 
 export const TicketsSection = () => {
 	return (
@@ -25,10 +51,7 @@ export const TicketsSection = () => {
 						title="Tickets & Subscriptions"
 						description="View and manage your event tickets, memberships, and active subscriptions."
 					>
-						<Button theme="accent" variant="ghost" size="sm" className="w-fit">
-							<Code className="size-4" />
-							View Integration Code
-						</Button>
+						<IntegrationCode code={integrationCode} language="typescript" />
 					</SectionHeading>
 				</div>
 
