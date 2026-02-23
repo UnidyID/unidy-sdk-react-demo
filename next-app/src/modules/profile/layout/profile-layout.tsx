@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { type FC, type PropsWithChildren } from 'react';
 
-import { useSession } from '@unidy.io/sdk-react';
+import { useProfile, useSession } from '@unidy.io/sdk-react';
 import { toastCallbacks } from '@/lib/unidy/callbacks';
 
 import { Button } from '@/components/shadcn/ui/button';
@@ -13,7 +13,19 @@ import { ProfileSidebar } from '../components/profile-sidebar';
 
 export const ProfileLayout: FC<PropsWithChildren> = ({ children }) => {
 	const session = useSession({ callbacks: toastCallbacks });
+	const { profile } = useProfile({ callbacks: toastCallbacks });
 	const router = useRouter();
+
+	const firstName = profile?.first_name?.value ?? '';
+	const lastName = profile?.last_name?.value ?? '';
+	const userName =
+		firstName || lastName
+			? `${firstName} ${lastName}`.trim()
+			: session.email || undefined;
+	const userInitials =
+		firstName && lastName
+			? `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+			: undefined;
 
 	const handleLogout = async () => {
 		await session.logout();
@@ -44,7 +56,10 @@ export const ProfileLayout: FC<PropsWithChildren> = ({ children }) => {
 
 			<div className="flex-1 flex justify-center py-6 lg:py-10">
 				<div className="max-w-[1200px] w-full px-2 lg:px-6 flex flex-col md:flex-row gap-6 lg:gap-10">
-					<ProfileSidebar />
+					<ProfileSidebar
+						userName={userName}
+						userInitials={userInitials}
+					/>
 
 					{children}
 				</div>

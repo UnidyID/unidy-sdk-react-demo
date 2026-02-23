@@ -6,8 +6,10 @@ import { Mail, Phone, Save, User } from 'lucide-react';
 export const ProfileExample = () => {
 	return (
 		<SDKWrapper
-			title="Profile SDK / Profile Form"
-			codeSnippet="<ProfileForm />"
+			title="Profile SDK / useProfile"
+			codeSnippet={`const { profile, updateProfile } = useProfile({
+  callbacks: toastCallbacks
+});`}
 			size="lg"
 			labelPosition="top-left"
 			detatched
@@ -16,7 +18,7 @@ export const ProfileExample = () => {
 			{/* Full Name Input */}
 			<SDKWrapper
 				title="Profile SDK / Name Input"
-				codeSnippet="<input type='text' name='name' />"
+				codeSnippet="profile.first_name?.value"
 				size="sm"
 				popoverPosition="left"
 				className="flex flex-col gap-2"
@@ -38,7 +40,7 @@ export const ProfileExample = () => {
 			<div className="flex flex-col gap-2 relative">
 				<SDKWrapper
 					title="Profile SDK / Email Input"
-					codeSnippet="<input type='email' name='email' />"
+					codeSnippet="profile.email?.value"
 					size="sm"
 					popoverPosition="left"
 					className="flex flex-col gap-2"
@@ -51,6 +53,7 @@ export const ProfileExample = () => {
 								placeholder="john.doe@example.com"
 								defaultValue="john.doe@example.com"
 								className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
+								readOnly
 							/>
 						</div>
 					</FormLabel>
@@ -59,7 +62,7 @@ export const ProfileExample = () => {
 				{/* Phone Number Input */}
 				<SDKWrapper
 					title="Profile SDK / Phone Input"
-					codeSnippet="<input type='tel' name='phone' />"
+					codeSnippet="profile.phone_number?.value"
 					size="sm"
 					popoverPosition="left"
 					className="flex flex-col gap-2"
@@ -80,7 +83,7 @@ export const ProfileExample = () => {
 				{/* Bio Textarea */}
 				<SDKWrapper
 					title="Profile SDK / Custom Attribute"
-					codeSnippet="<textarea name='bio' />"
+					codeSnippet="updateProfile({ bio: value })"
 					size="sm"
 					popoverPosition="left"
 					className="flex flex-col gap-2"
@@ -98,7 +101,7 @@ export const ProfileExample = () => {
 				{/* Save Button */}
 				<SDKWrapper
 					title="Profile SDK / Submit"
-					codeSnippet="<button type='submit'>Save Changes</button>"
+					codeSnippet="updateProfile({ first_name, last_name, ... })"
 					size="sm"
 					popoverPosition="left"
 				>
