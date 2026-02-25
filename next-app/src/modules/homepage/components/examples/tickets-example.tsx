@@ -1,11 +1,12 @@
 'use client';
 
-import { toastCallbacks } from '@/lib/unidy/callbacks';
+import { toastCallbacks } from '@/deps/unidy/callbacks';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import {
 	TicketCard,
 	TicketCardProps
 } from '@/modules/tickets/components/ticket-card';
+import { formatDate, formatPrice, formatTime, mapItemState } from '@/modules/tickets/utils';
 import {
 	usePagination,
 	useSession,
@@ -42,54 +43,13 @@ const fallbackTickets: (TicketCardProps & { id: string })[] = [
 	}
 ];
 
-function formatPrice(price: number, currency: string | null): string {
-	if (!currency) return `$${price.toFixed(2)}`;
-	try {
-		return new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency
-		}).format(price);
-	} catch {
-		return `${price.toFixed(2)} ${currency}`;
-	}
-}
-
-function formatDate(date: Date): string {
-	return new Intl.DateTimeFormat('en-GB', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric'
-	}).format(new Date(date));
-}
-
-function formatTime(date: Date): string {
-	return new Intl.DateTimeFormat('en-GB', {
-		hour: '2-digit',
-		minute: '2-digit',
-		hour12: false
-	}).format(new Date(date));
-}
-
-function mapTicketState(
-	state: string
-): 'active' | 'inactive' | 'expired' {
-	switch (state.toLowerCase()) {
-		case 'active':
-			return 'active';
-		case 'expired':
-			return 'expired';
-		default:
-			return 'inactive';
-	}
-}
-
 function mapTicketToCardProps(ticket: Ticket): TicketCardProps & { id: string } {
 	return {
 		id: ticket.id,
 		title: ticket.title,
 		ticketId: ticket.reference,
 		price: formatPrice(ticket.price, ticket.currency),
-		status: mapTicketState(ticket.state),
+		status: mapItemState(ticket.state),
 		date: formatDate(ticket.starts_at),
 		time: formatTime(ticket.starts_at),
 		venue: ticket.venue ?? 'TBA',

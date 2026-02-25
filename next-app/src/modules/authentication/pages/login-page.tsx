@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { useLogin } from '@unidy.io/sdk-react';
-import { toastCallbacks } from '@/lib/unidy/callbacks';
+import { toastCallbacks } from '@/deps/unidy/callbacks';
 
 import { Card } from '@/components/card';
 import { FormLabel } from '@/components/form-label';

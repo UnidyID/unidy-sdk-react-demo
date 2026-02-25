@@ -4,7 +4,7 @@ import { CardSelect } from '@/components/card-select';
 import { FormLabel } from '@/components/form-label';
 import { Button } from '@/components/shadcn/ui/button';
 import { cn } from '@/components/shadcn/utils';
-import { toastCallbacks } from '@/lib/unidy/callbacks';
+import { toastCallbacks } from '@/deps/unidy/callbacks';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { useNewsletterSubscribe } from '@unidy.io/sdk-react';
 import {

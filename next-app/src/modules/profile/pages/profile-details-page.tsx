@@ -2,7 +2,7 @@
 
 import { type FC } from 'react';
 import { useProfile } from '@unidy.io/sdk-react';
-import { toastCallbacks } from '@/lib/unidy/callbacks';
+import { toastCallbacks } from '@/deps/unidy/callbacks';
 import { ConnectedAccounts } from '../components/connected-accounts';
 import {
 	ProfileDetailsForm,

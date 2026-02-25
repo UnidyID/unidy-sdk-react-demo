@@ -1,11 +1,12 @@
 'use client';
 
-import { toastCallbacks } from '@/lib/unidy/callbacks';
+import { toastCallbacks } from '@/deps/unidy/callbacks';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import {
 	SubscriptionCard,
 	SubscriptionCardProps
 } from '@/modules/tickets/components/subscription-card';
+import { formatDate, formatPrice, mapItemState } from '@/modules/tickets/utils';
 import { Button } from '@/components/shadcn/ui/button';
 import {
 	usePagination,
@@ -32,40 +33,6 @@ const fallbackSubscriptions: (SubscriptionCardProps & { id: string })[] = [
 	}
 ];
 
-function formatPrice(price: number, currency: string | null): string {
-	if (!currency) return `$${price.toFixed(2)}`;
-	try {
-		return new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency
-		}).format(price);
-	} catch {
-		return `${price.toFixed(2)} ${currency}`;
-	}
-}
-
-function formatDate(date: Date | null): string {
-	if (!date) return 'N/A';
-	return new Intl.DateTimeFormat('en-GB', {
-		day: '2-digit',
-		month: '2-digit',
-		year: 'numeric'
-	}).format(new Date(date));
-}
-
-function mapSubscriptionState(
-	state: string
-): 'active' | 'inactive' | 'expired' {
-	switch (state.toLowerCase()) {
-		case 'active':
-			return 'active';
-		case 'expired':
-			return 'expired';
-		default:
-			return 'inactive';
-	}
-}
-
 function mapSubscriptionToCardProps(
 	subscription: Subscription
 ): SubscriptionCardProps & { id: string } {
@@ -73,7 +40,7 @@ function mapSubscriptionToCardProps(
 		id: subscription.id,
 		title: subscription.title,
 		subtitle: subscription.text,
-		status: mapSubscriptionState(subscription.state),
+		status: mapItemState(subscription.state),
 		validUntil: formatDate(subscription.ends_at),
 		remainingMatches: subscription.payment_frequency ?? 'N/A',
 		benefits: [],

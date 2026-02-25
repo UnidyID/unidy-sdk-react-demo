@@ -1,20 +1,20 @@
 'use client';
 
 import { Button } from '@/components/shadcn/ui/button';
-import { toastCallbacks } from '@/lib/unidy/callbacks';
+import { toastCallbacks } from '@/deps/unidy/callbacks';
 import { ProfileNavigation } from '@/modules/profile/components/profile-navigation';
 import { ProfileSidebar } from '@/modules/profile/components/profile-sidebar';
 import {
 	useNewsletterLogin,
-	useNewsletterPreferenceCenter,
 	useSession
 } from '@unidy.io/sdk-react';
 import { CheckCircle2, Info, Loader2, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useMemo, useState, type FC } from 'react';
+import { useState, type FC } from 'react';
 import type { NewsletterCategory } from '../components/newsletter-picker';
 import { NewsletterPicker } from '../components/newsletter-picker';
+import { useNewsletterPreferences } from '../hooks/use-newsletter-preferences';
 
 const newsletterCategories: NewsletterCategory[] = [
 	{
@@ -89,59 +89,21 @@ export const NewsletterPage: FC = () => {
 	} = useNewsletterLogin({ callbacks: toastCallbacks });
 
 	const {
-		subscriptions,
 		isLoading: isPreferencesLoading,
-		isMutating,
-		subscribe,
-		unsubscribe
-	} = useNewsletterPreferenceCenter({
-		preferenceToken,
-		callbacks: toastCallbacks
+		isAnythingMutating,
+		effectiveSelectedIds,
+		setSelectedIds,
+		handleSave,
+		handleUnsubscribeAll
+	} = useNewsletterPreferences({
+		categories: newsletterCategories,
+		preferenceToken
 	});
-
-	const subscribedIds = useMemo(
-		() => subscriptions.map((s) => s.newsletter_internal_name),
-		[subscriptions]
-	);
-
-	const [selectedIds, setSelectedIds] = useState<string[] | null>(null);
-
-	// Use subscribedIds as the source of truth until the user makes local changes
-	const effectiveSelectedIds = selectedIds ?? subscribedIds;
 
 	const handleLogin = async () => {
 		if (!email) return;
 		await sendLoginEmail(email, window.location.href);
 	};
-
-	const handleSave = async () => {
-		const currentIds = effectiveSelectedIds;
-		const toSubscribe = currentIds.filter(
-			(id) => !subscribedIds.includes(id)
-		);
-		const toUnsubscribe = subscribedIds.filter(
-			(id) => !currentIds.includes(id)
-		);
-
-		await Promise.all([
-			...toSubscribe.map((id) => subscribe(id)),
-			...toUnsubscribe.map((id) => unsubscribe(id))
-		]);
-
-		// Reset local selection so it re-syncs from server state
-		setSelectedIds(null);
-	};
-
-	const handleUnsubscribeAll = async () => {
-		await Promise.all(subscriptions.map((s) => unsubscribe(s.newsletter_internal_name)));
-		setSelectedIds(null);
-	};
-
-	const allOptionIds = useMemo(
-		() => newsletterCategories.flatMap((c) => c.options.map((o) => o.id)),
-		[]
-	);
-	const isAnythingMutating = allOptionIds.some((id) => isMutating(id));
 
 	return (
 		<div className="bg-background min-h-screen flex flex-col">

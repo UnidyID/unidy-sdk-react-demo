@@ -1,12 +1,11 @@
 'use client';
 
 import { Button } from '@/components/shadcn/ui/button';
-import { toastCallbacks } from '@/lib/unidy/callbacks';
 import type { NewsletterCategory } from '@/modules/newsletter/components/newsletter-picker';
 import { NewsletterPicker } from '@/modules/newsletter/components/newsletter-picker';
-import { useNewsletterPreferenceCenter } from '@unidy.io/sdk-react';
+import { useNewsletterPreferences } from '@/modules/newsletter/hooks/use-newsletter-preferences';
 import { Loader2 } from 'lucide-react';
-import { useMemo, useState, type FC } from 'react';
+import { type FC } from 'react';
 
 const newsletterCategories: NewsletterCategory[] = [
 	{
@@ -67,51 +66,13 @@ const newsletterCategories: NewsletterCategory[] = [
 
 export const ProfileNewsletterPage: FC = () => {
 	const {
-		subscriptions,
 		isLoading,
-		isMutating,
-		subscribe,
-		unsubscribe
-	} = useNewsletterPreferenceCenter({ callbacks: toastCallbacks });
-
-	const subscribedIds = useMemo(
-		() => subscriptions.map((s) => s.newsletter_internal_name),
-		[subscriptions]
-	);
-
-	const [selectedIds, setSelectedIds] = useState<string[] | null>(null);
-
-	// Use subscribedIds as the source of truth until the user makes local changes
-	const effectiveSelectedIds = selectedIds ?? subscribedIds;
-
-	const allOptionIds = useMemo(
-		() => newsletterCategories.flatMap((c) => c.options.map((o) => o.id)),
-		[]
-	);
-	const isAnythingMutating = allOptionIds.some((id) => isMutating(id));
-
-	const handleSave = async () => {
-		const currentIds = effectiveSelectedIds;
-		const toSubscribe = currentIds.filter(
-			(id) => !subscribedIds.includes(id)
-		);
-		const toUnsubscribe = subscribedIds.filter(
-			(id) => !currentIds.includes(id)
-		);
-
-		await Promise.all([
-			...toSubscribe.map((id) => subscribe(id)),
-			...toUnsubscribe.map((id) => unsubscribe(id))
-		]);
-
-		// Reset local selection so it re-syncs from server state
-		setSelectedIds(null);
-	};
-
-	const handleUnsubscribeAll = async () => {
-		await Promise.all(subscriptions.map((s) => unsubscribe(s.newsletter_internal_name)));
-		setSelectedIds(null);
-	};
+		isAnythingMutating,
+		effectiveSelectedIds,
+		setSelectedIds,
+		handleSave,
+		handleUnsubscribeAll
+	} = useNewsletterPreferences({ categories: newsletterCategories });
 
 	return (
 		<div className="flex flex-col gap-6 grow">

@@ -2,19 +2,24 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { type FC, type PropsWithChildren } from 'react';
+import { type FC, type PropsWithChildren, useEffect, useState } from 'react';
 
 import { useProfile, useSession } from '@unidy.io/sdk-react';
-import { toastCallbacks } from '@/lib/unidy/callbacks';
+import { toastCallbacks } from '@/deps/unidy/callbacks';
 
 import { Button } from '@/components/shadcn/ui/button';
 import { ProfileNavigation } from '../components/profile-navigation';
 import { ProfileSidebar } from '../components/profile-sidebar';
 
 export const ProfileLayout: FC<PropsWithChildren> = ({ children }) => {
+	const [mounted, setMounted] = useState(false);
 	const session = useSession({ callbacks: toastCallbacks });
 	const { profile } = useProfile({ callbacks: toastCallbacks });
 	const router = useRouter();
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
 
 	const firstName = profile?.first_name?.value ?? '';
 	const lastName = profile?.last_name?.value ?? '';
@@ -35,7 +40,7 @@ export const ProfileLayout: FC<PropsWithChildren> = ({ children }) => {
 	return (
 		<div className="bg-background min-h-screen flex flex-col">
 			<ProfileNavigation>
-				{session.isAuthenticated ? (
+				{mounted && session.isAuthenticated ? (
 					<Button
 						theme="neutral"
 						variant="solid"
