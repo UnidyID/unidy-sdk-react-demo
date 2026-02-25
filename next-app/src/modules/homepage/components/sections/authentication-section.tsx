@@ -15,22 +15,27 @@ import { LoginExtrasExample } from '../examples/login-extras-example';
 import { LoginSimpleExample } from '../examples/login-simple-example';
 import { LoginSocialExample } from '../examples/login-social-example';
 
-const integrationCode = `import { UnidyAuth, UnidyNewsletter } from '@unidy/sdk';
+const integrationCode = `import { useLogin } from '@unidy.io/sdk-react';
 
-// Initialize authentication
-const auth = new UnidyAuth({
-  apiKey: 'your-api-key',
-  theme: {
-    primaryColor: '#DC2626',
-    brandName: 'FC United'
-  }
-});
+function LoginForm() {
+  const login = useLogin();
 
-// Add newsletter signup
-const newsletter = new UnidyNewsletter({
-  apiKey: 'your-api-key',
-  lists: ['match-updates', 'player-news', 'shop-offers']
-});`;
+  // Multi-step state machine
+  // login.step: "email" | "verification" | "password"
+  //           | "magic-code" | "reset-password" | "authenticated"
+
+  const handleSubmit = async () => {
+    await login.submitEmail(email);
+    // SDK returns loginOptions: { password, magic_link, social_logins }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={email} disabled={login.isLoading} />
+      <button type="submit">Continue</button>
+    </form>
+  );
+}`;
 
 export const AuthenticationSection = () => {
 	const features = [
