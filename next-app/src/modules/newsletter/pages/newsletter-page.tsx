@@ -1,11 +1,18 @@
 'use client';
 
 import { Button } from '@/components/shadcn/ui/button';
+import { toastCallbacks } from '@/lib/unidy/callbacks';
 import { ProfileNavigation } from '@/modules/profile/components/profile-navigation';
 import { ProfileSidebar } from '@/modules/profile/components/profile-sidebar';
-import { CheckCircle2, Info, Mail } from 'lucide-react';
+import {
+	useNewsletterLogin,
+	useNewsletterPreferenceCenter,
+	useSession
+} from '@unidy.io/sdk-react';
+import { CheckCircle2, Info, Loader2, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { useState, type FC } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useMemo, useState, type FC } from 'react';
 import type { NewsletterCategory } from '../components/newsletter-picker';
 import { NewsletterPicker } from '../components/newsletter-picker';
 
@@ -66,39 +73,86 @@ const newsletterCategories: NewsletterCategory[] = [
 	}
 ];
 
-type LoginState = 'logged-in' | 'logged-out' | 'link-sent' | 'expired';
-
 export const NewsletterPage: FC = () => {
-	const [loginState, setLoginState] = useState<LoginState>('logged-out');
-	const [email, setEmail] = useState('matija@unidy.de');
-	const [selectedIds, setSelectedIds] = useState<string[]>(['player-news']);
+	const searchParams = useSearchParams();
+	const preferenceToken = searchParams.get('preference_token') ?? undefined;
 
-	const handleLogin = () => {
-		setLoginState('link-sent');
-		setTimeout(() => {
-			setLoginState('logged-in');
-		}, 3000);
+	const session = useSession();
+	const isLoggedIn = !!preferenceToken || session.isAuthenticated;
+
+	const [email, setEmail] = useState('');
+
+	const {
+		isLoading: isLoginLoading,
+		success: loginSuccess,
+		sendLoginEmail
+	} = useNewsletterLogin({ callbacks: toastCallbacks });
+
+	const {
+		subscriptions,
+		isLoading: isPreferencesLoading,
+		isMutating,
+		subscribe,
+		unsubscribe
+	} = useNewsletterPreferenceCenter({
+		preferenceToken,
+		callbacks: toastCallbacks
+	});
+
+	const subscribedIds = useMemo(
+		() => subscriptions.map((s) => s.newsletter_internal_name),
+		[subscriptions]
+	);
+
+	const [selectedIds, setSelectedIds] = useState<string[] | null>(null);
+
+	// Use subscribedIds as the source of truth until the user makes local changes
+	const effectiveSelectedIds = selectedIds ?? subscribedIds;
+
+	const handleLogin = async () => {
+		if (!email) return;
+		await sendLoginEmail(email, window.location.href);
 	};
 
-	const handleSave = () => {
-		console.log('Saving preferences:', selectedIds);
+	const handleSave = async () => {
+		const currentIds = effectiveSelectedIds;
+		const toSubscribe = currentIds.filter(
+			(id) => !subscribedIds.includes(id)
+		);
+		const toUnsubscribe = subscribedIds.filter(
+			(id) => !currentIds.includes(id)
+		);
+
+		await Promise.all([
+			...toSubscribe.map((id) => subscribe(id)),
+			...toUnsubscribe.map((id) => unsubscribe(id))
+		]);
+
+		// Reset local selection so it re-syncs from server state
+		setSelectedIds(null);
 	};
 
-	const handleUnsubscribeAll = () => {
-		setSelectedIds([]);
+	const handleUnsubscribeAll = async () => {
+		await Promise.all(subscriptions.map((s) => unsubscribe(s.newsletter_internal_name)));
+		setSelectedIds(null);
 	};
 
-	const isLoggedIn = loginState === 'logged-in';
-	const isFrozen = loginState === 'expired' || loginState === 'logged-out';
+	const allOptionIds = useMemo(
+		() => newsletterCategories.flatMap((c) => c.options.map((o) => o.id)),
+		[]
+	);
+	const isAnythingMutating = allOptionIds.some((id) => isMutating(id));
 
 	return (
 		<div className="bg-background min-h-screen flex flex-col">
 			<ProfileNavigation>
 				{isLoggedIn ? (
 					<div className="flex gap-2 items-center">
-						<div className="bg-neutral-weak rounded-[10px] h-10 px-4 flex items-center w-[240px]">
-							<p className="body-2 text-neutral-strong">{email}</p>
-						</div>
+						{session.email && (
+							<div className="bg-neutral-weak rounded-[10px] h-10 px-4 flex items-center w-[240px]">
+								<p className="body-2 text-neutral-strong">{session.email}</p>
+							</div>
+						)}
 						<Link href="/login">
 							<Button theme="accent" variant="solid" size="md">
 								Go to Profile
@@ -106,23 +160,20 @@ export const NewsletterPage: FC = () => {
 						</Link>
 					</div>
 				) : (
-					<Button
-						theme="neutral"
-						variant="solid"
-						size="md"
-						onClick={handleLogin}
-					>
-						Log in
-					</Button>
+					<Link href="/login">
+						<Button theme="neutral" variant="solid" size="md">
+							Log in
+						</Button>
+					</Link>
 				)}
 			</ProfileNavigation>
 
 			<div className="flex-1 flex justify-center py-6 lg:py-10">
 				<div className="max-w-[1200px] w-full px-2 lg:px-6 flex flex-col md:flex-row gap-6 lg:gap-10">
 					<ProfileSidebar
-						userName={isLoggedIn ? 'John Doe' : 'Signed out'}
-						userInitials={isLoggedIn ? 'JD' : ''}
-						memberSince={isLoggedIn ? '2020' : undefined}
+						userName={isLoggedIn ? (session.email || 'Subscriber') : 'Signed out'}
+						userInitials={isLoggedIn ? (session.email?.[0]?.toUpperCase() || 'S') : ''}
+						memberSince={isLoggedIn ? undefined : undefined}
 						showNavigation={false}
 					>
 						{!isLoggedIn && (
@@ -134,7 +185,6 @@ export const NewsletterPage: FC = () => {
 										value={email}
 										onChange={(e) => setEmail(e.target.value)}
 										placeholder="email@email.com"
-										disabled={isFrozen}
 										className="flex-1 input text-neutral-medium bg-transparent border-0 outline-0 placeholder:text-neutral-medium"
 									/>
 								</div>
@@ -144,14 +194,18 @@ export const NewsletterPage: FC = () => {
 									size="md"
 									className="w-full"
 									onClick={handleLogin}
-									disabled={isFrozen}
+									disabled={isLoginLoading || !email}
 								>
-									Log in
+									{isLoginLoading ? (
+										<Loader2 className="size-4 animate-spin" />
+									) : (
+										'Log in'
+									)}
 								</Button>
 							</div>
 						)}
-						{isLoggedIn && (
-							<Link href="/login" className="w-full mt-6">
+						{isLoggedIn && session.isAuthenticated && (
+							<Link href="/profile/newsletter" className="w-full mt-6">
 								<Button
 									theme="accent"
 									variant="solid"
@@ -165,75 +219,6 @@ export const NewsletterPage: FC = () => {
 					</ProfileSidebar>
 
 					<div className="flex-1 min-w-0 flex flex-col gap-6">
-						{/* Profile Preferences Section */}
-						{/* <div className="bg-section border border-neutral-weak rounded-[12px] p-10 flex flex-col gap-6">
-							<div className="flex flex-col gap-1">
-								<h2 className="title-2 text-neutral">Profile Preferences</h2>
-								<p className="body-2 text-neutral-strong">
-									Manage your personal details here.
-								</p>
-							</div>
-
-							{isFrozen ? (
-								<div className="flex flex-col gap-6">
-									<div className="bg-neutral-weak border border-neutral-medium rounded-[10px] p-4 flex gap-4 items-start">
-										<Info className="size-6 text-neutral-strong shrink-0" />
-										<p className="body-2 text-neutral-strong">
-											Please sign in to view newsletter preferences.
-										</p>
-									</div>
-									<Button
-										theme="neutral"
-										variant="solid-weak"
-										size="md"
-										disabled
-									>
-										Save Changes
-									</Button>
-								</div>
-							) : (
-								<div className="flex flex-col gap-6">
-									<div className="flex flex-col gap-6">
-										<FormLabel title="Email Address" required>
-											<InputGroup className="border-neutral-medium rounded-[10px] h-10 px-4">
-												<InputGroupInput
-													type="email"
-													value={email}
-													disabled
-													className="text-neutral"
-												/>
-											</InputGroup>
-										</FormLabel>
-										<div className="flex gap-3">
-											<FormLabel title="First Name" required className="flex-1">
-												<InputGroup className="border-neutral-medium rounded-[10px] h-10 px-4">
-													<InputGroupInput
-														type="text"
-														value="Matija"
-														disabled
-														className="text-neutral"
-													/>
-												</InputGroup>
-											</FormLabel>
-											<FormLabel title="Last Name" required className="flex-1">
-												<InputGroup className="border-neutral-medium rounded-[10px] h-10 px-4">
-													<InputGroupInput
-														type="text"
-														value="Fucek"
-														disabled
-														className="text-neutral"
-													/>
-												</InputGroup>
-											</FormLabel>
-										</div>
-									</div>
-									<Button theme="accent" variant="solid" size="md">
-										Save Changes
-									</Button>
-								</div>
-							)}
-						</div> */}
-
 						{/* Newsletter Preferences Section */}
 						<div className="bg-section border border-neutral-weak rounded-[12px] p-10 flex flex-col gap-6">
 							<div className="flex flex-col gap-1">
@@ -249,19 +234,23 @@ export const NewsletterPage: FC = () => {
 									<p className="title-3 text-neutral-strong">
 										Subscribed Newsletters
 									</p>
-									{isFrozen ? (
+									{!isLoggedIn ? (
 										<div className="bg-neutral-weak border border-neutral-medium rounded-[10px] p-4 flex gap-4 items-start">
 											<Info className="size-6 text-neutral-strong shrink-0" />
 											<p className="body-2 text-neutral-strong">
 												Please sign in to view newsletter preferences.
 											</p>
 										</div>
+									) : isPreferencesLoading ? (
+										<div className="flex items-center justify-center py-8">
+											<Loader2 className="size-6 animate-spin text-neutral-strong" />
+										</div>
 									) : (
 										<NewsletterPicker
 											categories={newsletterCategories}
-											selectedIds={selectedIds}
+											selectedIds={effectiveSelectedIds}
 											onChange={setSelectedIds}
-											disabled={!isLoggedIn}
+											disabled={isAnythingMutating}
 										/>
 									)}
 								</div>
@@ -272,8 +261,11 @@ export const NewsletterPage: FC = () => {
 										variant="solid"
 										size="md"
 										onClick={handleSave}
-										disabled={!isLoggedIn || isFrozen}
+										disabled={!isLoggedIn || isAnythingMutating}
 									>
+										{isAnythingMutating ? (
+											<Loader2 className="size-4 animate-spin" />
+										) : null}
 										Save Preferences
 									</Button>
 									<Button
@@ -281,7 +273,7 @@ export const NewsletterPage: FC = () => {
 										variant="outline"
 										size="md"
 										onClick={handleUnsubscribeAll}
-										disabled={!isLoggedIn || isFrozen}
+										disabled={!isLoggedIn || isAnythingMutating}
 									>
 										Unsubscribe from All
 									</Button>
@@ -304,7 +296,7 @@ export const NewsletterPage: FC = () => {
 			</div>
 
 			{/* Link Sent Notification */}
-			{loginState === 'link-sent' && (
+			{loginSuccess && (
 				<div className="fixed bottom-[30px] right-[30px] bg-neutral rounded-[10px] p-[17px] flex gap-3 items-center w-[407px]">
 					<CheckCircle2 className="size-5 text-neutral-contrast shrink-0" />
 					<p className="body-2 text-neutral-contrast">
