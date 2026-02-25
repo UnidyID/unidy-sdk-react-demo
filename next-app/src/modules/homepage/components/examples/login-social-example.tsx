@@ -21,7 +21,7 @@ export const LoginSocialExample = () => {
 			{/* Continue Button */}
 			<SDKWrapper
 				title="Auth SDK / Submit"
-				codeSnippet="<button type='submit'>Continue</button>"
+				codeSnippet={`import { useLogin } from '@unidy.io/sdk-react';\n\nconst login = useLogin();\nawait login.submitEmail(email);`}
 				size="sm"
 				labelPosition="top-left"
 				popoverPosition="left"
@@ -43,7 +43,7 @@ export const LoginSocialExample = () => {
 				{/* Google Button */}
 				<SDKWrapper
 					title="Auth SDK / OAuth2 Button"
-					codeSnippet="<OAuthButton provider='google' />"
+					codeSnippet={`const login = useLogin();\nconst url = login.getSocialAuthUrl('google', redirectUri);\nwindow.location.href = url;`}
 					size="sm"
 					labelPosition="top-right"
 					popoverPosition="left"

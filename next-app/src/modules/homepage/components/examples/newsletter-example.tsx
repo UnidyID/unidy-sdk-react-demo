@@ -4,8 +4,20 @@ import { CardSelect } from '@/components/card-select';
 import { FormLabel } from '@/components/form-label';
 import { Button } from '@/components/shadcn/ui/button';
 import { cn } from '@/components/shadcn/utils';
+import { toastCallbacks } from '@/lib/unidy/callbacks';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
-import { Bell, Check, Mail, Phone, Trophy, User, Users } from 'lucide-react';
+import { useNewsletterSubscribe } from '@unidy.io/sdk-react';
+import {
+	Bell,
+	Check,
+	CheckCircle2,
+	Loader2,
+	Mail,
+	Phone,
+	Trophy,
+	User,
+	Users
+} from 'lucide-react';
 import { useState } from 'react';
 
 const newsletters = [
@@ -37,8 +49,16 @@ const newsletters = [
 ];
 
 export const NewsletterExample = () => {
+	const [email, setEmail] = useState('');
+	const [firstName, setFirstName] = useState('');
+	const [lastName, setLastName] = useState('');
+	const [phoneNumber, setPhoneNumber] = useState('');
 	const [selectedNewsletters, setSelectedNewsletters] = useState<string[]>([]);
 	const [consentChecked, setConsentChecked] = useState(false);
+	const [subscribed, setSubscribed] = useState(false);
+
+	const { isLoading, fieldErrors, subscribe, reset } =
+		useNewsletterSubscribe({ callbacks: toastCallbacks });
 
 	const toggleNewsletter = (id: string) => {
 		setSelectedNewsletters((prev) =>
@@ -48,10 +68,72 @@ export const NewsletterExample = () => {
 		);
 	};
 
+	const handleSubmit = async () => {
+		const result = await subscribe({
+			email,
+			newsletters: selectedNewsletters.map((id) => ({ internalName: id })),
+			additionalFields: {
+				first_name: firstName || null,
+				last_name: lastName || null,
+				phone_number: phoneNumber || null
+			}
+		});
+
+		if (result.success) {
+			setSubscribed(true);
+		}
+	};
+
+	const handleReset = () => {
+		reset();
+		setSubscribed(false);
+		setEmail('');
+		setFirstName('');
+		setLastName('');
+		setPhoneNumber('');
+		setSelectedNewsletters([]);
+		setConsentChecked(false);
+	};
+
+	if (subscribed) {
+		return (
+			<SDKWrapper
+				title="Newsletter SDK / Subscription Form"
+				codeSnippet={`const { subscribe } = useNewsletterSubscribe();
+await subscribe({ email, newsletters });`}
+				size="lg"
+				labelPosition="top-left"
+				detatched
+				popoverPosition="right"
+			>
+				<div className="flex flex-col gap-6 w-full items-center py-12">
+					<CheckCircle2 className="size-12 text-accent" />
+					<div className="flex flex-col gap-2 items-center text-center">
+						<h3 className="title-2 text-neutral">
+							Thank you for subscribing!
+						</h3>
+						<p className="body-2 text-neutral-strong">
+							Please check your email to confirm your subscription.
+						</p>
+					</div>
+					<Button
+						theme="neutral"
+						variant="outline"
+						size="md"
+						onClick={handleReset}
+					>
+						Subscribe with another email
+					</Button>
+				</div>
+			</SDKWrapper>
+		);
+	}
+
 	return (
 		<SDKWrapper
 			title="Newsletter SDK / Subscription Form"
-			codeSnippet="<NewsletterForm />"
+			codeSnippet={`const { subscribe, isLoading, fieldErrors } = useNewsletterSubscribe();
+await subscribe({ email, newsletters, additionalFields });`}
 			size="lg"
 			labelPosition="top-left"
 			detatched
@@ -63,48 +145,110 @@ export const NewsletterExample = () => {
 					<FormLabel title="Email Address" required>
 						<SDKWrapper
 							title="Newsletter SDK / Email Input"
-							codeSnippet="<input type='email' />"
+							codeSnippet="subscribe({ email, newsletters })"
 							size="sm"
 							labelPosition="bottom-right"
 							popoverPosition="right"
-							className="relative border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section"
+							className="relative"
 						>
-							<Mail className="size-5 text-neutral-medium shrink-0" />
-							<input
-								type="email"
-								placeholder="john.doe@example.com"
-								className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
-							/>
+							<div
+								className={cn(
+									'border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
+									fieldErrors.email
+										? 'border-red-500'
+										: 'border-neutral-medium'
+								)}
+							>
+								<Mail className="size-5 text-neutral-medium shrink-0" />
+								<input
+									type="email"
+									value={email}
+									onChange={(e) => setEmail(e.target.value)}
+									placeholder="john.doe@example.com"
+									className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
+								/>
+							</div>
 						</SDKWrapper>
+						{fieldErrors.email && (
+							<p className="body-3 text-red-500 mt-1">{fieldErrors.email}</p>
+						)}
 					</FormLabel>
 				</div>
 
 				{/* Additional Fields */}
 				<FormLabel title="Additional Fields">
 					<div className="flex flex-col gap-3 w-full">
-						<div className="relative border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section">
-							<User className="size-5 text-neutral-medium shrink-0" />
-							<input
-								type="text"
-								placeholder="First Name"
-								className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
-							/>
+						<div>
+							<div
+								className={cn(
+									'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
+									fieldErrors.first_name
+										? 'border-red-500'
+										: 'border-neutral-medium'
+								)}
+							>
+								<User className="size-5 text-neutral-medium shrink-0" />
+								<input
+									type="text"
+									value={firstName}
+									onChange={(e) => setFirstName(e.target.value)}
+									placeholder="First Name"
+									className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
+								/>
+							</div>
+							{fieldErrors.first_name && (
+								<p className="body-3 text-red-500 mt-1">
+									{fieldErrors.first_name}
+								</p>
+							)}
 						</div>
-						<div className="relative border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section">
-							<User className="size-5 text-neutral-medium shrink-0" />
-							<input
-								type="text"
-								placeholder="Last Name"
-								className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
-							/>
+						<div>
+							<div
+								className={cn(
+									'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
+									fieldErrors.last_name
+										? 'border-red-500'
+										: 'border-neutral-medium'
+								)}
+							>
+								<User className="size-5 text-neutral-medium shrink-0" />
+								<input
+									type="text"
+									value={lastName}
+									onChange={(e) => setLastName(e.target.value)}
+									placeholder="Last Name"
+									className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
+								/>
+							</div>
+							{fieldErrors.last_name && (
+								<p className="body-3 text-red-500 mt-1">
+									{fieldErrors.last_name}
+								</p>
+							)}
 						</div>
-						<div className="relative border border-neutral-medium rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section">
-							<Phone className="size-5 text-neutral-medium shrink-0" />
-							<input
-								type="tel"
-								placeholder="Phone Number"
-								className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
-							/>
+						<div>
+							<div
+								className={cn(
+									'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
+									fieldErrors.phone_number
+										? 'border-red-500'
+										: 'border-neutral-medium'
+								)}
+							>
+								<Phone className="size-5 text-neutral-medium shrink-0" />
+								<input
+									type="tel"
+									value={phoneNumber}
+									onChange={(e) => setPhoneNumber(e.target.value)}
+									placeholder="Phone Number"
+									className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
+								/>
+							</div>
+							{fieldErrors.phone_number && (
+								<p className="body-3 text-red-500 mt-1">
+									{fieldErrors.phone_number}
+								</p>
+							)}
 						</div>
 					</div>
 				</FormLabel>
@@ -153,11 +297,26 @@ export const NewsletterExample = () => {
 				{/* Submit Button */}
 				<SDKWrapper
 					title="Newsletter SDK / Submit"
-					codeSnippet="<button type='submit'>Subscribe</button>"
+					codeSnippet="subscribe({ email, newsletters, additionalFields })"
 					size="sm"
 					popoverPosition="right"
 				>
-					<Button theme="accent" variant="solid" size="lg" className="w-full">
+					<Button
+						theme="accent"
+						variant="solid"
+						size="lg"
+						className="w-full"
+						onClick={handleSubmit}
+						disabled={
+							isLoading ||
+							!email ||
+							selectedNewsletters.length === 0 ||
+							!consentChecked
+						}
+					>
+						{isLoading ? (
+							<Loader2 className="size-4 animate-spin" />
+						) : null}
 						Subscribe to Selected Newsletters
 					</Button>
 				</SDKWrapper>

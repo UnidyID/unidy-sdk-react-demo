@@ -21,7 +21,7 @@ export const LoginExtrasExample = () => {
 			{/* Continue and Magic Link Buttons */}
 			<SDKWrapper
 				title="Auth SDK / Submit"
-				codeSnippet="<button type='submit'>Continue</button>"
+				codeSnippet={`import { useLogin } from '@unidy.io/sdk-react';\n\nconst login = useLogin();\nawait login.submitEmail(email);\nawait login.sendMagicCode();`}
 				size="sm"
 				labelPosition="top-left"
 				popoverPosition="left"
@@ -51,7 +51,7 @@ export const LoginExtrasExample = () => {
 			{/* Passcode Button */}
 			<SDKWrapper
 				title="Auth SDK / Passcode Button"
-				codeSnippet="<PasscodeButton />"
+				codeSnippet={`const login = useLogin();\n// login.loginOptions?.passkey\n// Passkey authentication via WebAuthn`}
 				size="sm"
 				labelPosition="top-right"
 				popoverPosition="left"
