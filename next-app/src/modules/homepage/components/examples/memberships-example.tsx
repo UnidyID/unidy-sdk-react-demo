@@ -15,6 +15,7 @@ import {
 	type Subscription
 } from '@unidy.io/sdk-react';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const fallbackSubscriptions: (SubscriptionCardProps & { id: string })[] = [
 	{
@@ -49,6 +50,7 @@ function mapSubscriptionToCardProps(
 }
 
 export const MembershipsExample = () => {
+	const [mounted, setMounted] = useState(false);
 	const { isAuthenticated } = useSession();
 	const pagination = usePagination({ perPage: 10 });
 	const { items, isLoading } = useTicketables({
@@ -59,11 +61,17 @@ export const MembershipsExample = () => {
 		callbacks: toastCallbacks
 	});
 
-	const subscriptions = isAuthenticated
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	const loggedIn = mounted && isAuthenticated;
+
+	const subscriptions = loggedIn
 		? items.map(mapSubscriptionToCardProps)
 		: fallbackSubscriptions;
 
-	if (isAuthenticated && isLoading) {
+	if (loggedIn && isLoading) {
 		return (
 			<div className="flex items-center justify-center py-12">
 				<Loader2 className="size-6 animate-spin text-neutral-strong" />
@@ -95,13 +103,13 @@ export const MembershipsExample = () => {
 				</SDKWrapper>
 			))}
 
-			{isAuthenticated && subscriptions.length === 0 && !isLoading && (
+			{loggedIn && subscriptions.length === 0 && !isLoading && (
 				<p className="body-2 text-neutral-strong text-center py-8">
 					No subscriptions found.
 				</p>
 			)}
 
-			{isAuthenticated && (pagination.hasNextPage || pagination.hasPrevPage) && (
+			{loggedIn && (pagination.hasNextPage || pagination.hasPrevPage) && (
 				<div className="flex items-center justify-center gap-4 pt-4">
 					<Button
 						theme="accent"

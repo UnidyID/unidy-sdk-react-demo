@@ -14,6 +14,7 @@ import {
 	type Ticket
 } from '@unidy.io/sdk-react';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/shadcn/ui/button';
 
 const fallbackTickets: (TicketCardProps & { id: string })[] = [
@@ -58,8 +59,13 @@ function mapTicketToCardProps(ticket: Ticket): TicketCardProps & { id: string } 
 }
 
 export const TicketsExample = () => {
+	const [mounted, setMounted] = useState(false);
 	const { isAuthenticated } = useSession();
 	const pagination = usePagination({ perPage: 10 });
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
 	const { items, isLoading, getExportLink } = useTicketables({
 		type: 'ticket',
 		pagination,
@@ -75,11 +81,13 @@ export const TicketsExample = () => {
 		}
 	};
 
-	const tickets = isAuthenticated
+	const loggedIn = mounted && isAuthenticated;
+
+	const tickets = loggedIn
 		? items.map(mapTicketToCardProps)
 		: fallbackTickets;
 
-	if (isAuthenticated && isLoading) {
+	if (loggedIn && isLoading) {
 		return (
 			<div className="flex items-center justify-center py-12">
 				<Loader2 className="size-6 animate-spin text-neutral-strong" />
@@ -108,13 +116,13 @@ export const TicketsExample = () => {
 				</SDKWrapper>
 			))}
 
-			{isAuthenticated && tickets.length === 0 && !isLoading && (
+			{loggedIn && tickets.length === 0 && !isLoading && (
 				<p className="body-2 text-neutral-strong text-center py-8">
 					No tickets found.
 				</p>
 			)}
 
-			{isAuthenticated && (pagination.hasNextPage || pagination.hasPrevPage) && (
+			{loggedIn && (pagination.hasNextPage || pagination.hasPrevPage) && (
 				<div className="flex items-center justify-center gap-4 pt-4">
 					<Button
 						theme="accent"

@@ -96,7 +96,7 @@ export const LoginPage = () => {
 					<h1 className="display-3 text-center text-accent-contrast">
 						Welcome to FC Unidy
 					</h1>
-					<p className="title-2 text-center text-accent-weak">
+					<p className="title-2 text-center text-accent-contrast/60">
 						Sign in to access your account
 					</p>
 				</div>
@@ -178,7 +178,7 @@ export const LoginPage = () => {
 
 							{/* Verification Step - show available login methods */}
 							{isVerificationStep && (
-								<div className="flex flex-col gap-6 w-full">
+								<div className="flex flex-col gap-3 w-full">
 									{/* Locked Email */}
 									<FormLabel title="Email Address" required>
 										<InputGroup
@@ -217,7 +217,7 @@ export const LoginPage = () => {
 										<Button
 											theme="accent"
 											variant="solid-weak"
-											size="lg"
+											size="md"
 											className="w-full"
 											onClick={() => {
 												login.sendMagicCode();
@@ -234,7 +234,7 @@ export const LoginPage = () => {
 										<Button
 											theme="accent"
 											variant="solid-weak"
-											size="lg"
+											size="md"
 											className="w-full"
 											disabled={login.isLoading}
 										>
@@ -262,7 +262,7 @@ export const LoginPage = () => {
 																key={provider}
 																theme="neutral"
 																variant="outline"
-																size="lg"
+																size="md"
 																className="w-full capitalize"
 																onClick={() => {
 																	const url =
@@ -295,7 +295,7 @@ export const LoginPage = () => {
 											<Button
 												theme="neutral"
 												variant="outline"
-												size="lg"
+												size="md"
 												className="w-full"
 												onClick={handleGoBack}
 											>
@@ -382,20 +382,18 @@ export const LoginPage = () => {
 									)}
 
 									{/* Back button */}
-									<div className="flex gap-4 w-full">
-										{login.canGoBack && (
-											<Button
-												theme="neutral"
-												variant="outline"
-												size="lg"
-												className="w-full"
-												onClick={handleGoBack}
-											>
-												<ArrowLeft className="size-4" />
-												Back
-											</Button>
-										)}
-									</div>
+									{login.canGoBack && (
+										<Button
+											theme="neutral"
+											variant="outline"
+											size="md"
+											className="w-full"
+											onClick={handleGoBack}
+										>
+											<ArrowLeft className="size-4" />
+											Back
+										</Button>
+									)}
 								</div>
 							)}
 
@@ -454,7 +452,7 @@ export const LoginPage = () => {
 									<Button
 										theme="accent"
 										variant="solid"
-										size="lg"
+										size="md"
 										className="w-full"
 										onClick={handleSubmitMagicCode}
 										disabled={login.isLoading}
@@ -493,7 +491,7 @@ export const LoginPage = () => {
 										<Button
 											theme="neutral"
 											variant="outline"
-											size="lg"
+											size="md"
 											className="w-full"
 											onClick={handleGoBack}
 										>
@@ -564,7 +562,7 @@ export const LoginPage = () => {
 										<Button
 											theme="neutral"
 											variant="outline"
-											size="lg"
+											size="md"
 											className="w-full"
 											onClick={handleGoBack}
 										>
@@ -634,7 +632,7 @@ export const LoginPage = () => {
 
 							{/* Verification Step */}
 							{isVerificationStep && (
-								<div className="flex flex-col gap-6 w-full">
+								<div className="flex flex-col gap-3 w-full">
 									{/* Locked Email */}
 									<FormLabel title="Email Address" required>
 										<InputGroup
@@ -673,7 +671,7 @@ export const LoginPage = () => {
 										<Button
 											theme="accent"
 											variant="solid-weak"
-											size="lg"
+											size="md"
 											className="w-full"
 											onClick={() => {
 												login.sendMagicCode();
@@ -690,7 +688,7 @@ export const LoginPage = () => {
 										<Button
 											theme="accent"
 											variant="solid-weak"
-											size="lg"
+											size="md"
 											className="w-full"
 											disabled={login.isLoading}
 										>
@@ -718,7 +716,7 @@ export const LoginPage = () => {
 																key={provider}
 																theme="neutral"
 																variant="outline"
-																size="lg"
+																size="md"
 																className="w-full capitalize"
 																onClick={() => {
 																	const url =
@@ -750,7 +748,7 @@ export const LoginPage = () => {
 										<Button
 											theme="neutral"
 											variant="outline"
-											size="lg"
+											size="md"
 											className="w-full"
 											onClick={handleGoBack}
 										>
@@ -828,7 +826,7 @@ export const LoginPage = () => {
 										<Button
 											theme="neutral"
 											variant="outline"
-											size="lg"
+											size="md"
 											className="w-full"
 											onClick={handleGoBack}
 										>
@@ -894,7 +892,7 @@ export const LoginPage = () => {
 									<Button
 										theme="accent"
 										variant="solid"
-										size="lg"
+										size="md"
 										className="w-full"
 										onClick={handleSubmitMagicCode}
 										disabled={login.isLoading}
@@ -933,7 +931,7 @@ export const LoginPage = () => {
 										<Button
 											theme="neutral"
 											variant="outline"
-											size="lg"
+											size="md"
 											className="w-full"
 											onClick={handleGoBack}
 										>
@@ -1004,7 +1002,7 @@ export const LoginPage = () => {
 										<Button
 											theme="neutral"
 											variant="outline"
-											size="lg"
+											size="md"
 											className="w-full"
 											onClick={handleGoBack}
 										>

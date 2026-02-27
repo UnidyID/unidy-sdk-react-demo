@@ -6,13 +6,21 @@ import { ThemeToggler } from '@/lib/theme/components/theme-toggler';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { LogIn, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import { useSession } from '@unidy.io/sdk-react';
+import { toastCallbacks } from '@/deps/unidy/callbacks';
 
 export const TopNavigation = () => {
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const [mounted, setMounted] = useState(false);
+	const session = useSession({ callbacks: toastCallbacks });
 
-	const toggleAuthState = () => {
-		setIsLoggedIn((prev) => !prev);
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	const handleLogout = async () => {
+		await session.logout();
 	};
 
 	return (
@@ -25,7 +33,7 @@ export const TopNavigation = () => {
 				<div className="flex gap-3 items-center relative">
 					<ThemeToggler />
 
-					{isLoggedIn ? (
+					{mounted && session.isAuthenticated ? (
 						<>
 							{/* Profile Button with SDKElement */}
 							<SDKWrapper
@@ -53,7 +61,8 @@ export const TopNavigation = () => {
 								theme="accent"
 								variant="solid"
 								size="md"
-								onClick={toggleAuthState}
+								onClick={handleLogout}
+								disabled={session.isLoading}
 							>
 								<LogOut />
 								Log out
@@ -70,15 +79,16 @@ export const TopNavigation = () => {
 								popoverPosition="left"
 								detatched
 							>
-								<Button
-									theme="accent"
-									variant="solid"
-									size="md"
-									onClick={toggleAuthState}
-								>
-									<LogIn />
-									Log in
-								</Button>
+								<Link href="/login">
+									<Button
+										theme="accent"
+										variant="solid"
+										size="md"
+									>
+										<LogIn />
+										Log in
+									</Button>
+								</Link>
 							</SDKWrapper>
 						</>
 					)}
