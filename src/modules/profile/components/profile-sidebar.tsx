@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/shadcn/ui/button';
 import { cn } from '@/components/shadcn/utils';
-import { Mail, User } from 'lucide-react';
+import { CreditCard, Mail, Ticket, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { type FC } from 'react';
@@ -38,6 +38,18 @@ export const ProfileSidebar: FC<ProfileSidebarProps> = ({
 			label: 'Newsletter',
 			icon: Mail,
 			href: '/profile/newsletter'
+		},
+		{
+			id: 'tickets',
+			label: 'Tickets',
+			icon: Ticket,
+			href: '/profile/tickets'
+		},
+		{
+			id: 'subscriptions',
+			label: 'Subscriptions',
+			icon: CreditCard,
+			href: '/profile/subscriptions'
 		}
 	];
 

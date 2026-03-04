@@ -62,8 +62,8 @@ export const ProfileLayout: FC<PropsWithChildren> = ({ children }) => {
 			<div className="flex-1 flex justify-center py-6 lg:py-10">
 				<div className="max-w-[1200px] w-full px-2 lg:px-6 flex flex-col md:flex-row gap-6 lg:gap-10">
 					<ProfileSidebar
-						userName={userName}
-						userInitials={userInitials}
+						userName={mounted ? userName : undefined}
+						userInitials={mounted ? userInitials : undefined}
 					/>
 
 					{children}
