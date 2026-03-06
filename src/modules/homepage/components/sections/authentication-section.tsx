@@ -10,7 +10,10 @@ import {
 	TabsList,
 	TabsTrigger
 } from '@/components/shadcn/ui/tabs';
+import { useSession } from '@unidy.io/sdk-react';
 import { Mail, Shield, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { LoggedInPlaceholder } from '../examples/logged-in-placeholder';
 import { LoginExtrasExample } from '../examples/login-extras-example';
 import { LoginSimpleExample } from '../examples/login-simple-example';
 import { LoginSocialExample } from '../examples/login-social-example';
@@ -38,6 +41,15 @@ function LoginForm() {
 }`;
 
 export const AuthenticationSection = () => {
+	const [mounted, setMounted] = useState(false);
+	const session = useSession();
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	const isLoggedIn = mounted && session.isAuthenticated;
+
 	const features = [
 		{
 			icon: <Shield className="size-4 text-accent" />,
@@ -105,15 +117,15 @@ export const AuthenticationSection = () => {
 						{/* Card with Form */}
 						<Card className="mt-6">
 							<TabsContent value="simple">
-								<LoginSimpleExample />
+								{isLoggedIn ? <LoggedInPlaceholder /> : <LoginSimpleExample />}
 							</TabsContent>
 
 							<TabsContent value="social">
-								<LoginSocialExample />
+								{isLoggedIn ? <LoggedInPlaceholder /> : <LoginSocialExample />}
 							</TabsContent>
 
 							<TabsContent value="extras">
-								<LoginExtrasExample />
+								{isLoggedIn ? <LoggedInPlaceholder /> : <LoginExtrasExample />}
 							</TabsContent>
 						</Card>
 					</Tabs>

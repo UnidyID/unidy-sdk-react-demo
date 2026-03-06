@@ -1,10 +1,10 @@
 'use client';
 
-import { ArrowLeft, CheckCircle2, KeyRound, Lock, Mail, Send, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowLeft, CheckCircle2, Lock, Mail, ShieldCheck, User } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { useLogin } from '@unidy.io/sdk-react';
+import { useRegistration } from '@unidy.io/sdk-react';
 import { toastCallbacks } from '@/deps/unidy/callbacks';
 
 import { Card } from '@/components/card';
@@ -22,69 +22,179 @@ import {
 	InputGroupAddon,
 	InputGroupInput
 } from '@/components/shadcn/ui/input-group';
+import { LoginForm } from '../components/login-form';
+
+const REGISTRATION_STORAGE_KEY = 'unidy_pending_registration';
 
 export const LoginPage = () => {
 	const router = useRouter();
-	const login = useLogin({ callbacks: toastCallbacks });
+	const registration = useRegistration({ callbacks: toastCallbacks });
 
 	const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-	const [emailInput, setEmailInput] = useState('');
-	const [passwordInput, setPasswordInput] = useState('');
-	const [magicCodeInput, setMagicCodeInput] = useState('');
+	// Key to force LoginForm remount when switching tabs (resets its internal state)
+	const [loginFormKey, setLoginFormKey] = useState(0);
 
-	// Register form state (without SDK)
+	// Register form state
 	const [registerFirstName, setRegisterFirstName] = useState('');
 	const [registerLastName, setRegisterLastName] = useState('');
 	const [registerEmail, setRegisterEmail] = useState('');
 	const [registerPassword, setRegisterPassword] = useState('');
 	const [registerConfirmPassword, setRegisterConfirmPassword] = useState('');
+	const [registerStep, setRegisterStep] = useState<'form' | 'verify-email'>('form');
+	const [verificationCode, setVerificationCode] = useState('');
+	const [confirmPasswordError, setConfirmPasswordError] = useState('');
+	const [resendCountdown, setResendCountdown] = useState(0);
+	const [resumeLinkSent, setResumeLinkSent] = useState(false);
+	const didAutoFetchRef = useRef(false);
 
-	// Redirect to profile on successful authentication
+	// Redirect on successful registration auth & clear localStorage
 	useEffect(() => {
-		if (login.step === 'authenticated') {
+		if (registration.registration?.auth) {
+			localStorage.removeItem(REGISTRATION_STORAGE_KEY);
 			router.push('/profile');
 		}
-	}, [login.step, router]);
+	}, [registration.registration?.auth, router]);
+
+	// Recover pending registration from URL query params (resume link) or localStorage
+	useEffect(() => {
+		const params = new URLSearchParams(window.location.search);
+		const ridFromUrl = params.get('registration_rid');
+		if (ridFromUrl) {
+			setActiveTab('register');
+			setRegisterStep('verify-email');
+			return;
+		}
+
+		try {
+			const saved = localStorage.getItem(REGISTRATION_STORAGE_KEY);
+			if (saved) {
+				const { email, rid } = JSON.parse(saved);
+				if (rid) {
+					registration.setRid(rid);
+					if (email) setRegisterEmail(email);
+					setRegisterStep('verify-email');
+					setActiveTab('register');
+				}
+			}
+		} catch {
+			// ignore
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	// Auto-fetch registration data when rid is recovered (from URL or localStorage)
+	useEffect(() => {
+		if (didAutoFetchRef.current) return;
+		if (!registration.rid) return;
+		didAutoFetchRef.current = true;
+		void registration.getRegistration();
+	}, [registration.rid]);
+
+	// Populate email from registration data once loaded (e.g. after resume link recovery)
+	useEffect(() => {
+		if (registration.registration?.email && registerStep === 'verify-email' && !registerEmail) {
+			setRegisterEmail(registration.registration.email);
+		}
+	}, [registration.registration?.email, registerStep, registerEmail]);
+
+	// Resend countdown timer
+	useEffect(() => {
+		if (resendCountdown <= 0) return;
+		const interval = setInterval(() => {
+			setResendCountdown((prev) => {
+				if (prev <= 1) {
+					clearInterval(interval);
+					return 0;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+		return () => clearInterval(interval);
+	}, [resendCountdown]);
 
 	const handleTabChange = (value: string) => {
 		setActiveTab(value as 'login' | 'register');
-		if (login.step !== 'idle' && login.step !== 'email') {
-			login.restart();
+		// Remount LoginForm to reset its internal state
+		if (value === 'login') {
+			setLoginFormKey((k) => k + 1);
+		}
+		// Reset registration state when switching away from register tab
+		if (value !== 'register') {
+			setRegisterStep('form');
+			setVerificationCode('');
+			setConfirmPasswordError('');
+			setResumeLinkSent(false);
+			didAutoFetchRef.current = false;
+			registration.reset();
 		}
 	};
 
-	const handleSubmitEmail = async () => {
-		await login.submitEmail(emailInput);
+	const handleCreateRegistration = async () => {
+		setConfirmPasswordError('');
+		setResumeLinkSent(false);
+		if (!registerFirstName.trim() || !registerLastName.trim()) {
+			return;
+		}
+		if (!registerPassword) {
+			setConfirmPasswordError('Password is required');
+			return;
+		}
+		if (registerPassword !== registerConfirmPassword) {
+			setConfirmPasswordError('Passwords do not match');
+			return;
+		}
+		const success = await registration.createRegistration({
+			registration_url: window.location.origin + '/login',
+			email: registerEmail,
+			password: registerPassword,
+			registration_profile_data: {
+				first_name: registerFirstName,
+				last_name: registerLastName
+			}
+		});
+		if (success) {
+			await transitionToVerifyEmail();
+		} else if (registration.error === 'registration_flow_already_exists') {
+			// A flow already exists for this email — send a resume link so the user can continue
+			const sent = await registration.sendResumeLink(registerEmail);
+			if (sent) setResumeLinkSent(true);
+		}
 	};
 
-	const handleSubmitPassword = async () => {
-		await login.submitPassword(passwordInput);
+	const transitionToVerifyEmail = async () => {
+		const result = await registration.sendEmailVerificationCode();
+		if (result.success) {
+			const cooldown = result.data?.enable_resend_after ?? registration.enableResendAfter;
+			if (cooldown) setResendCountdown(cooldown);
+			localStorage.setItem(
+				REGISTRATION_STORAGE_KEY,
+				JSON.stringify({ email: registerEmail, rid: registration.rid })
+			);
+			setRegisterStep('verify-email');
+		}
 	};
 
-	const handleSubmitMagicCode = async () => {
-		await login.submitMagicCode(magicCodeInput);
+	const handleVerifyEmail = async () => {
+		const success = await registration.verifyEmail(verificationCode);
+		if (success) {
+			await registration.finalizeRegistration();
+		}
 	};
 
-	const handleForgotPassword = () => {
-		login.goToStep('reset-password');
+	const handleResendVerificationCode = async () => {
+		const result = await registration.sendEmailVerificationCode();
+		if (result.success) {
+			const cooldown = result.data?.enable_resend_after ?? registration.enableResendAfter;
+			if (cooldown) setResendCountdown(cooldown);
+		}
 	};
 
-	const handleSendResetEmail = async () => {
-		await login.sendResetPasswordEmail();
+	const handleRegistrationGoBack = () => {
+		setRegisterStep('form');
+		setVerificationCode('');
+		setConfirmPasswordError('');
+		registration.clearErrors();
 	};
-
-	const handleGoBack = () => {
-		login.goBack();
-		setPasswordInput('');
-		setMagicCodeInput('');
-	};
-
-	// Determine which step content to render
-	const isEmailStep = login.step === 'idle' || login.step === 'email';
-	const isVerificationStep = login.step === 'verification';
-	const isPasswordStep = login.step === 'password';
-	const isMagicCodeStep = login.step === 'magic-code';
-	const isResetPasswordStep = login.step === 'reset-password';
 
 	return (
 		<div
@@ -129,10 +239,18 @@ export const LoginPage = () => {
 
 						{/* Login Content */}
 						<ButtonTabsContent value="login" className="w-full mt-6">
-							{/* Email Step */}
-							{isEmailStep && (
+							<LoginForm
+								key={loginFormKey}
+								onAuthenticated={() => router.push('/profile')}
+								onRegisterClick={() => setActiveTab('register')}
+							/>
+						</ButtonTabsContent>
+
+						{/* Register Content */}
+						<ButtonTabsContent value="register" className="w-full mt-6">
+							{registerStep === 'form' && (
 								<div className="flex flex-col gap-6 w-full">
-									<FormLabel title="Email Address" required>
+									<FormLabel title="Email Address" required error={registration.fieldErrors.email}>
 										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
 											<InputGroupAddon>
 												<Mail className="size-5 text-neutral-medium" />
@@ -140,202 +258,61 @@ export const LoginPage = () => {
 											<InputGroupInput
 												type="email"
 												placeholder="you@example.com"
-												value={emailInput}
-												onChange={(e) => setEmailInput(e.target.value)}
+												value={registerEmail}
+												onChange={(e) =>
+													setRegisterEmail(e.target.value)
+												}
 												onKeyDown={(e) =>
-													e.key === 'Enter' && handleSubmitEmail()
+													e.key === 'Enter' && handleCreateRegistration()
 												}
 												className="text-neutral placeholder:text-neutral-medium"
 											/>
 										</InputGroup>
 									</FormLabel>
 
-									{login.errors.email && (
-										<p className="body-2 text-red-500">
-											{login.errors.email}
-										</p>
-									)}
+									<div className="flex gap-4">
+										<FormLabel title="First Name" required className="flex-1" error={registration.fieldErrors.first_name}>
+											<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
+												<InputGroupAddon>
+													<User className="size-5 text-neutral-medium" />
+												</InputGroupAddon>
+												<InputGroupInput
+													type="text"
+													placeholder="John"
+													value={registerFirstName}
+													onChange={(e) =>
+														setRegisterFirstName(e.target.value)
+													}
+													onKeyDown={(e) =>
+														e.key === 'Enter' && handleCreateRegistration()
+													}
+													className="text-neutral placeholder:text-neutral-medium"
+												/>
+											</InputGroup>
+										</FormLabel>
 
-									<Button
-										theme="accent"
-										variant="solid"
-										size="lg"
-										className="w-full"
-										onClick={handleSubmitEmail}
-										disabled={login.isLoading}
-									>
-										{login.isLoading ? 'Loading...' : 'Continue'}
-									</Button>
-
-									<div className="flex items-center justify-center gap-2">
-										<p className="body-2 text-neutral-strong">
-											Don&apos;t have an account?
-										</p>
-										<Button
-											type="button"
-											onClick={() => setActiveTab('register')}
-											size="link"
-											variant="link"
-										>
-											Register
-										</Button>
+										<FormLabel title="Last Name" required className="flex-1" error={registration.fieldErrors.last_name}>
+											<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
+												<InputGroupAddon>
+													<User className="size-5 text-neutral-medium" />
+												</InputGroupAddon>
+												<InputGroupInput
+													type="text"
+													placeholder="Doe"
+													value={registerLastName}
+													onChange={(e) =>
+														setRegisterLastName(e.target.value)
+													}
+													onKeyDown={(e) =>
+														e.key === 'Enter' && handleCreateRegistration()
+													}
+													className="text-neutral placeholder:text-neutral-medium"
+												/>
+											</InputGroup>
+										</FormLabel>
 									</div>
-								</div>
-							)}
 
-							{/* Verification Step - show available login methods */}
-							{isVerificationStep && (
-								<div className="flex flex-col gap-3 w-full">
-									{/* Locked Email */}
-									<FormLabel title="Email Address" required>
-										<InputGroup
-											className="border-neutral-medium rounded-[10px] h-[50px] bg-neutral-weak"
-											data-disabled="true"
-										>
-											<InputGroupAddon>
-												<Mail className="size-5 text-neutral-medium" />
-											</InputGroupAddon>
-											<InputGroupInput
-												type="email"
-												value={login.email}
-												disabled
-												className="text-neutral cursor-not-allowed"
-											/>
-										</InputGroup>
-									</FormLabel>
-
-									{/* Password option */}
-									{login.loginOptions?.password && (
-										<Button
-											theme="accent"
-											variant="solid"
-											size="lg"
-											className="w-full"
-											onClick={() => login.goToStep('password')}
-											disabled={login.isLoading}
-										>
-											<Lock className="size-5" />
-											Continue with Password
-										</Button>
-									)}
-
-									{/* Magic code option */}
-									{login.loginOptions?.magic_link && (
-										<Button
-											theme="accent"
-											variant="solid-weak"
-											size="md"
-											className="w-full"
-											onClick={() => {
-												login.sendMagicCode();
-											}}
-											disabled={login.isLoading}
-										>
-											<Send className="size-5" />
-											Send Magic Code
-										</Button>
-									)}
-
-									{/* Passkey option */}
-									{login.loginOptions?.passkey && (
-										<Button
-											theme="accent"
-											variant="solid-weak"
-											size="md"
-											className="w-full"
-											disabled={login.isLoading}
-										>
-											<KeyRound className="size-5" />
-											Continue with Passkey
-										</Button>
-									)}
-
-									{/* Social login options */}
-									{login.loginOptions?.social_logins &&
-										login.loginOptions.social_logins.length > 0 && (
-											<>
-												<div className="flex items-center justify-center gap-2">
-													<div className="flex-1 h-px bg-neutral-weak" />
-													<p className="body-2 text-neutral-strong">
-														or continue with
-													</p>
-													<div className="flex-1 h-px bg-neutral-weak" />
-												</div>
-
-												<div className="flex flex-col gap-3">
-													{login.loginOptions.social_logins.map(
-														(provider) => (
-															<Button
-																key={provider}
-																theme="neutral"
-																variant="outline"
-																size="md"
-																className="w-full capitalize"
-																onClick={() => {
-																	const url =
-																		login.getSocialAuthUrl(
-																			provider,
-																			window.location.origin +
-																				'/login'
-																		);
-																	window.location.href = url;
-																}}
-																disabled={login.isLoading}
-															>
-																Continue with {provider}
-															</Button>
-														)
-													)}
-												</div>
-											</>
-										)}
-
-									{login.errors.global && (
-										<p className="body-2 text-red-500">
-											{login.errors.global}
-										</p>
-									)}
-
-									{/* Back button */}
-									{login.canGoBack && (
-										<div className="flex justify-center">
-											<Button
-												theme="neutral"
-												variant="outline"
-												size="md"
-												className="w-full"
-												onClick={handleGoBack}
-											>
-												<ArrowLeft className="size-4" />
-												Back
-											</Button>
-										</div>
-									)}
-								</div>
-							)}
-
-							{/* Password Step */}
-							{isPasswordStep && (
-								<div className="flex flex-col gap-6 w-full">
-									{/* Locked Email */}
-									<FormLabel title="Email Address" required>
-										<InputGroup
-											className="border-neutral-medium rounded-[10px] h-[50px] bg-neutral-weak"
-											data-disabled="true"
-										>
-											<InputGroupAddon>
-												<Mail className="size-5 text-neutral-medium" />
-											</InputGroupAddon>
-											<InputGroupInput
-												type="email"
-												value={login.email}
-												disabled
-												className="text-neutral cursor-not-allowed"
-											/>
-										</InputGroup>
-									</FormLabel>
-
-									<FormLabel title="Password" required>
+									<FormLabel title="Password" required error={registration.fieldErrors.password}>
 										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
 											<InputGroupAddon>
 												<Lock className="size-5 text-neutral-medium" />
@@ -343,69 +320,84 @@ export const LoginPage = () => {
 											<InputGroupInput
 												type="password"
 												placeholder="••••••••"
-												value={passwordInput}
-												onChange={(e) => setPasswordInput(e.target.value)}
+												value={registerPassword}
+												onChange={(e) =>
+													setRegisterPassword(e.target.value)
+												}
 												onKeyDown={(e) =>
-													e.key === 'Enter' && handleSubmitPassword()
+													e.key === 'Enter' && handleCreateRegistration()
 												}
 												className="text-neutral placeholder:text-neutral-medium"
 											/>
 										</InputGroup>
 									</FormLabel>
 
-									{login.errors.password && (
-										<p className="body-2 text-red-500">
-											{login.errors.password}
-										</p>
+									<FormLabel title="Confirm Password" required error={confirmPasswordError}>
+										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
+											<InputGroupAddon>
+												<Lock className="size-5 text-neutral-medium" />
+											</InputGroupAddon>
+											<InputGroupInput
+												type="password"
+												placeholder="••••••••"
+												value={registerConfirmPassword}
+												onChange={(e) =>
+													setRegisterConfirmPassword(e.target.value)
+												}
+												onKeyDown={(e) =>
+													e.key === 'Enter' && handleCreateRegistration()
+												}
+												className="text-neutral placeholder:text-neutral-medium"
+											/>
+										</InputGroup>
+									</FormLabel>
+
+									{resumeLinkSent && (
+										<div className="border border-neutral-medium rounded-[10px] p-4 flex gap-4 items-start bg-neutral-weak">
+											<CheckCircle2 className="size-10 text-theme shrink-0" />
+											<div className="flex flex-col gap-1">
+												<p className="body-1 text-neutral-strong font-semibold">Resume link sent!</p>
+												<p className="body-2 text-neutral-strong">
+													A registration is already in progress. Check your inbox for a link to continue.
+												</p>
+											</div>
+										</div>
 									)}
 
-									{/* Forgot Password Link */}
-									<div className="flex justify-end">
-										<Button
-											type="button"
-											size="link"
-											variant="link"
-											onClick={handleForgotPassword}
-										>
-											Forgot password?
-										</Button>
-									</div>
+									{registration.error && !resumeLinkSent && (
+										<p className="body-2 text-danger">
+											{registration.error}
+										</p>
+									)}
 
 									<Button
 										theme="accent"
 										variant="solid"
 										size="lg"
 										className="w-full"
-										onClick={handleSubmitPassword}
-										disabled={login.isLoading}
+										onClick={handleCreateRegistration}
+										disabled={registration.isLoading}
 									>
-										{login.isLoading ? 'Signing in...' : 'Sign In'}
+										{registration.isLoading ? 'Registering...' : 'Register'}
 									</Button>
 
-									{login.errors.global && (
-										<p className="body-2 text-red-500">
-											{login.errors.global}
+									<div className="flex items-center justify-center gap-2">
+										<p className="body-2 text-neutral-strong">
+											Already have an account?
 										</p>
-									)}
-
-									{/* Back button */}
-									{login.canGoBack && (
 										<Button
-											theme="neutral"
-											variant="outline"
-											size="md"
-											className="w-full"
-											onClick={handleGoBack}
+											type="button"
+											onClick={() => setActiveTab('login')}
+											size="link"
+											variant="link"
 										>
-											<ArrowLeft className="size-4" />
-											Back
+											Login
 										</Button>
-									)}
+									</div>
 								</div>
 							)}
 
-							{/* Magic Code Step */}
-							{isMagicCodeStep && (
+							{registerStep === 'verify-email' && (
 								<div className="flex flex-col gap-6 w-full">
 									{/* Locked Email */}
 									<FormLabel title="Email Address" required>
@@ -418,27 +410,27 @@ export const LoginPage = () => {
 											</InputGroupAddon>
 											<InputGroupInput
 												type="email"
-												value={login.email}
+												value={registration.registration?.email ?? registerEmail}
 												disabled
 												className="text-neutral cursor-not-allowed"
 											/>
 										</InputGroup>
 									</FormLabel>
 
-									<FormLabel title="Magic Code" required>
+									<FormLabel title="Verification Code" required>
 										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
 											<InputGroupAddon>
-												<KeyRound className="size-5 text-neutral-medium" />
+												<ShieldCheck className="size-5 text-neutral-medium" />
 											</InputGroupAddon>
 											<InputGroupInput
 												type="text"
 												placeholder="Enter 6-digit code"
-												value={magicCodeInput}
+												value={verificationCode}
 												onChange={(e) =>
-													setMagicCodeInput(e.target.value)
+													setVerificationCode(e.target.value)
 												}
 												onKeyDown={(e) =>
-													e.key === 'Enter' && handleSubmitMagicCode()
+													e.key === 'Enter' && handleVerifyEmail()
 												}
 												maxLength={6}
 												className="text-neutral placeholder:text-neutral-medium"
@@ -446,25 +438,27 @@ export const LoginPage = () => {
 										</InputGroup>
 									</FormLabel>
 
-									{login.errors.magicCode && (
-										<p className="body-2 text-red-500">
-											{login.errors.magicCode}
+									<p className="body-2 text-neutral-strong text-center">
+										A 6-digit verification code has been sent to your email.
+									</p>
+
+									{registration.error && (
+										<p className="body-2 text-danger">
+											{registration.error}
 										</p>
 									)}
-
-									<p className="body-2 text-neutral-strong text-center">
-										A 6-digit code has been sent to your email.
-									</p>
 
 									<Button
 										theme="accent"
 										variant="solid"
-										size="md"
+										size="lg"
 										className="w-full"
-										onClick={handleSubmitMagicCode}
-										disabled={login.isLoading}
+										onClick={handleVerifyEmail}
+										disabled={registration.isLoading}
 									>
-										{login.isLoading ? 'Verifying...' : 'Verify Code'}
+										{registration.isLoading
+											? 'Verifying...'
+											: 'Verify & Complete Registration'}
 									</Button>
 
 									{/* Resend code */}
@@ -473,227 +467,30 @@ export const LoginPage = () => {
 											type="button"
 											size="link"
 											variant="link"
-											onClick={() => login.sendMagicCode()}
+											onClick={handleResendVerificationCode}
 											disabled={
-												login.isLoading ||
-												(login.magicCodeResendAfter !== null &&
-													login.magicCodeResendAfter > 0)
+												registration.isLoading || resendCountdown > 0
 											}
 										>
-											{login.magicCodeResendAfter !== null &&
-											login.magicCodeResendAfter > 0
-												? `Resend code in ${login.magicCodeResendAfter}s`
+											{resendCountdown > 0
+												? `Resend code in ${resendCountdown}s`
 												: 'Resend code'}
 										</Button>
 									</div>
 
-									{login.errors.global && (
-										<p className="body-2 text-red-500">
-											{login.errors.global}
-										</p>
-									)}
-
 									{/* Back button */}
-									{login.canGoBack && (
-										<Button
-											theme="neutral"
-											variant="outline"
-											size="md"
-											className="w-full"
-											onClick={handleGoBack}
-										>
-											<ArrowLeft className="size-4" />
-											Back
-										</Button>
-									)}
-								</div>
-							)}
-
-							{/* Reset Password Step */}
-							{isResetPasswordStep && (
-								<div className="flex flex-col gap-6 w-full">
-									{login.resetPasswordStep === 'idle' ? (
-										<>
-											<div className="flex flex-col gap-2 text-center">
-												<h2 className="title-1 text-neutral">
-													Reset Password
-												</h2>
-												<p className="body-2 text-neutral-strong">
-													We&apos;ll send a password reset link to{' '}
-													<strong>{login.email}</strong>.
-												</p>
-											</div>
-
-											{login.errors.resetPassword && (
-												<p className="body-2 text-red-500">
-													{login.errors.resetPassword}
-												</p>
-											)}
-
-											<Button
-												theme="accent"
-												variant="solid"
-												size="lg"
-												className="w-full"
-												onClick={handleSendResetEmail}
-												disabled={login.isLoading}
-											>
-												{login.isLoading
-													? 'Sending...'
-													: 'Send Reset Email'}
-											</Button>
-										</>
-									) : (
-										<div className="border border-neutral-medium rounded-[10px] p-4 flex gap-4 items-start bg-neutral-weak">
-											<CheckCircle2 className="size-10 text-theme shrink-0" />
-											<div className="flex flex-col gap-1">
-												<p className="body-1 text-neutral-strong font-semibold">
-													Reset email sent!
-												</p>
-												<p className="body-2 text-neutral-strong">
-													Please check your inbox for the password
-													reset link.
-												</p>
-											</div>
-										</div>
-									)}
-
-									{login.errors.global && (
-										<p className="body-2 text-red-500">
-											{login.errors.global}
-										</p>
-									)}
-
-									{/* Back button */}
-									{login.canGoBack && (
-										<Button
-											theme="neutral"
-											variant="outline"
-											size="md"
-											className="w-full"
-											onClick={handleGoBack}
-										>
-											<ArrowLeft className="size-4" />
-											Back
-										</Button>
-									)}
-								</div>
-							)}
-						</ButtonTabsContent>
-
-						{/* Register Content — simple form without SDK */}
-						<ButtonTabsContent value="register" className="w-full mt-6">
-							<div className="flex flex-col gap-6 w-full">
-								<FormLabel title="Email Address" required>
-									<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
-										<InputGroupAddon>
-											<Mail className="size-5 text-neutral-medium" />
-										</InputGroupAddon>
-										<InputGroupInput
-											type="email"
-											placeholder="you@example.com"
-											value={registerEmail}
-											onChange={(e) =>
-												setRegisterEmail(e.target.value)
-											}
-											className="text-neutral placeholder:text-neutral-medium"
-										/>
-									</InputGroup>
-								</FormLabel>
-
-								<div className="flex gap-4">
-									<FormLabel title="First Name" required className="flex-1">
-										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
-											<InputGroupAddon>
-												<User className="size-5 text-neutral-medium" />
-											</InputGroupAddon>
-											<InputGroupInput
-												type="text"
-												placeholder="John"
-												value={registerFirstName}
-												onChange={(e) =>
-													setRegisterFirstName(e.target.value)
-												}
-												className="text-neutral placeholder:text-neutral-medium"
-											/>
-										</InputGroup>
-									</FormLabel>
-
-									<FormLabel title="Last Name" required className="flex-1">
-										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
-											<InputGroupAddon>
-												<User className="size-5 text-neutral-medium" />
-											</InputGroupAddon>
-											<InputGroupInput
-												type="text"
-												placeholder="Doe"
-												value={registerLastName}
-												onChange={(e) =>
-													setRegisterLastName(e.target.value)
-												}
-												className="text-neutral placeholder:text-neutral-medium"
-											/>
-										</InputGroup>
-									</FormLabel>
-								</div>
-
-								<FormLabel title="Password" required>
-									<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
-										<InputGroupAddon>
-											<Lock className="size-5 text-neutral-medium" />
-										</InputGroupAddon>
-										<InputGroupInput
-											type="password"
-											placeholder="••••••••"
-											value={registerPassword}
-											onChange={(e) =>
-												setRegisterPassword(e.target.value)
-											}
-											className="text-neutral placeholder:text-neutral-medium"
-										/>
-									</InputGroup>
-								</FormLabel>
-
-								<FormLabel title="Confirm Password" required>
-									<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
-										<InputGroupAddon>
-											<Lock className="size-5 text-neutral-medium" />
-										</InputGroupAddon>
-										<InputGroupInput
-											type="password"
-											placeholder="••••••••"
-											value={registerConfirmPassword}
-											onChange={(e) =>
-												setRegisterConfirmPassword(e.target.value)
-											}
-											className="text-neutral placeholder:text-neutral-medium"
-										/>
-									</InputGroup>
-								</FormLabel>
-
-								<Button
-									theme="accent"
-									variant="solid"
-									size="lg"
-									className="w-full"
-								>
-									Register
-								</Button>
-
-								<div className="flex items-center justify-center gap-2">
-									<p className="body-2 text-neutral-strong">
-										Already have an account?
-									</p>
 									<Button
-										type="button"
-										onClick={() => setActiveTab('login')}
-										size="link"
-										variant="link"
+										theme="neutral"
+										variant="outline"
+										size="md"
+										className="w-full"
+										onClick={handleRegistrationGoBack}
 									>
-										Login
+										<ArrowLeft className="size-4" />
+										Back
 									</Button>
 								</div>
-							</div>
+							)}
 						</ButtonTabsContent>
 					</ButtonTabs>
 				</Card>

@@ -9,56 +9,33 @@ import { type FC } from 'react';
 
 const newsletterCategories: NewsletterCategory[] = [
 	{
-		id: 'sports',
-		name: 'Sports Newsletter',
+		id: 'main',
+		name: 'Main Newsletter',
 		description:
-			'Manage your email subscriptions and choose what content you want to receive from FC Unidy.',
+			'Manage your email subscriptions and choose what content you want to receive.',
 		options: [
 			{
-				id: 'match-updates',
-				title: 'Match Updates & Results',
+				id: 'main',
+				title: 'News & Updates',
 				description:
-					'Get live scores, match highlights, and post-game analysis',
+					'All the latest news, events, tickets, and partner offers',
 				icon: 'trophy',
-				category: 'sports'
-			},
-			{
-				id: 'player-news',
-				title: 'Player News',
-				description:
-					'Transfer updates, injury reports, and exclusive player interviews',
-				icon: 'users',
-				category: 'sports'
+				category: 'main'
 			}
 		]
 	},
 	{
-		id: 'shop',
-		name: 'Shop Newsletter',
+		id: 'weather',
+		name: 'Weather Forecast',
 		description:
-			'Manage your email subscriptions and choose what content you want to receive from FC Unidy.',
+			'Stay up to date with the latest weather forecasts.',
 		options: [
 			{
-				id: 'shop-offers',
-				title: 'Shop Offers & Merchandise',
-				description: 'Exclusive discounts and early access to new merchandise',
-				icon: 'trophy',
-				category: 'shop'
-			}
-		]
-	},
-	{
-		id: 'club',
-		name: 'Club Newsletter',
-		description:
-			'Manage your email subscriptions and choose what content you want to receive from FC Unidy.',
-		options: [
-			{
-				id: 'club-updates',
-				title: 'General Club Updates',
-				description: 'Club announcements, events, and community news',
+				id: 'weather',
+				title: 'Weather Forecast',
+				description: 'Temperature, wind, and precipitation updates',
 				icon: 'bell',
-				category: 'club'
+				category: 'weather'
 			}
 		]
 	}

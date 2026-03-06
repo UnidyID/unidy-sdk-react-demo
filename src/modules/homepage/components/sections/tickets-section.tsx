@@ -1,5 +1,6 @@
 'use client';
 
+import { Card } from '@/components/card';
 import { IntegrationCode } from '@/components/integration-code';
 import { SectionHeading } from '@/components/section-heading';
 import {
@@ -8,6 +9,9 @@ import {
 	TabsList,
 	TabsTrigger
 } from '@/components/shadcn/ui/tabs';
+import { useSession } from '@unidy.io/sdk-react';
+import { useEffect, useState } from 'react';
+import { LoggedOutPlaceholder } from '../examples/logged-out-placeholder';
 import { MembershipsExample } from '../examples/memberships-example';
 import { TicketsExample } from '../examples/tickets-example';
 
@@ -39,6 +43,15 @@ const { items: subscriptions } = useTicketables({
 });`;
 
 export const TicketsSection = () => {
+	const [mounted, setMounted] = useState(false);
+	const session = useSession();
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	const isLoggedIn = mounted && session.isAuthenticated;
+
 	return (
 		<section
 			className="bg-background flex flex-col items-center px-6 py-20 w-full"
@@ -65,13 +78,13 @@ export const TicketsSection = () => {
 					</TabsList>
 
 					{/* Event Tickets Tab */}
-					<TabsContent value="tickets" className="mt-12 flex-1 min-w-0 w-full">
-						<TicketsExample />
+					<TabsContent value="tickets" className="flex-1 min-w-0 w-full">
+						{isLoggedIn ? <TicketsExample /> : <Card className="mt-6"><LoggedOutPlaceholder message="Please log in to see your list of events and tickets." /></Card>}
 					</TabsContent>
 
 					{/* Subscriptions & Memberships Tab */}
-					<TabsContent value="subscriptions" className="mt-12">
-						<MembershipsExample />
+					<TabsContent value="subscriptions">
+						{isLoggedIn ? <MembershipsExample /> : <Card className="mt-6"><LoggedOutPlaceholder message="Please log in to see your subscriptions and memberships." /></Card>}
 					</TabsContent>
 				</Tabs>
 			</div>

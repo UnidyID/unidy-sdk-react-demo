@@ -13,7 +13,7 @@ import { ProfileSidebar } from '../components/profile-sidebar';
 
 export const ProfileLayout: FC<PropsWithChildren> = ({ children }) => {
 	const [mounted, setMounted] = useState(false);
-	const session = useSession({ callbacks: toastCallbacks });
+	const session = useSession();
 	const { profile } = useProfile({ callbacks: toastCallbacks });
 	const router = useRouter();
 

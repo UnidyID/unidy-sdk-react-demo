@@ -9,11 +9,10 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { useSession } from '@unidy.io/sdk-react';
-import { toastCallbacks } from '@/deps/unidy/callbacks';
 
 export const TopNavigation = () => {
 	const [mounted, setMounted] = useState(false);
-	const session = useSession({ callbacks: toastCallbacks });
+	const session = useSession();
 
 	useEffect(() => {
 		setMounted(true);

@@ -1,11 +1,24 @@
+'use client';
+
 import { Card } from '@/components/card';
 import { FeatureItem } from '@/components/feature-item';
 import { SectionHeading } from '@/components/section-heading';
 import { Button } from '@/components/shadcn/ui/button';
+import { useSession } from '@unidy.io/sdk-react';
 import { Check, Code } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { LoggedOutPlaceholder } from '../examples/logged-out-placeholder';
 import { ProfileExample } from '../examples/profile-example';
 
 export const ProfileSection = () => {
+	const [mounted, setMounted] = useState(false);
+	const session = useSession();
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	const isLoggedIn = mounted && session.isAuthenticated;
 	const features = [
 		{
 			icon: <Check className="size-4 text-accent" />,
@@ -60,7 +73,7 @@ export const ProfileSection = () => {
 				{/* Right Column - Card with Form */}
 				<div className="flex-1 min-w-0 w-full">
 					<Card className="relative">
-						<ProfileExample />
+						{isLoggedIn ? <ProfileExample /> : <LoggedOutPlaceholder />}
 					</Card>
 				</div>
 			</div>

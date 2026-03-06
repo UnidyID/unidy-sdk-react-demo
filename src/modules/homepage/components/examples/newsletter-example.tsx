@@ -15,36 +15,22 @@ import {
 	Mail,
 	Phone,
 	Trophy,
-	User,
-	Users
+	User
 } from 'lucide-react';
 import { useState } from 'react';
 
 const newsletters = [
 	{
-		id: 'match-updates',
+		id: 'main',
 		icon: <Trophy className="size-5 text-neutral-strong" />,
-		title: 'Match Updates & Results',
-		description: 'Get live scores, match highlights, and post-game analysis'
+		title: 'News & Updates',
+		description: 'All the latest news, events, tickets, and partner offers'
 	},
 	{
-		id: 'player-news',
-		icon: <Users className="size-5 text-neutral-strong" />,
-		title: 'Player News',
-		description:
-			'Transfer updates, injury reports, and exclusive player interviews'
-	},
-	{
-		id: 'shop-offers',
-		icon: <Trophy className="size-5 text-neutral-strong" />,
-		title: 'Shop Offers & Merchandise',
-		description: 'Exclusive discounts and early access to new merchandise'
-	},
-	{
-		id: 'club-updates',
+		id: 'weather',
 		icon: <Bell className="size-5 text-neutral-strong" />,
-		title: 'General Club Updates',
-		description: 'Club announcements, events, and community news'
+		title: 'Weather Forecast',
+		description: 'Temperature, wind, and precipitation updates'
 	}
 ];
 
