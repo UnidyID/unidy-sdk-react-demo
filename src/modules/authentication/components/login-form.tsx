@@ -1,11 +1,15 @@
 'use client';
 
-import { ArrowLeft, CheckCircle2, KeyRound, Lock, Mail, Send } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-
 import { useLogin } from '@unidy.io/sdk-react';
-import { toastCallbacks } from '@/deps/unidy/callbacks';
-
+import {
+	ArrowLeft,
+	CheckCircle2,
+	KeyRound,
+	Lock,
+	Mail,
+	Send
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { FormLabel } from '@/components/form-label';
 import { GoogleIcon } from '@/components/icons/google-icon';
 import { Button } from '@/components/shadcn/ui/button';
@@ -14,17 +18,20 @@ import {
 	InputGroupAddon,
 	InputGroupInput
 } from '@/components/shadcn/ui/input-group';
+import { toastCallbacks } from '@/deps/unidy/callbacks';
+import { translateAuthError } from '@/locales/translate-auth-error';
 
 interface LoginFormProps {
 	/** Called when login.step becomes 'authenticated' */
 	onAuthenticated?: () => void;
-	/** Called when user clicks "Register" / "Sign Up" link */
-	onRegisterClick?: () => void;
 	/** Called whenever the login step changes */
 	onStepChange?: (step: string) => void;
 }
 
-export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: LoginFormProps) => {
+export const LoginForm = ({
+	onAuthenticated,
+	onStepChange
+}: LoginFormProps) => {
 	const login = useLogin({ callbacks: toastCallbacks });
 
 	const [emailInput, setEmailInput] = useState('');
@@ -106,7 +113,9 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: Lo
 					</FormLabel>
 
 					{login.errors.email && (
-						<p className="body-2 text-red-500">{login.errors.email}</p>
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.email)}
+						</p>
 					)}
 
 					<Button
@@ -119,22 +128,6 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: Lo
 					>
 						{login.isLoading ? 'Loading...' : 'Continue'}
 					</Button>
-
-					{onRegisterClick && (
-						<div className="flex items-center justify-center gap-2">
-							<p className="body-2 text-neutral-strong">
-								Don&apos;t have an account?
-							</p>
-							<Button
-								type="button"
-								onClick={onRegisterClick}
-								size="link"
-								variant="link"
-							>
-								Register
-							</Button>
-						</div>
-					)}
 				</div>
 			)}
 
@@ -225,7 +218,9 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: Lo
 											}}
 											disabled={login.isLoading}
 										>
-											{provider === 'google' && <GoogleIcon className="size-5" />}
+											{provider === 'google' && (
+												<GoogleIcon className="size-5" />
+											)}
 											Continue with {provider}
 										</Button>
 									))}
@@ -234,7 +229,9 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: Lo
 						)}
 
 					{login.errors.global && (
-						<p className="body-2 text-red-500">{login.errors.global}</p>
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.global)}
+						</p>
 					)}
 
 					<Button
@@ -287,7 +284,9 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: Lo
 					</FormLabel>
 
 					{login.errors.password && (
-						<p className="body-2 text-red-500">{login.errors.password}</p>
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.password)}
+						</p>
 					)}
 
 					<div className="flex justify-end">
@@ -313,7 +312,9 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: Lo
 					</Button>
 
 					{login.errors.global && (
-						<p className="body-2 text-red-500">{login.errors.global}</p>
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.global)}
+						</p>
 					)}
 
 					{login.canGoBack && (
@@ -369,7 +370,9 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: Lo
 					</FormLabel>
 
 					{login.errors.magicCode && (
-						<p className="body-2 text-red-500">{login.errors.magicCode}</p>
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.magicCode)}
+						</p>
 					)}
 
 					<p className="body-2 text-neutral-strong text-center">
@@ -404,7 +407,9 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: Lo
 					</div>
 
 					{login.errors.global && (
-						<p className="body-2 text-red-500">{login.errors.global}</p>
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.global)}
+						</p>
 					)}
 
 					{login.canGoBack && (
@@ -437,7 +442,7 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: Lo
 
 							{login.errors.resetPassword && (
 								<p className="body-2 text-red-500">
-									{login.errors.resetPassword}
+									{translateAuthError(login.errors.resetPassword)}
 								</p>
 							)}
 
@@ -467,7 +472,9 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: Lo
 					)}
 
 					{login.errors.global && (
-						<p className="body-2 text-red-500">{login.errors.global}</p>
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.global)}
+						</p>
 					)}
 
 					{login.canGoBack && (

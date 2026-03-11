@@ -1,12 +1,12 @@
 'use client';
 
-import { toastCallbacks } from '@/deps/unidy/callbacks';
 import {
 	useNewsletterPreferenceCenter,
 	useSession,
 	useUnidyClient
 } from '@unidy.io/sdk-react';
 import { useMemo, useState } from 'react';
+import { toastCallbacks } from '@/deps/unidy/callbacks';
 import type { NewsletterCategory } from '../components/newsletter-picker';
 
 export function useNewsletterPreferences({
@@ -50,9 +50,7 @@ export function useNewsletterPreferences({
 
 	const handleSave = async () => {
 		const currentIds = effectiveSelectedIds;
-		const toSubscribe = currentIds.filter(
-			(id) => !subscribedIds.includes(id)
-		);
+		const toSubscribe = currentIds.filter((id) => !subscribedIds.includes(id));
 		const toUnsubscribe = subscribedIds.filter(
 			(id) => !currentIds.includes(id)
 		);
@@ -67,11 +65,8 @@ export function useNewsletterPreferences({
 						const [error] = await client.newsletters.create({
 							payload: {
 								email: session.email,
-								newsletter_subscriptions: [
-									{ newsletter_internal_name: id }
-								],
-								redirect_to_after_confirmation:
-									window.location.href
+								newsletter_subscriptions: [{ newsletter_internal_name: id }],
+								redirect_to_after_confirmation: window.location.href
 							}
 						});
 						if (error) {
@@ -101,9 +96,7 @@ export function useNewsletterPreferences({
 		setIsSaving(true);
 		try {
 			await Promise.all(
-				subscriptions.map((s) =>
-					unsubscribe(s.newsletter_internal_name)
-				)
+				subscriptions.map((s) => unsubscribe(s.newsletter_internal_name))
 			);
 		} catch (error) {
 			toastCallbacks.onError?.('Failed to unsubscribe');

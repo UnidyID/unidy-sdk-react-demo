@@ -79,11 +79,7 @@ export const TopNavigation = () => {
 								detatched
 							>
 								<Link href="/login?redirect=/">
-									<Button
-										theme="accent"
-										variant="solid"
-										size="md"
-									>
+									<Button theme="accent" variant="solid" size="md">
 										<LogIn />
 										Log in
 									</Button>

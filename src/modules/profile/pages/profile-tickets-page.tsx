@@ -6,16 +6,23 @@ import {
 	TicketCard,
 	TicketCardProps
 } from '@/modules/tickets/components/ticket-card';
-import { formatDate, formatPrice, formatTime, mapItemState } from '@/modules/tickets/utils';
+import {
+	formatDate,
+	formatPrice,
+	formatTime,
+	mapItemState
+} from '@/modules/tickets/utils';
 import {
 	usePagination,
 	useTicketables,
 	type Ticket
 } from '@unidy.io/sdk-react';
-import { ChevronLeft, ChevronRight, Loader2, Plus } from 'lucide-react';
-import { type FC, useState } from 'react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import type { FC } from 'react';
 
-function mapTicketToCardProps(ticket: Ticket): TicketCardProps & { id: string } {
+function mapTicketToCardProps(
+	ticket: Ticket
+): TicketCardProps & { id: string } {
 	return {
 		id: ticket.id,
 		title: ticket.title,
@@ -29,42 +36,6 @@ function mapTicketToCardProps(ticket: Ticket): TicketCardProps & { id: string } 
 	};
 }
 
-const matchups = [
-	['FC Unidy', 'Unidy United'],
-	['FC Unidy', 'Real Identidad'],
-	['FC Unidy', 'AC Authen'],
-	['FC Unidy', 'SSO Rovers'],
-	['FC Unidy', 'Dynamo Token']
-];
-const venues = ['Unidy Stadium', 'Identity Arena', 'Auth Park', 'Token Grounds'];
-const blocks = ['North Stand - Block A', 'South Stand - Block B', 'East Wing - Block C', 'West Wing - Block D'];
-
-function randomPlaceholderTicket(): TicketCardProps & { id: string } {
-	const matchup = matchups[Math.floor(Math.random() * matchups.length)]!;
-	const [home, away] = matchup;
-	const venue = venues[Math.floor(Math.random() * venues.length)]!;
-	const block = blocks[Math.floor(Math.random() * blocks.length)]!;
-	const row = Math.floor(Math.random() * 30) + 1;
-	const seatNum = Math.floor(Math.random() * 60) + 1;
-	const price = Math.floor(Math.random() * 150) + 20;
-	const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
-	const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
-	const hour = Math.floor(Math.random() * 5) + 17;
-
-	return {
-		id: `placeholder-${crypto.randomUUID()}`,
-		title: `${home} vs ${away}`,
-		ticketId: `TKT-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-		price: `$${price}`,
-		status: 'active',
-		date: `${day}/${month}/2025`,
-		time: `${hour}:00`,
-		venue,
-		venueDetails: block,
-		seat: `Row ${row}, Seat ${seatNum}`
-	};
-}
-
 export const ProfileTicketsPage: FC = () => {
 	const pagination = usePagination({ perPage: 10 });
 	const { items, isLoading, getExportLink } = useTicketables({
@@ -75,10 +46,6 @@ export const ProfileTicketsPage: FC = () => {
 		callbacks: toastCallbacks
 	});
 
-	const [placeholderTickets, setPlaceholderTickets] = useState<
-		(TicketCardProps & { id: string })[]
-	>([]);
-
 	const handleDownload = async (ticketId: string) => {
 		const result = await getExportLink(ticketId, 'pdf');
 		if (result?.url) {
@@ -86,12 +53,7 @@ export const ProfileTicketsPage: FC = () => {
 		}
 	};
 
-	const handleAddTicket = () => {
-		setPlaceholderTickets((prev) => [randomPlaceholderTicket(), ...prev]);
-	};
-
-	const apiTickets = items.map(mapTicketToCardProps);
-	const allTickets = [...placeholderTickets, ...apiTickets];
+	const tickets = items.map(mapTicketToCardProps);
 
 	return (
 		<div className="flex flex-col gap-6 grow">
@@ -103,10 +65,6 @@ export const ProfileTicketsPage: FC = () => {
 							View and manage your event tickets.
 						</p>
 					</div>
-					<Button theme="accent" size="sm" onClick={handleAddTicket}>
-						<Plus className="size-4" />
-						Add Ticket
-					</Button>
 				</div>
 
 				{isLoading ? (
@@ -115,19 +73,15 @@ export const ProfileTicketsPage: FC = () => {
 					</div>
 				) : (
 					<div className="flex flex-col gap-2">
-						{allTickets.map((ticket) => (
+						{tickets.map((ticket) => (
 							<TicketCard
 								key={ticket.id}
 								{...ticket}
-								onDownload={
-									ticket.id.startsWith('placeholder-')
-										? undefined
-										: () => handleDownload(ticket.id)
-								}
+								onDownload={() => handleDownload(ticket.id)}
 							/>
 						))}
 
-						{allTickets.length === 0 && (
+						{tickets.length === 0 && (
 							<p className="body-2 text-neutral-strong text-center py-8">
 								No tickets found.
 							</p>

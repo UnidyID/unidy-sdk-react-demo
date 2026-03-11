@@ -4,7 +4,7 @@ import { UnidyProvider } from '@unidy.io/sdk-react';
 import { unidyClient } from './client';
 
 export function UnidyProviderWrapper({
-	children,
+	children
 }: {
 	children: React.ReactNode;
 }) {

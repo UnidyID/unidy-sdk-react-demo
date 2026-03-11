@@ -1,5 +1,15 @@
 'use client';
 
+import {
+	ArrowDown,
+	Expand,
+	ExternalLink,
+	Lock,
+	Mail,
+	Ticket,
+	User
+} from 'lucide-react';
+import Link from 'next/link';
 import { LinkSmooth } from '@/components/link-smooth';
 import { SectionHeading } from '@/components/section-heading';
 import { Button } from '@/components/shadcn/ui/button';
@@ -12,16 +22,6 @@ import {
 	DialogTrigger
 } from '@/components/shadcn/ui/dialog';
 import { OptionItem } from '@/modules/homepage/components/option-item';
-import {
-	ArrowDown,
-	Expand,
-	ExternalLink,
-	Lock,
-	Mail,
-	Ticket,
-	User
-} from 'lucide-react';
-import Link from 'next/link';
 import { LoginModalExample } from '../examples/login-modal-example';
 
 export const OptionsSection = () => {
@@ -173,6 +173,18 @@ export const OptionsSection = () => {
 								Inline Demo
 							</Button>
 						</LinkSmooth>
+
+						<Link href="/profile/tickets">
+							<Button
+								theme="neutral"
+								variant="ghost"
+								size="md"
+								className="w-full justify-start"
+							>
+								<ExternalLink className="size-4" />
+								Dedicated Page Demo
+							</Button>
+						</Link>
 					</OptionItem>
 				</div>
 			</div>

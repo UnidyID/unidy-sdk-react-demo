@@ -4,10 +4,7 @@ import { Button } from '@/components/shadcn/ui/button';
 import { toastCallbacks } from '@/deps/unidy/callbacks';
 import { ProfileNavigation } from '@/modules/profile/components/profile-navigation';
 import { ProfileSidebar } from '@/modules/profile/components/profile-sidebar';
-import {
-	useNewsletterLogin,
-	useSession
-} from '@unidy.io/sdk-react';
+import { useNewsletterLogin, useSession } from '@unidy.io/sdk-react';
 import { CheckCircle2, Info, Loader2, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -26,8 +23,7 @@ const newsletterCategories: NewsletterCategory[] = [
 			{
 				id: 'main',
 				title: 'News & Updates',
-				description:
-					'All the latest news, events, tickets, and partner offers',
+				description: 'All the latest news, events, tickets, and partner offers',
 				icon: 'trophy',
 				category: 'main'
 			}
@@ -36,8 +32,7 @@ const newsletterCategories: NewsletterCategory[] = [
 	{
 		id: 'weather',
 		name: 'Weather Forecast',
-		description:
-			'Stay up to date with the latest weather forecasts.',
+		description: 'Stay up to date with the latest weather forecasts.',
 		options: [
 			{
 				id: 'weather',
@@ -110,8 +105,10 @@ export const NewsletterPage: FC = () => {
 			<div className="flex-1 flex justify-center py-6 lg:py-10">
 				<div className="max-w-[1200px] w-full px-2 lg:px-6 flex flex-col md:flex-row gap-6 lg:gap-10">
 					<ProfileSidebar
-						userName={isLoggedIn ? (session.email || 'Subscriber') : 'Signed out'}
-						userInitials={isLoggedIn ? (session.email?.[0]?.toUpperCase() || 'S') : ''}
+						userName={isLoggedIn ? session.email || 'Subscriber' : 'Signed out'}
+						userInitials={
+							isLoggedIn ? session.email?.[0]?.toUpperCase() || 'S' : ''
+						}
 						memberSince={isLoggedIn ? undefined : undefined}
 						showNavigation={false}
 					>

@@ -96,9 +96,7 @@ export const MembershipsExample = () => {
 				>
 					<SubscriptionCard
 						{...subscription}
-						onRenew={() =>
-							console.log('Renew subscription', subscription.id)
-						}
+						onRenew={() => console.log('Renew subscription', subscription.id)}
 					/>
 				</SDKWrapper>
 			))}

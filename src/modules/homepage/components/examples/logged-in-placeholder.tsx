@@ -13,7 +13,9 @@ export const LoggedInPlaceholder = () => {
 
 	return (
 		<div className="flex flex-col items-center justify-center gap-4 py-8">
-			<p className="body-1 text-neutral-strong">You&apos;re already logged in.</p>
+			<p className="body-1 text-neutral-strong">
+				You&apos;re already logged in.
+			</p>
 			<Button
 				theme="neutral"
 				variant="solid"

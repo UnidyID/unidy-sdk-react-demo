@@ -1,12 +1,18 @@
 'use client';
 
-import { ArrowLeft, CheckCircle2, Lock, Mail, ShieldCheck, User } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-
 import { useRegistration } from '@unidy.io/sdk-react';
-import { toastCallbacks } from '@/deps/unidy/callbacks';
-
+import {
+	ArrowLeft,
+	CheckCircle2,
+	Lock,
+	Mail,
+	ShieldCheck,
+	User,
+	X
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Card } from '@/components/card';
 import { FormLabel } from '@/components/form-label';
 import { Button } from '@/components/shadcn/ui/button';
@@ -22,6 +28,8 @@ import {
 	InputGroupAddon,
 	InputGroupInput
 } from '@/components/shadcn/ui/input-group';
+import { toastCallbacks } from '@/deps/unidy/callbacks';
+import { translateAuthError } from '@/locales/translate-auth-error';
 import { LoginForm } from '../components/login-form';
 
 const REGISTRATION_STORAGE_KEY = 'unidy_pending_registration';
@@ -29,7 +37,10 @@ const REGISTRATION_STORAGE_KEY = 'unidy_pending_registration';
 export const LoginPage = () => {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const redirectTo = useMemo(() => searchParams.get('redirect') || '/profile', [searchParams]);
+	const redirectTo = useMemo(
+		() => searchParams.get('redirect') || '/profile',
+		[searchParams]
+	);
 	const registration = useRegistration({ callbacks: toastCallbacks });
 
 	const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
@@ -43,7 +54,9 @@ export const LoginPage = () => {
 	const [registerEmail, setRegisterEmail] = useState('');
 	const [registerPassword, setRegisterPassword] = useState('');
 	const [registerConfirmPassword, setRegisterConfirmPassword] = useState('');
-	const [registerStep, setRegisterStep] = useState<'form' | 'verify-email'>('form');
+	const [registerStep, setRegisterStep] = useState<'form' | 'verify-email'>(
+		'form'
+	);
 	const [verificationCode, setVerificationCode] = useState('');
 	const [confirmPasswordError, setConfirmPasswordError] = useState('');
 	const [resendCountdown, setResendCountdown] = useState(0);
@@ -95,7 +108,11 @@ export const LoginPage = () => {
 
 	// Populate email from registration data once loaded (e.g. after resume link recovery)
 	useEffect(() => {
-		if (registration.registration?.email && registerStep === 'verify-email' && !registerEmail) {
+		if (
+			registration.registration?.email &&
+			registerStep === 'verify-email' &&
+			!registerEmail
+		) {
 			setRegisterEmail(registration.registration.email);
 		}
 	}, [registration.registration?.email, registerStep, registerEmail]);
@@ -167,7 +184,8 @@ export const LoginPage = () => {
 	const transitionToVerifyEmail = async () => {
 		const result = await registration.sendEmailVerificationCode();
 		if (result.success) {
-			const cooldown = result.data?.enable_resend_after ?? registration.enableResendAfter;
+			const cooldown =
+				result.data?.enable_resend_after ?? registration.enableResendAfter;
 			if (cooldown) setResendCountdown(cooldown);
 			localStorage.setItem(
 				REGISTRATION_STORAGE_KEY,
@@ -187,7 +205,8 @@ export const LoginPage = () => {
 	const handleResendVerificationCode = async () => {
 		const result = await registration.sendEmailVerificationCode();
 		if (result.success) {
-			const cooldown = result.data?.enable_resend_after ?? registration.enableResendAfter;
+			const cooldown =
+				result.data?.enable_resend_after ?? registration.enableResendAfter;
 			if (cooldown) setResendCountdown(cooldown);
 		}
 	};
@@ -207,7 +226,16 @@ export const LoginPage = () => {
 					'linear-gradient(150.64deg, rgba(216, 106, 96, 1) 0%, rgba(199, 42, 28, 1) 50%, rgba(216, 106, 96, 1) 100%)'
 			}}
 		>
-			<div className="flex flex-col items-center gap-8 w-full max-w-[448px]">
+			<div className="flex flex-col items-center gap-8 w-full max-w-[448px] relative">
+				{/* Cancel */}
+				<Link
+					href="/"
+					className="absolute right-0 top-0 rounded-full size-10 flex items-center justify-center bg-white/15 hover:bg-white/25 transition-colors"
+					aria-label="Back to homepage"
+				>
+					<X className="size-5 text-white" />
+				</Link>
+
 				{/* Header */}
 				<div className="flex flex-col items-center gap-4">
 					<div className="size-12 flex items-center justify-center bg-white rounded-full">
@@ -237,7 +265,11 @@ export const LoginPage = () => {
 								<ButtonTabsTrigger
 									value="register"
 									className="flex-1"
-									disabled={activeTab === 'login' && loginStep !== 'idle' && loginStep !== 'email'}
+									disabled={
+										activeTab === 'login' &&
+										loginStep !== 'idle' &&
+										loginStep !== 'email'
+									}
 								>
 									Register
 								</ButtonTabsTrigger>
@@ -249,7 +281,6 @@ export const LoginPage = () => {
 							<LoginForm
 								key={loginFormKey}
 								onAuthenticated={() => router.push(redirectTo)}
-								onRegisterClick={() => setActiveTab('register')}
 								onStepChange={setLoginStep}
 							/>
 						</ButtonTabsContent>
@@ -258,7 +289,11 @@ export const LoginPage = () => {
 						<ButtonTabsContent value="register" className="w-full mt-6">
 							{registerStep === 'form' && (
 								<div className="flex flex-col gap-6 w-full">
-									<FormLabel title="Email Address" required error={registration.fieldErrors.email}>
+									<FormLabel
+										title="Email Address"
+										required
+										error={translateAuthError(registration.fieldErrors.email)}
+									>
 										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
 											<InputGroupAddon>
 												<Mail className="size-5 text-neutral-medium" />
@@ -267,9 +302,7 @@ export const LoginPage = () => {
 												type="email"
 												placeholder="you@example.com"
 												value={registerEmail}
-												onChange={(e) =>
-													setRegisterEmail(e.target.value)
-												}
+												onChange={(e) => setRegisterEmail(e.target.value)}
 												onKeyDown={(e) =>
 													e.key === 'Enter' && handleCreateRegistration()
 												}
@@ -279,7 +312,14 @@ export const LoginPage = () => {
 									</FormLabel>
 
 									<div className="flex gap-4">
-										<FormLabel title="First Name" required className="flex-1" error={registration.fieldErrors.first_name}>
+										<FormLabel
+											title="First Name"
+											required
+											className="flex-1"
+											error={translateAuthError(
+												registration.fieldErrors.first_name
+											)}
+										>
 											<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
 												<InputGroupAddon>
 													<User className="size-5 text-neutral-medium" />
@@ -288,9 +328,7 @@ export const LoginPage = () => {
 													type="text"
 													placeholder="John"
 													value={registerFirstName}
-													onChange={(e) =>
-														setRegisterFirstName(e.target.value)
-													}
+													onChange={(e) => setRegisterFirstName(e.target.value)}
 													onKeyDown={(e) =>
 														e.key === 'Enter' && handleCreateRegistration()
 													}
@@ -299,7 +337,14 @@ export const LoginPage = () => {
 											</InputGroup>
 										</FormLabel>
 
-										<FormLabel title="Last Name" required className="flex-1" error={registration.fieldErrors.last_name}>
+										<FormLabel
+											title="Last Name"
+											required
+											className="flex-1"
+											error={translateAuthError(
+												registration.fieldErrors.last_name
+											)}
+										>
 											<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
 												<InputGroupAddon>
 													<User className="size-5 text-neutral-medium" />
@@ -308,9 +353,7 @@ export const LoginPage = () => {
 													type="text"
 													placeholder="Doe"
 													value={registerLastName}
-													onChange={(e) =>
-														setRegisterLastName(e.target.value)
-													}
+													onChange={(e) => setRegisterLastName(e.target.value)}
 													onKeyDown={(e) =>
 														e.key === 'Enter' && handleCreateRegistration()
 													}
@@ -320,7 +363,13 @@ export const LoginPage = () => {
 										</FormLabel>
 									</div>
 
-									<FormLabel title="Password" required error={registration.fieldErrors.password}>
+									<FormLabel
+										title="Password"
+										required
+										error={translateAuthError(
+											registration.fieldErrors.password
+										)}
+									>
 										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
 											<InputGroupAddon>
 												<Lock className="size-5 text-neutral-medium" />
@@ -329,9 +378,7 @@ export const LoginPage = () => {
 												type="password"
 												placeholder="••••••••"
 												value={registerPassword}
-												onChange={(e) =>
-													setRegisterPassword(e.target.value)
-												}
+												onChange={(e) => setRegisterPassword(e.target.value)}
 												onKeyDown={(e) =>
 													e.key === 'Enter' && handleCreateRegistration()
 												}
@@ -340,7 +387,11 @@ export const LoginPage = () => {
 										</InputGroup>
 									</FormLabel>
 
-									<FormLabel title="Confirm Password" required error={confirmPasswordError}>
+									<FormLabel
+										title="Confirm Password"
+										required
+										error={confirmPasswordError}
+									>
 										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
 											<InputGroupAddon>
 												<Lock className="size-5 text-neutral-medium" />
@@ -364,9 +415,12 @@ export const LoginPage = () => {
 										<div className="border border-neutral-medium rounded-[10px] p-4 flex gap-4 items-start bg-neutral-weak">
 											<CheckCircle2 className="size-10 text-theme shrink-0" />
 											<div className="flex flex-col gap-1">
-												<p className="body-1 text-neutral-strong font-semibold">Resume link sent!</p>
+												<p className="body-1 text-neutral-strong font-semibold">
+													Resume link sent!
+												</p>
 												<p className="body-2 text-neutral-strong">
-													A registration is already in progress. Check your inbox for a link to continue.
+													A registration is already in progress. Check your
+													inbox for a link to continue.
 												</p>
 											</div>
 										</div>
@@ -374,7 +428,7 @@ export const LoginPage = () => {
 
 									{registration.error && !resumeLinkSent && (
 										<p className="body-2 text-danger">
-											{registration.error}
+											{translateAuthError(registration.error)}
 										</p>
 									)}
 
@@ -418,7 +472,9 @@ export const LoginPage = () => {
 											</InputGroupAddon>
 											<InputGroupInput
 												type="email"
-												value={registration.registration?.email ?? registerEmail}
+												value={
+													registration.registration?.email ?? registerEmail
+												}
 												disabled
 												className="text-neutral cursor-not-allowed"
 											/>
@@ -434,9 +490,7 @@ export const LoginPage = () => {
 												type="text"
 												placeholder="Enter 6-digit code"
 												value={verificationCode}
-												onChange={(e) =>
-													setVerificationCode(e.target.value)
-												}
+												onChange={(e) => setVerificationCode(e.target.value)}
 												onKeyDown={(e) =>
 													e.key === 'Enter' && handleVerifyEmail()
 												}
@@ -452,7 +506,7 @@ export const LoginPage = () => {
 
 									{registration.error && (
 										<p className="body-2 text-danger">
-											{registration.error}
+											{translateAuthError(registration.error)}
 										</p>
 									)}
 
@@ -476,9 +530,7 @@ export const LoginPage = () => {
 											size="link"
 											variant="link"
 											onClick={handleResendVerificationCode}
-											disabled={
-												registration.isLoading || resendCountdown > 0
-											}
+											disabled={registration.isLoading || resendCountdown > 0}
 										>
 											{resendCountdown > 0
 												? `Resend code in ${resendCountdown}s`

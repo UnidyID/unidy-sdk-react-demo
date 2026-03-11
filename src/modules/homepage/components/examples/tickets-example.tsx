@@ -6,7 +6,12 @@ import {
 	TicketCard,
 	TicketCardProps
 } from '@/modules/tickets/components/ticket-card';
-import { formatDate, formatPrice, formatTime, mapItemState } from '@/modules/tickets/utils';
+import {
+	formatDate,
+	formatPrice,
+	formatTime,
+	mapItemState
+} from '@/modules/tickets/utils';
 import {
 	usePagination,
 	useSession,
@@ -44,7 +49,9 @@ const fallbackTickets: (TicketCardProps & { id: string })[] = [
 	}
 ];
 
-function mapTicketToCardProps(ticket: Ticket): TicketCardProps & { id: string } {
+function mapTicketToCardProps(
+	ticket: Ticket
+): TicketCardProps & { id: string } {
 	return {
 		id: ticket.id,
 		title: ticket.title,
@@ -83,9 +90,7 @@ export const TicketsExample = () => {
 
 	const loggedIn = mounted && isAuthenticated;
 
-	const tickets = loggedIn
-		? items.map(mapTicketToCardProps)
-		: fallbackTickets;
+	const tickets = loggedIn ? items.map(mapTicketToCardProps) : fallbackTickets;
 
 	if (loggedIn && isLoading) {
 		return (

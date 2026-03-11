@@ -55,9 +55,15 @@ export const HeroSection = () => {
 						</Button>
 					</LinkSmooth>
 
-					<Button theme="accent-contrast" variant="outline" size="lg">
-						View Documentation
-					</Button>
+					<a
+						href="https://github.com/UnidyID/unidy-sdk/tree/master/packages/sdk-react#readme"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<Button theme="accent-contrast" variant="outline" size="lg">
+							View Documentation
+						</Button>
+					</a>
 				</div>
 			</div>
 		</section>

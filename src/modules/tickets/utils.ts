@@ -1,4 +1,5 @@
-export function formatPrice(price: number, currency: string | null): string {
+export function formatPrice(price: number | null, currency: string | null): string {
+	if (price == null) return 'Free';
 	if (!currency) return `$${price.toFixed(2)}`;
 	try {
 		return new Intl.NumberFormat('en-US', {
@@ -27,9 +28,7 @@ export function formatTime(date: Date): string {
 	}).format(new Date(date));
 }
 
-export function mapItemState(
-	state: string
-): 'active' | 'inactive' | 'expired' {
+export function mapItemState(state: string): 'active' | 'inactive' | 'expired' {
 	switch (state.toLowerCase()) {
 		case 'active':
 			return 'active';

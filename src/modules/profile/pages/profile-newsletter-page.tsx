@@ -17,8 +17,7 @@ const newsletterCategories: NewsletterCategory[] = [
 			{
 				id: 'main',
 				title: 'News & Updates',
-				description:
-					'All the latest news, events, tickets, and partner offers',
+				description: 'All the latest news, events, tickets, and partner offers',
 				icon: 'trophy',
 				category: 'main'
 			}
@@ -27,8 +26,7 @@ const newsletterCategories: NewsletterCategory[] = [
 	{
 		id: 'weather',
 		name: 'Weather Forecast',
-		description:
-			'Stay up to date with the latest weather forecasts.',
+		description: 'Stay up to date with the latest weather forecasts.',
 		options: [
 			{
 				id: 'weather',

@@ -11,15 +11,14 @@ import { toastCallbacks } from '@/deps/unidy/callbacks';
 import { translateAuthError } from '@/locales/translate-auth-error';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { useLogin } from '@unidy.io/sdk-react';
-import { ArrowLeft, Lock, Mail } from 'lucide-react';
+import { ArrowLeft, KeyRound, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-export const LoginSimpleExample = () => {
+export const LoginPasskeyExample = () => {
 	const login = useLogin({ callbacks: toastCallbacks });
 	const router = useRouter();
 	const [emailInput, setEmailInput] = useState('');
-	const [passwordInput, setPasswordInput] = useState('');
 
 	useEffect(() => {
 		if (login.step === 'authenticated') {
@@ -27,19 +26,11 @@ export const LoginSimpleExample = () => {
 		}
 	}, [login.step, router]);
 
-	// Auto-advance to password step once verification options arrive
-	useEffect(() => {
-		if (login.step === 'verification' && login.loginOptions?.password) {
-			login.goToStep('password');
-		}
-	}, [login.step, login.loginOptions?.password]);
-
 	const isEmailStep = login.step === 'idle' || login.step === 'email';
-	const isPasswordStep = login.step === 'password';
+	const isVerificationStep = login.step === 'verification';
 
 	const handleBack = () => {
 		login.restart();
-		setPasswordInput('');
 	};
 
 	return (
@@ -73,7 +64,7 @@ export const LoginSimpleExample = () => {
 
 					<SDKWrapper
 						title="Auth SDK / Submit"
-						codeSnippet={`import { useLogin } from '@unidy.io/sdk-react';\n\nconst login = useLogin();\nawait login.submitEmail(email);`}
+						codeSnippet={`import { useLogin } from '@unidy.io/sdk-react';\n\nconst login = useLogin();\nawait login.submitEmail(email);\n// login.loginOptions?.passkey → true`}
 						size="sm"
 						labelPosition="top-left"
 						popoverPosition="left"
@@ -92,8 +83,8 @@ export const LoginSimpleExample = () => {
 				</>
 			)}
 
-			{/* Password Step */}
-			{isPasswordStep && (
+			{/* Verification Step - passkey option */}
+			{isVerificationStep && (
 				<>
 					<FormLabel title="Email Address">
 						<InputGroup
@@ -112,47 +103,32 @@ export const LoginSimpleExample = () => {
 						</InputGroup>
 					</FormLabel>
 
-					<FormLabel title="Password">
-						<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
-							<InputGroupAddon>
-								<Lock className="size-5 text-neutral-medium" />
-							</InputGroupAddon>
-							<InputGroupInput
-								type="password"
-								placeholder="••••••••"
-								value={passwordInput}
-								onChange={(e) => setPasswordInput(e.target.value)}
-								onKeyDown={(e) =>
-									e.key === 'Enter' && login.submitPassword(passwordInput)
-								}
-								className="text-neutral placeholder:text-neutral-medium"
-							/>
-						</InputGroup>
-					</FormLabel>
-
-					{login.errors.password && (
-						<p className="body-2 text-red-500">
-							{translateAuthError(login.errors.password)}
-						</p>
-					)}
-
-					<SDKWrapper
-						title="Auth SDK / Password"
-						codeSnippet={`const login = useLogin();\nawait login.submitPassword(password);`}
-						size="sm"
-						popoverPosition="left"
-					>
-						<Button
-							theme="accent"
-							variant="solid"
-							size="lg"
-							className="w-full"
-							onClick={() => login.submitPassword(passwordInput)}
-							disabled={login.isLoading}
+					{login.loginOptions?.passkey ? (
+						<SDKWrapper
+							title="Auth SDK / Passkey"
+							codeSnippet={`const login = useLogin();\n// login.loginOptions?.passkey === true\n// Passkey authentication via WebAuthn`}
+							size="sm"
+							popoverPosition="left"
 						>
-							{login.isLoading ? 'Signing in...' : 'Sign In'}
-						</Button>
-					</SDKWrapper>
+							<Button
+								theme="accent"
+								variant="solid"
+								size="lg"
+								className="w-full"
+								disabled={login.isLoading}
+							>
+								<KeyRound className="size-5" />
+								Continue with Passkey
+							</Button>
+						</SDKWrapper>
+					) : (
+						<div className="border border-neutral-medium rounded-[10px] p-4 bg-neutral-weak">
+							<p className="body-2 text-neutral-strong text-center">
+								Passkey is not available for this account. Set up a passkey in
+								your profile to use this method.
+							</p>
+						</div>
+					)}
 
 					{login.errors.global && (
 						<p className="body-2 text-red-500">

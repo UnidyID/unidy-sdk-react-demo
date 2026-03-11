@@ -9,7 +9,10 @@ import {
 	TabsList,
 	TabsTrigger
 } from '@/components/shadcn/ui/tabs';
+import { Button } from '@/components/shadcn/ui/button';
 import { useSession } from '@unidy.io/sdk-react';
+import { ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { LoggedOutPlaceholder } from '../examples/logged-out-placeholder';
 import { MembershipsExample } from '../examples/memberships-example';
@@ -61,7 +64,7 @@ export const TicketsSection = () => {
 				{/* Section Heading */}
 				<div className="flex flex-col gap-6 flex-1 min-w-0 w-full">
 					<SectionHeading
-						title="Tickets & Subscriptions"
+						title="Tickets / Subscriptions"
 						description="View and manage your event tickets, memberships, and active subscriptions."
 					>
 						<IntegrationCode code={integrationCode} language="typescript" />
@@ -79,12 +82,44 @@ export const TicketsSection = () => {
 
 					{/* Event Tickets Tab */}
 					<TabsContent value="tickets" className="flex-1 min-w-0 w-full">
-						{isLoggedIn ? <TicketsExample /> : <Card className="mt-6"><LoggedOutPlaceholder message="Please log in to see your list of events and tickets." /></Card>}
+						{isLoggedIn ? (
+							<>
+								<TicketsExample />
+								<div className="flex justify-center pt-6">
+									<Link href="/profile/tickets">
+										<Button theme="accent" variant="outline" size="md">
+											<ExternalLink className="size-4" />
+											View All Tickets
+										</Button>
+									</Link>
+								</div>
+							</>
+						) : (
+							<Card className="mt-6">
+								<LoggedOutPlaceholder message="Please log in to see your list of events and tickets." />
+							</Card>
+						)}
 					</TabsContent>
 
 					{/* Subscriptions & Memberships Tab */}
 					<TabsContent value="subscriptions">
-						{isLoggedIn ? <MembershipsExample /> : <Card className="mt-6"><LoggedOutPlaceholder message="Please log in to see your subscriptions and memberships." /></Card>}
+						{isLoggedIn ? (
+							<>
+								<MembershipsExample />
+								<div className="flex justify-center pt-6">
+									<Link href="/profile/subscriptions">
+										<Button theme="accent" variant="outline" size="md">
+											<ExternalLink className="size-4" />
+											View All Subscriptions
+										</Button>
+									</Link>
+								</div>
+							</>
+						) : (
+							<Card className="mt-6">
+								<LoggedOutPlaceholder message="Please log in to see your subscriptions and memberships." />
+							</Card>
+						)}
 					</TabsContent>
 				</Tabs>
 			</div>

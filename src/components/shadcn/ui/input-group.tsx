@@ -1,7 +1,7 @@
 'use client';
 
 import { cva, type VariantProps } from 'class-variance-authority';
-import * as React from 'react';
+import type * as React from 'react';
 
 import { Button } from '@/components/shadcn/ui/button';
 import { Input } from '@/components/shadcn/ui/input';
@@ -136,7 +136,7 @@ function InputGroupInput({
 		<Input
 			data-slot="input-group-control"
 			className={cn(
-				'flex-1 min-w-0 rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 input',
+				'h-full flex-1 min-w-0 rounded-none border-0 bg-transparent px-3 py-0 shadow-none outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 input',
 				className
 			)}
 			{...props}

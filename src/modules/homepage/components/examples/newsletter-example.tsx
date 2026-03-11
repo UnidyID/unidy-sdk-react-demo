@@ -6,7 +6,11 @@ import { Button } from '@/components/shadcn/ui/button';
 import { cn } from '@/components/shadcn/utils';
 import { toastCallbacks } from '@/deps/unidy/callbacks';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
-import { useNewsletterPreferenceCenter, useNewsletterSubscribe, useSession } from '@unidy.io/sdk-react';
+import {
+	useNewsletterPreferenceCenter,
+	useNewsletterSubscribe,
+	useSession
+} from '@unidy.io/sdk-react';
 import {
 	Bell,
 	Check,
@@ -62,10 +66,12 @@ export const NewsletterExample = () => {
 	const { subscriptions, isLoading: isPreferencesLoading } =
 		useNewsletterPreferenceCenter({ callbacks: toastCallbacks });
 
-	const hasExistingSubscriptions = isLoggedIn && !isPreferencesLoading && subscriptions.length > 0;
+	const hasExistingSubscriptions =
+		isLoggedIn && !isPreferencesLoading && subscriptions.length > 0;
 
-	const { isLoading, fieldErrors, subscribe, reset } =
-		useNewsletterSubscribe({ callbacks: toastCallbacks });
+	const { isLoading, fieldErrors, subscribe, reset } = useNewsletterSubscribe({
+		callbacks: toastCallbacks
+	});
 
 	const toggleNewsletter = (id: string) => {
 		setSelectedNewsletters((prev) =>
@@ -120,15 +126,13 @@ export const NewsletterExample = () => {
 							You&apos;re already subscribed!
 						</h3>
 						<p className="body-2 text-neutral-strong">
-							You have {subscriptions.length} active newsletter{subscriptions.length !== 1 ? 's' : ''}. Manage your preferences from your profile.
+							You have {subscriptions.length} active newsletter
+							{subscriptions.length !== 1 ? 's' : ''}. Manage your preferences
+							from your profile.
 						</p>
 					</div>
 					<Link href="/profile/newsletter">
-						<Button
-							theme="accent"
-							variant="solid"
-							size="md"
-						>
+						<Button theme="accent" variant="solid" size="md">
 							<ExternalLink className="size-4" />
 							Edit Newsletter Preferences
 						</Button>
@@ -152,9 +156,7 @@ await subscribe({ email, newsletters });`}
 				<div className="flex flex-col gap-6 w-full items-center py-12">
 					<CheckCircle2 className="size-12 text-accent" />
 					<div className="flex flex-col gap-2 items-center text-center">
-						<h3 className="title-2 text-neutral">
-							Thank you for subscribing!
-						</h3>
+						<h3 className="title-2 text-neutral">Thank you for subscribing!</h3>
 						<p className="body-2 text-neutral-strong">
 							Please check your email to confirm your subscription.
 						</p>
@@ -227,8 +229,8 @@ await subscribe({ email, newsletters, additionalFields });`}
 									className="text-accent underline hover:text-accent-strong cursor-pointer"
 								>
 									Logout
-								</button>
-								{' '}to use a different email
+								</button>{' '}
+								to use a different email
 							</p>
 						)}
 						{fieldErrors.email && (
@@ -238,6 +240,7 @@ await subscribe({ email, newsletters, additionalFields });`}
 				</div>
 
 				{/* Additional Fields */}
+				{!isLoggedIn && (
 				<FormLabel title="Additional Fields">
 					<div className="flex flex-col gap-3 w-full">
 						<div>
@@ -314,6 +317,7 @@ await subscribe({ email, newsletters, additionalFields });`}
 						</div>
 					</div>
 				</FormLabel>
+				)}
 
 				{/* Newsletter Selection */}
 				<FormLabel title="Select Newsletters" required>
@@ -348,11 +352,11 @@ await subscribe({ email, newsletters, additionalFields });`}
 						{consentChecked && <Check className="size-3 text-section" />}
 					</div>
 					<p className="body-3 text-neutral-strong">
-						I want to receive the newsletter of the brand with information
-						about their entertainment offers and specials via email. My data
-						will not be passed along to third-persons. My consent can at any
-						time be revoked via Email to info@unidy.io. I accept the data
-						protection terms and terms of use.
+						I want to receive the newsletter of the brand with information about
+						their entertainment offers and specials via email. My data will not
+						be passed along to third-persons. My consent can at any time be
+						revoked via Email to info@unidy.io. I accept the data protection
+						terms and terms of use.
 					</p>
 				</button>
 
@@ -376,9 +380,7 @@ await subscribe({ email, newsletters, additionalFields });`}
 							!consentChecked
 						}
 					>
-						{isLoading ? (
-							<Loader2 className="size-4 animate-spin" />
-						) : null}
+						{isLoading ? <Loader2 className="size-4 animate-spin" /> : null}
 						Subscribe to Selected Newsletters
 					</Button>
 				</SDKWrapper>

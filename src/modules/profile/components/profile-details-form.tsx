@@ -1,12 +1,12 @@
 'use client';
 
+import { type FC, useEffect, useState } from 'react';
 import { FormLabel } from '@/components/form-label';
 import { Button } from '@/components/shadcn/ui/button';
 import {
 	InputGroup,
 	InputGroupInput
 } from '@/components/shadcn/ui/input-group';
-import { useEffect, useState, type FC } from 'react';
 
 export interface ProfileDetailsFormData {
 	firstName: string;
@@ -31,6 +31,8 @@ const fieldToSdkKey: Record<keyof ProfileDetailsFormData, string> = {
 	dateOfBirth: 'date_of_birth'
 };
 
+export type ProfileFormSection = 'personal' | 'contact' | 'address' | 'additional';
+
 export interface ProfileDetailsFormProps {
 	initialData?: Partial<ProfileDetailsFormData>;
 	onSubmit?: (data: ProfileDetailsFormData) => void;
@@ -38,6 +40,8 @@ export interface ProfileDetailsFormProps {
 	fieldErrors?: Record<string, string>;
 	isMutating?: boolean;
 	className?: string;
+	/** Which sections to show. Defaults to all. */
+	sections?: ProfileFormSection[];
 }
 
 function FieldError({
@@ -59,8 +63,10 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 	onCancel,
 	fieldErrors,
 	isMutating,
-	className
+	className,
+	sections
 }) => {
+	const show = (s: ProfileFormSection) => !sections || sections.includes(s);
 	const [formData, setFormData] = useState<ProfileDetailsFormData>({
 		firstName: initialData.firstName || '',
 		lastName: initialData.lastName || '',
@@ -114,152 +120,136 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 
 			<div className="flex flex-col gap-6">
 				{/* Personal Information */}
-				<div className="flex flex-col gap-4">
-					<h3 className="title-3 text-neutral">Personal Information</h3>
-					<div className="flex gap-3">
-						<FormLabel title="First Name" required className="flex-1">
-							<InputGroup>
-								<InputGroupInput
-									type="text"
-									value={formData.firstName}
-									onChange={handleChange('firstName')}
-									className="text-neutral"
-									placeholder="Text"
-								/>
-							</InputGroup>
-							<FieldError
-								fieldKey="firstName"
-								fieldErrors={fieldErrors}
-							/>
-						</FormLabel>
-						<FormLabel title="Last Name" required className="flex-1">
-							<InputGroup>
-								<InputGroupInput
-									type="text"
-									value={formData.lastName}
-									onChange={handleChange('lastName')}
-									className="text-neutral"
-									placeholder="Text"
-								/>
-							</InputGroup>
-							<FieldError
-								fieldKey="lastName"
-								fieldErrors={fieldErrors}
-							/>
-						</FormLabel>
-					</div>
-				</div>
-
-				{/* Contact Information */}
-				<div className="flex flex-col gap-4">
-					<h3 className="title-3 text-neutral">Contact Information</h3>
+				{show('personal') && (
 					<div className="flex flex-col gap-4">
-						<FormLabel title="Email Address" required>
-							<InputGroup>
-								<InputGroupInput
-									type="email"
-									value={formData.email}
-									onChange={handleChange('email')}
-									className="text-neutral"
-									placeholder="Text"
-									readOnly
-								/>
-							</InputGroup>
-							<FieldError
-								fieldKey="email"
-								fieldErrors={fieldErrors}
-							/>
-						</FormLabel>
-						<FormLabel title="Phone Number" required>
-							<InputGroup>
-								<InputGroupInput
-									type="tel"
-									value={formData.phone}
-									onChange={handleChange('phone')}
-									className="text-neutral"
-									placeholder="Text"
-								/>
-							</InputGroup>
-							<FieldError
-								fieldKey="phone"
-								fieldErrors={fieldErrors}
-							/>
-						</FormLabel>
-					</div>
-				</div>
-
-				{/* Address */}
-				<div className="flex flex-col gap-4">
-					<h3 className="title-3 text-neutral">Address</h3>
-					<div className="flex flex-col gap-4">
-						<FormLabel title="Street Address" required>
-							<InputGroup>
-								<InputGroupInput
-									type="text"
-									value={formData.streetAddress}
-									onChange={handleChange('streetAddress')}
-									className="text-neutral"
-									placeholder="Text"
-								/>
-							</InputGroup>
-							<FieldError
-								fieldKey="streetAddress"
-								fieldErrors={fieldErrors}
-							/>
-						</FormLabel>
+						<h3 className="title-3 text-neutral">Personal Information</h3>
 						<div className="flex gap-3">
-							<FormLabel title="City" required className="flex-1">
+							<FormLabel title="First Name" required className="flex-1">
 								<InputGroup>
 									<InputGroupInput
 										type="text"
-										value={formData.city}
-										onChange={handleChange('city')}
+										value={formData.firstName}
+										onChange={handleChange('firstName')}
 										className="text-neutral"
 										placeholder="Text"
 									/>
 								</InputGroup>
-								<FieldError
-									fieldKey="city"
-									fieldErrors={fieldErrors}
-								/>
+								<FieldError fieldKey="firstName" fieldErrors={fieldErrors} />
 							</FormLabel>
-							<FormLabel title="Country" required className="flex-1">
+							<FormLabel title="Last Name" required className="flex-1">
 								<InputGroup>
 									<InputGroupInput
 										type="text"
-										value={formData.country}
-										onChange={handleChange('country')}
+										value={formData.lastName}
+										onChange={handleChange('lastName')}
 										className="text-neutral"
 										placeholder="Text"
 									/>
 								</InputGroup>
-								<FieldError
-									fieldKey="country"
-									fieldErrors={fieldErrors}
-								/>
+								<FieldError fieldKey="lastName" fieldErrors={fieldErrors} />
 							</FormLabel>
 						</div>
 					</div>
-				</div>
+				)}
+
+				{/* Contact Information */}
+				{show('contact') && (
+					<div className="flex flex-col gap-4">
+						<h3 className="title-3 text-neutral">Contact Information</h3>
+						<div className="flex flex-col gap-4">
+							<FormLabel title="Email Address" required>
+								<InputGroup>
+									<InputGroupInput
+										type="email"
+										value={formData.email}
+										onChange={handleChange('email')}
+										className="text-neutral"
+										placeholder="Text"
+										readOnly
+									/>
+								</InputGroup>
+								<FieldError fieldKey="email" fieldErrors={fieldErrors} />
+							</FormLabel>
+							<FormLabel title="Phone Number" required>
+								<InputGroup>
+									<InputGroupInput
+										type="tel"
+										value={formData.phone}
+										onChange={handleChange('phone')}
+										className="text-neutral"
+										placeholder="Text"
+									/>
+								</InputGroup>
+								<FieldError fieldKey="phone" fieldErrors={fieldErrors} />
+							</FormLabel>
+						</div>
+					</div>
+				)}
+
+				{/* Address */}
+				{show('address') && (
+					<div className="flex flex-col gap-4">
+						<h3 className="title-3 text-neutral">Address</h3>
+						<div className="flex flex-col gap-4">
+							<FormLabel title="Street Address" required>
+								<InputGroup>
+									<InputGroupInput
+										type="text"
+										value={formData.streetAddress}
+										onChange={handleChange('streetAddress')}
+										className="text-neutral"
+										placeholder="Text"
+									/>
+								</InputGroup>
+								<FieldError fieldKey="streetAddress" fieldErrors={fieldErrors} />
+							</FormLabel>
+							<div className="flex gap-3">
+								<FormLabel title="City" required className="flex-1">
+									<InputGroup>
+										<InputGroupInput
+											type="text"
+											value={formData.city}
+											onChange={handleChange('city')}
+											className="text-neutral"
+											placeholder="Text"
+										/>
+									</InputGroup>
+									<FieldError fieldKey="city" fieldErrors={fieldErrors} />
+								</FormLabel>
+								<FormLabel title="Country" required className="flex-1">
+									<InputGroup>
+										<InputGroupInput
+											type="text"
+											value={formData.country}
+											onChange={handleChange('country')}
+											className="text-neutral"
+											placeholder="Text"
+										/>
+									</InputGroup>
+									<FieldError fieldKey="country" fieldErrors={fieldErrors} />
+								</FormLabel>
+							</div>
+						</div>
+					</div>
+				)}
 
 				{/* Additional Information */}
-				<div className="flex flex-col gap-4">
-					<h3 className="title-3 text-neutral">Additional Information</h3>
-					<FormLabel title="Date of Birth" required>
-						<InputGroup>
-							<InputGroupInput
-								type="date"
-								value={formData.dateOfBirth}
-								onChange={handleChange('dateOfBirth')}
-								className="text-neutral"
-							/>
-						</InputGroup>
-						<FieldError
-							fieldKey="dateOfBirth"
-							fieldErrors={fieldErrors}
-						/>
-					</FormLabel>
-				</div>
+				{show('additional') && (
+					<div className="flex flex-col gap-4">
+						<h3 className="title-3 text-neutral">Additional Information</h3>
+						<FormLabel title="Date of Birth" required>
+							<InputGroup>
+								<InputGroupInput
+									type="date"
+									value={formData.dateOfBirth}
+									onChange={handleChange('dateOfBirth')}
+									className="text-neutral"
+								/>
+							</InputGroup>
+							<FieldError fieldKey="dateOfBirth" fieldErrors={fieldErrors} />
+						</FormLabel>
+					</div>
+				)}
 
 				{/* Actions */}
 				<div className="flex gap-4 pt-4 border-t border-section">
@@ -272,15 +262,17 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 					>
 						{isMutating ? 'Saving...' : 'Save changes'}
 					</Button>
-					<Button
-						theme="neutral"
-						variant="outline"
-						size="md"
-						type="button"
-						onClick={onCancel}
-					>
-						Cancel
-					</Button>
+					{onCancel && (
+						<Button
+							theme="neutral"
+							variant="outline"
+							size="md"
+							type="button"
+							onClick={onCancel}
+						>
+							Cancel
+						</Button>
+					)}
 				</div>
 			</div>
 		</form>

@@ -8,44 +8,70 @@ import React, {
 	useState
 } from 'react';
 
-type Theme = 'light' | 'dark';
+type ThemeSetting = 'system' | 'light' | 'dark';
+type ResolvedTheme = 'light' | 'dark';
 
 interface ThemeContextType {
-	theme: Theme;
-	toggleTheme: () => void;
+	theme: ThemeSetting;
+	resolvedTheme: ResolvedTheme;
+	setTheme: (theme: ThemeSetting) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function getSystemTheme(): ResolvedTheme {
+	if (typeof window === 'undefined') return 'light';
+	return window.matchMedia('(prefers-color-scheme: dark)').matches
+		? 'dark'
+		: 'light';
+}
+
+function getInitialTheme(): ThemeSetting {
+	if (typeof window === 'undefined') return 'system';
+	return (localStorage.getItem('theme') as ThemeSetting | null) ?? 'system';
+}
+
+function getInitialResolved(): ResolvedTheme {
+	if (typeof window === 'undefined') return 'light';
+	// Read what the blocking script already applied
+	return document.body.classList.contains('dark') ? 'dark' : 'light';
+}
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
 	children
 }) => {
-	const [theme, setTheme] = useState<Theme>('light');
+	const [theme, setThemeState] = useState<ThemeSetting>(getInitialTheme);
+	const [resolvedTheme, setResolvedTheme] =
+		useState<ResolvedTheme>(getInitialResolved);
 
+	// Resolve theme and listen for system changes
 	useEffect(() => {
-		if (typeof window !== 'undefined') {
-			const storedTheme = localStorage.getItem('theme') as Theme | null;
+		const resolve = () => {
+			const resolved = theme === 'system' ? getSystemTheme() : theme;
+			setResolvedTheme(resolved);
+			if (resolved === 'dark') {
+				document.body.classList.add('dark');
+			} else {
+				document.body.classList.remove('dark');
+			}
+		};
+		resolve();
 
-			setTheme(storedTheme ?? 'light');
+		if (theme === 'system') {
+			const mq = window.matchMedia('(prefers-color-scheme: dark)');
+			const handler = () => resolve();
+			mq.addEventListener('change', handler);
+			return () => mq.removeEventListener('change', handler);
 		}
+	}, [theme]);
+
+	const setTheme = useCallback((newTheme: ThemeSetting) => {
+		setThemeState(newTheme);
+		localStorage.setItem('theme', newTheme);
 	}, []);
 
-	useEffect(() => {
-		if (theme === 'dark') {
-			document.body.classList.add('dark');
-		} else {
-			document.body.classList.remove('dark');
-		}
-	}, [theme]);
-
-	const toggleTheme = useCallback(() => {
-		const newTheme = theme === 'light' ? 'dark' : 'light';
-		setTheme(newTheme);
-		localStorage.setItem('theme', newTheme);
-	}, [theme]);
-
 	return (
-		<ThemeContext.Provider value={{ theme, toggleTheme }}>
+		<ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
 			{children}
 		</ThemeContext.Provider>
 	);
