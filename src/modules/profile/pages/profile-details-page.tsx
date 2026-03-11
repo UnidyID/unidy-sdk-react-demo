@@ -9,9 +9,10 @@ import {
 } from '../components/profile-details-form';
 
 export const ProfileDetailsPage: FC = () => {
-	const { profile, fieldErrors, isMutating, updateProfile } = useProfile({
-		callbacks: mutationCallbackOptions
-	});
+	const { profile, isLoading, fieldErrors, isMutating, updateProfile } =
+		useProfile({
+			callbacks: mutationCallbackOptions
+		});
 
 	const initialData: Partial<ProfileDetailsFormData> = profile
 		? {
@@ -45,6 +46,7 @@ export const ProfileDetailsPage: FC = () => {
 				onSubmit={handleSubmit}
 				fieldErrors={fieldErrors}
 				isMutating={isMutating}
+				isLoading={isLoading}
 			/>
 		</div>
 	);

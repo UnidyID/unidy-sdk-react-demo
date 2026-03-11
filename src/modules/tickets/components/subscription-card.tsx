@@ -1,7 +1,7 @@
+import { Calendar, Check, Clock, Download, WalletCards } from 'lucide-react';
+import type { FC } from 'react';
 import { Button } from '@/components/shadcn/ui/button';
 import { cn } from '@/components/shadcn/utils';
-import { Calendar, Check, Clock } from 'lucide-react';
-import { type FC } from 'react';
 
 export interface SubscriptionCardProps {
 	title: string;
@@ -11,7 +11,9 @@ export interface SubscriptionCardProps {
 	remainingMatches: string;
 	benefits: string[];
 	annualPrice: string;
-	onRenew?: () => void;
+	exportable?: boolean;
+	onDownloadPdf?: () => void;
+	onDownloadPkpass?: () => void;
 	className?: string;
 }
 
@@ -23,7 +25,9 @@ export const SubscriptionCard: FC<SubscriptionCardProps> = ({
 	remainingMatches,
 	benefits,
 	annualPrice,
-	onRenew,
+	exportable = true,
+	onDownloadPdf,
+	onDownloadPkpass,
 	className
 }) => {
 	return (
@@ -85,15 +89,27 @@ export const SubscriptionCard: FC<SubscriptionCardProps> = ({
 				{/* Divider */}
 				<div className="h-px bg-neutral-weak" />
 
-				{/* Price and Renew Button */}
-				<div className="flex items-center justify-between">
+				<div className="flex items-center justify-between gap-4">
 					<div className="flex flex-col gap-1">
 						<p className="caption text-neutral-strong">Annual Price</p>
 						<p className="body-1 text-neutral">{annualPrice}</p>
 					</div>
-					<Button theme="accent" onClick={onRenew}>
-						Renew Now
-					</Button>
+					<div className="flex flex-wrap justify-end gap-3">
+						<Button theme="accent" onClick={onDownloadPdf}>
+							<Download className="size-4" />
+							Download PDF
+						</Button>
+						{exportable && (
+							<Button
+								theme="accent"
+								variant="outline"
+								onClick={onDownloadPkpass}
+							>
+								<WalletCards className="size-4" />
+								Add to Apple Wallet
+							</Button>
+						)}
+					</div>
 				</div>
 			</div>
 		</div>

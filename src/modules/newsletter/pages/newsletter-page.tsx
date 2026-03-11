@@ -74,7 +74,11 @@ export const NewsletterPage: FC = () => {
 
 					<div className="flex-1 min-w-0 flex flex-col gap-6">
 						<div className="bg-section border border-neutral-weak rounded-[12px] p-6 lg:p-10">
-							<NewsletterSubscriptionShowcase className="gap-8 lg:gap-12" />
+							<NewsletterSubscriptionShowcase
+								className="gap-8 lg:gap-12"
+								showSidebarCopy={false}
+								showCardTitle
+							/>
 						</div>
 					</div>
 				</div>

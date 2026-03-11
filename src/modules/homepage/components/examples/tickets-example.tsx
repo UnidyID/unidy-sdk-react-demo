@@ -23,33 +23,6 @@ import {
 	mapItemState
 } from '@/modules/tickets/utils';
 
-const fallbackTickets: (TicketCardProps & { id: string })[] = [
-	{
-		id: 'tkt-001',
-		title: 'FC Unidy vs Unidy United',
-		ticketId: 'TKT-001',
-		price: '$65',
-		status: 'active' as const,
-		date: '15/01/2025',
-		time: '20:00',
-		venue: 'Unidy Stadium',
-		venueDetails: 'North Stand - Block A',
-		seat: 'Row 12, Seat 45'
-	},
-	{
-		id: 'tkt-002',
-		title: 'FC Unidy vs Unidy United',
-		ticketId: 'TKT-001',
-		price: '$65',
-		status: 'active' as const,
-		date: '15/01/2025',
-		time: '20:00',
-		venue: 'Unidy Stadium',
-		venueDetails: 'North Stand - Block A',
-		seat: 'Row 12, Seat 45'
-	}
-];
-
 function mapTicketToCardProps(
 	ticket: Ticket
 ): TicketCardProps & { id: string } {
@@ -93,8 +66,8 @@ export const TicketsExample = ({
 		callbacks: fetchCallbackOptions
 	});
 
-	const handleDownload = async (ticketId: string) => {
-		const result = await getExportLink(ticketId, 'pdf');
+	const handleExport = async (ticketId: string, format: 'pdf' | 'pkpass') => {
+		const result = await getExportLink(ticketId, format);
 		if (result?.url) {
 			window.open(result.url, '_blank');
 		}
@@ -102,7 +75,7 @@ export const TicketsExample = ({
 
 	const loggedIn = mounted && isAuthenticated;
 
-	const tickets = loggedIn ? items.map(mapTicketToCardProps) : fallbackTickets;
+	const tickets = loggedIn ? items.map(mapTicketToCardProps) : [];
 
 	return (
 		<div className="relative flex flex-col gap-2 w-full">
@@ -125,7 +98,8 @@ export const TicketsExample = ({
 				>
 					<TicketCard
 						{...ticket}
-						onDownload={() => handleDownload(ticket.id)}
+						onDownloadPdf={() => handleExport(ticket.id, 'pdf')}
+						onDownloadPkpass={() => handleExport(ticket.id, 'pkpass')}
 					/>
 				</SDKWrapper>
 			))}

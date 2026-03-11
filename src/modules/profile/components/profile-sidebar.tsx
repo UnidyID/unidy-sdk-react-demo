@@ -31,7 +31,7 @@ export const ProfileSidebar: FC<ProfileSidebarProps> = ({
 	const pathname = usePathname();
 	const displayName = isLoadingUser ? 'Loading' : userName || 'Signed out';
 	const secondaryText = isLoadingUser
-		? 'Loading'
+		? 'Loading your profile'
 		: statusText || (memberSince ? `Member since ${memberSince}` : '');
 
 	const navItems = [
@@ -77,7 +77,7 @@ export const ProfileSidebar: FC<ProfileSidebarProps> = ({
 				)}
 			>
 				{/* User Info */}
-				<div className="flex flex-col gap-4 items-center px-9">
+				<div className="flex flex-col gap-4 items-center px-4">
 					<div className="relative size-24">
 						{!isLoadingUser && userInitials ? (
 							<>

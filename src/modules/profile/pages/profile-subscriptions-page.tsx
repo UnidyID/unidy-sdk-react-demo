@@ -31,7 +31,8 @@ function mapSubscriptionToCardProps(
 		validUntil: formatDate(subscription.ends_at),
 		remainingMatches: subscription.payment_frequency ?? 'N/A',
 		benefits: [],
-		annualPrice: formatPrice(subscription.price, subscription.currency)
+		annualPrice: formatPrice(subscription.price, subscription.currency),
+		exportable: subscription.exportable_to_wallet
 	};
 }
 
@@ -40,7 +41,7 @@ export const ProfileSubscriptionsPage: FC = () => {
 	const perPage = Number(searchParams.get('per_page')) || 4;
 	const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('');
 	const pagination = usePagination({ perPage });
-	const { items, isLoading } = useTicketables({
+	const { items, isLoading, getExportLink } = useTicketables({
 		type: 'subscription',
 		pagination,
 		filter: {
@@ -51,6 +52,16 @@ export const ProfileSubscriptionsPage: FC = () => {
 		fetchOnMount: true,
 		callbacks: fetchCallbackOptions
 	});
+
+	const handleExport = async (
+		subscriptionId: string,
+		format: 'pdf' | 'pkpass'
+	) => {
+		const result = await getExportLink(subscriptionId, format);
+		if (result?.url) {
+			window.open(result.url, '_blank');
+		}
+	};
 
 	const subscriptions = items.map(mapSubscriptionToCardProps);
 
@@ -77,9 +88,8 @@ export const ProfileSubscriptionsPage: FC = () => {
 						<SubscriptionCard
 							key={subscription.id}
 							{...subscription}
-							onRenew={() =>
-								console.log('Renew subscription', subscription.id)
-							}
+							onDownloadPdf={() => handleExport(subscription.id, 'pdf')}
+							onDownloadPkpass={() => handleExport(subscription.id, 'pkpass')}
 						/>
 					))}
 

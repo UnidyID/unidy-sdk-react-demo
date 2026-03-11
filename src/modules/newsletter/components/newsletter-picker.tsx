@@ -1,8 +1,8 @@
 'use client';
 
-import { cn } from '@/components/shadcn/utils';
 import { Bell, Check, Trophy, Users } from 'lucide-react';
-import { useState, type FC } from 'react';
+import { type FC, useState } from 'react';
+import { cn } from '@/components/shadcn/utils';
 
 export interface NewsletterOption {
 	id: string;
@@ -16,6 +16,8 @@ export interface NewsletterCategory {
 	id: string;
 	name: string;
 	description: string;
+	/** When false, the category is subscribed/unsubscribed as a whole (no individual option toggling). */
+	selectablePreferences?: boolean;
 	options: NewsletterOption[];
 }
 
@@ -23,6 +25,7 @@ export interface NewsletterPickerProps {
 	categories: NewsletterCategory[];
 	selectedIds?: string[];
 	onChange?: (selectedIds: string[]) => void;
+	onToggle?: (id: string) => void;
 	disabled?: boolean;
 	className?: string;
 }
@@ -37,13 +40,22 @@ export const NewsletterPicker: FC<NewsletterPickerProps> = ({
 	categories,
 	selectedIds = [],
 	onChange,
+	onToggle,
 	disabled = false,
 	className
 }) => {
 	const [selected, setSelected] = useState<Set<string>>(new Set(selectedIds));
 
+	// When selectedIds are controlled externally, keep internal state in sync
+	const effectiveSelected = onToggle ? new Set(selectedIds) : selected;
+
 	const handleToggle = (id: string) => {
 		if (disabled) return;
+
+		if (onToggle) {
+			onToggle(id);
+			return;
+		}
 
 		const newSelected = new Set(selected);
 		if (newSelected.has(id)) {
@@ -69,7 +81,7 @@ export const NewsletterPicker: FC<NewsletterPickerProps> = ({
 					<div className="flex flex-col gap-3">
 						{category.options.map((option) => {
 							const Icon = iconMap[option.icon];
-							const isSelected = selected.has(option.id);
+							const isSelected = effectiveSelected.has(option.id);
 
 							return (
 								<button

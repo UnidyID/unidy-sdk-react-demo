@@ -5,12 +5,13 @@ import {
 	useSession,
 	useUnidyClient
 } from '@unidy.io/sdk-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
 	fetchCallbackOptions,
 	mutationCallbackOptions
 } from '@/deps/unidy/callbacks';
 import type { NewsletterCategory } from '../components/newsletter-picker';
+
 
 export function useNewsletterPreferences({
 	categories,
@@ -34,89 +35,96 @@ export function useNewsletterPreferences({
 		callbacks: mutationCallbackOptions
 	});
 
-	const subscribedIds = useMemo(
-		() => subscriptions.map((s) => s.newsletter_internal_name),
-		[subscriptions]
-	);
+	const subscribedIds = useMemo(() => {
+		const ids: string[] = [];
+		for (const sub of subscriptions) {
+			const category = categories.find(
+				(c) => c.id === sub.newsletter_internal_name
+			);
+			if (!category) continue;
 
-	const [selectedIds, setSelectedIds] = useState<string[] | null>(null);
+			if (
+				sub.preference_identifiers &&
+				sub.preference_identifiers.length > 0
+			) {
+				ids.push(...sub.preference_identifiers);
+			} else {
+				ids.push(...category.options.map((o) => o.id));
+			}
+		}
+		return ids;
+	}, [subscriptions, categories]);
+
 	const [isSaving, setIsSaving] = useState(false);
 
-	const effectiveSelectedIds = selectedIds ?? subscribedIds;
-
-	const allOptionIds = useMemo(
-		() => categories.flatMap((c) => c.options.map((o) => o.id)),
+	const allNewsletterIds = useMemo(
+		() => categories.map((c) => c.id),
 		[categories]
 	);
 	const isAnythingMutating =
-		isSaving || allOptionIds.some((id) => isMutating(id));
+		isSaving || allNewsletterIds.some((id) => isMutating(id));
 
-	const handleSave = async () => {
-		const currentIds = effectiveSelectedIds;
-		const toSubscribe = currentIds.filter((id) => !subscribedIds.includes(id));
-		const toUnsubscribe = subscribedIds.filter(
-			(id) => !currentIds.includes(id)
-		);
+	const togglePreference = useCallback(
+		async (toggledId: string) => {
+			// Find which category this option belongs to
+			const category = categories.find((c) =>
+				c.options.some((o) => o.id === toggledId)
+			);
+			if (!category) return;
 
-		setIsSaving(true);
-		try {
-			await Promise.all([
-				...toSubscribe.map(async (id) => {
-					// Use the client directly with the session email to avoid
-					// the SDK hook's empty email issue when no subscriptions exist yet
-					if (session.email) {
-						const [error] = await client.newsletters.create({
-							payload: {
-								email: session.email,
-								newsletter_subscriptions: [{ newsletter_internal_name: id }],
-								redirect_to_after_confirmation: window.location.href
-							}
-						});
-						if (error) {
-							mutationCallbackOptions.onError?.(error);
+			const isCurrentlySelected = subscribedIds.includes(toggledId);
+			const optionIds = category.options.map((o) => o.id);
+
+			// Compute new selected preferences for this category after toggle
+			const currentForCategory = optionIds.filter((id) =>
+				subscribedIds.includes(id)
+			);
+			const newForCategory = isCurrentlySelected
+				? currentForCategory.filter((id) => id !== toggledId)
+				: [...currentForCategory, toggledId];
+
+			setIsSaving(true);
+			try {
+				if (newForCategory.length === 0) {
+					// No preferences left → unsubscribe from the newsletter
+					await unsubscribe(category.id);
+				} else if (session.email) {
+					// Subscribe/update with the new preference set
+					const [error] = await client.newsletters.create({
+						payload: {
+							email: session.email,
+							newsletter_subscriptions: [
+								{
+									newsletter_internal_name: category.id,
+									preference_identifiers: newForCategory
+								}
+							],
+							redirect_to_after_confirmation: window.location.href
 						}
+					});
+					if (error) {
+						mutationCallbackOptions.onError?.(error);
 					} else {
-						await subscribe(id);
+						await refetch();
 					}
-				}),
-				...toUnsubscribe.map((id) => unsubscribe(id))
-			]);
-
-			// Refetch to sync SDK hook state after direct client calls
-			if (toSubscribe.length > 0 && session.email) {
-				await refetch();
+				} else {
+					await subscribe(category.id);
+				}
+			} catch {
+				mutationCallbackOptions.onError?.(
+					'Failed to update newsletter preference'
+				);
+			} finally {
+				setIsSaving(false);
 			}
-		} catch (error) {
-			mutationCallbackOptions.onError?.(
-				'Failed to update newsletter preferences'
-			);
-		} finally {
-			setIsSaving(false);
-		}
-
-		setSelectedIds(null);
-	};
-
-	const handleUnsubscribeAll = async () => {
-		setIsSaving(true);
-		try {
-			await Promise.all(
-				subscriptions.map((s) => unsubscribe(s.newsletter_internal_name))
-			);
-		} catch (error) {
-			mutationCallbackOptions.onError?.('Failed to unsubscribe');
-		} finally {
-			setIsSaving(false);
-		}
-		setSelectedIds(null);
-	};
+		},
+		[categories, subscribedIds, session.email, client, subscribe, unsubscribe, refetch]
+	);
 
 	return {
 		isLoading,
 		isAnythingMutating,
-		effectiveSelectedIds,
-		setSelectedIds,
-		handleSave,
-		handleUnsubscribeAll
+		subscribedIds,
+		togglePreference
 	};
 }

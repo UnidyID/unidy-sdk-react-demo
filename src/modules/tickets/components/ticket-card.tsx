@@ -1,4 +1,11 @@
-import { Calendar, Check, Download, MapPin, Ticket } from 'lucide-react';
+import {
+	Calendar,
+	Check,
+	Download,
+	MapPin,
+	Ticket,
+	WalletCards
+} from 'lucide-react';
 import type { FC } from 'react';
 import { Button } from '@/components/shadcn/ui/button';
 import { cn } from '@/components/shadcn/utils';
@@ -14,7 +21,8 @@ export interface TicketCardProps {
 	venueDetails?: string;
 	seat?: string;
 	exportable?: boolean;
-	onDownload?: () => void;
+	onDownloadPdf?: () => void;
+	onDownloadPkpass?: () => void;
 	className?: string;
 }
 
@@ -29,7 +37,8 @@ export const TicketCard: FC<TicketCardProps> = ({
 	venueDetails,
 	seat,
 	exportable = true,
-	onDownload,
+	onDownloadPdf,
+	onDownloadPkpass,
 	className
 }) => {
 	return (
@@ -96,13 +105,18 @@ export const TicketCard: FC<TicketCardProps> = ({
 				)}
 			</div>
 
-			{/* Download Button */}
-			{exportable && (
-				<Button theme="accent" onClick={onDownload}>
+			<div className="flex flex-wrap gap-3">
+				<Button theme="accent" onClick={onDownloadPdf}>
 					<Download className="size-4" />
-					Download Ticket
+					Download PDF
 				</Button>
-			)}
+				{exportable && (
+					<Button theme="accent" variant="outline" onClick={onDownloadPkpass}>
+						<WalletCards className="size-4" />
+						Add to Apple Wallet
+					</Button>
+				)}
+			</div>
 		</div>
 	);
 };

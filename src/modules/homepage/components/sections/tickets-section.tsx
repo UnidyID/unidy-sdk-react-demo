@@ -1,24 +1,24 @@
 'use client';
 
+import { useSession } from '@unidy.io/sdk-react';
+import { ExternalLink } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Card } from '@/components/card';
 import { IntegrationCode } from '@/components/integration-code';
 import { SectionHeading } from '@/components/section-heading';
+import { Button } from '@/components/shadcn/ui/button';
 import {
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger
 } from '@/components/shadcn/ui/tabs';
-import { Button } from '@/components/shadcn/ui/button';
 import {
 	StatusFilter,
 	type StatusFilterValue
 } from '@/modules/tickets/components/status-filter';
-import { useSession } from '@unidy.io/sdk-react';
-import { ExternalLink } from 'lucide-react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { LoggedOutPlaceholder } from '../examples/logged-out-placeholder';
 import { MembershipsExample } from '../examples/memberships-example';
 import { TicketsExample } from '../examples/tickets-example';
@@ -43,8 +43,12 @@ const { items, isLoading, getExportLink } = useTicketables({
 const link = await getExportLink(ticket.id, 'pdf');
 window.open(link.url, '_blank');
 
+// Add ticket to Apple Wallet
+const walletLink = await getExportLink(ticket.id, 'pkpass');
+window.open(walletLink.url, '_blank');
+
 // Subscriptions
-const { items: subscriptions } = useTicketables({
+const { items: subscriptions, getExportLink: getSubscriptionExportLink } = useTicketables({
   type: 'subscription',
   pagination,
   fetchOnMount: isAuthenticated,
@@ -89,10 +93,7 @@ export const TicketsSection = () => {
 							</TabsTrigger>
 						</TabsList>
 						{isLoggedIn && (
-							<StatusFilter
-								value={statusFilter}
-								onChange={setStatusFilter}
-							/>
+							<StatusFilter value={statusFilter} onChange={setStatusFilter} />
 						)}
 					</div>
 
@@ -121,7 +122,10 @@ export const TicketsSection = () => {
 					<TabsContent value="subscriptions">
 						{isLoggedIn ? (
 							<>
-								<MembershipsExample statusFilter={statusFilter} perPage={perPage} />
+								<MembershipsExample
+									statusFilter={statusFilter}
+									perPage={perPage}
+								/>
 								<div className="flex justify-center pt-6">
 									<Link href="/profile/subscriptions">
 										<Button theme="accent" variant="outline" size="md">

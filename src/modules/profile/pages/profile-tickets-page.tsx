@@ -59,8 +59,8 @@ export const ProfileTicketsPage: FC = () => {
 		callbacks: fetchCallbackOptions
 	});
 
-	const handleDownload = async (ticketId: string) => {
-		const result = await getExportLink(ticketId, 'pdf');
+	const handleExport = async (ticketId: string, format: 'pdf' | 'pkpass') => {
+		const result = await getExportLink(ticketId, format);
 		if (result?.url) {
 			window.open(result.url, '_blank');
 		}
@@ -91,7 +91,8 @@ export const ProfileTicketsPage: FC = () => {
 						<TicketCard
 							key={ticket.id}
 							{...ticket}
-							onDownload={() => handleDownload(ticket.id)}
+							onDownloadPdf={() => handleExport(ticket.id, 'pdf')}
+							onDownloadPkpass={() => handleExport(ticket.id, 'pkpass')}
 						/>
 					))}
 

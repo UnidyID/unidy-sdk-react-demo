@@ -27,84 +27,25 @@ import {
 	fetchCallbackOptions,
 	mutationCallbackOptions
 } from '@/deps/unidy/callbacks';
-import { newsletterOptions } from '@/modules/newsletter/constants/newsletter-data';
+import {
+	buildNewslettersPayload,
+	subscribableOptions
+} from '@/modules/newsletter/constants/newsletter-data';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 
-export const NewsletterExample = () => {
-	const iconMap = {
-		trophy: <Trophy className="size-5 text-neutral-strong" />,
-		users: <Users className="size-5 text-neutral-strong" />,
-		bell: <Bell className="size-5 text-neutral-strong" />
-	};
-
-	const session = useSession();
-	const [mounted, setMounted] = useState(false);
-	const [email, setEmail] = useState('');
-	const [firstName, setFirstName] = useState('');
-	const [lastName, setLastName] = useState('');
-	const [phoneNumber, setPhoneNumber] = useState('');
-	const [selectedNewsletters, setSelectedNewsletters] = useState<string[]>([]);
-	const [consentChecked, setConsentChecked] = useState(false);
-	const [subscribed, setSubscribed] = useState(false);
-
-	const isLoggedIn = mounted && session.isAuthenticated;
-
-	useEffect(() => {
-		setMounted(true);
-	}, []);
-
-	useEffect(() => {
-		if (isLoggedIn && session.email) {
-			setEmail(session.email);
-		}
-	}, [isLoggedIn, session.email]);
-
-	const { subscriptions, isLoading: isPreferencesLoading } =
-		useNewsletterPreferenceCenter({ callbacks: fetchCallbackOptions });
-
-	const hasExistingSubscriptions =
-		isLoggedIn && !isPreferencesLoading && subscriptions.length > 0;
-
-	const { isLoading, fieldErrors, subscribe, reset } = useNewsletterSubscribe({
-		callbacks: mutationCallbackOptions
+/** Only rendered when logged in — keeps the useNewsletterPreferenceCenter hook from firing for anonymous users. */
+const ExistingSubscriptionsGate = ({
+	children
+}: {
+	children: React.ReactNode;
+}) => {
+	const { subscriptions, isLoading } = useNewsletterPreferenceCenter({
+		callbacks: fetchCallbackOptions
 	});
 
-	const toggleNewsletter = (id: string) => {
-		setSelectedNewsletters((prev) =>
-			prev.includes(id)
-				? prev.filter((newsletterId) => newsletterId !== id)
-				: [...prev, id]
-		);
-	};
+	if (isLoading) return null;
 
-	const handleSubmit = async () => {
-		const result = await subscribe({
-			email,
-			newsletters: selectedNewsletters.map((id) => ({ internalName: id })),
-			additionalFields: {
-				first_name: firstName || null,
-				last_name: lastName || null,
-				phone_number: phoneNumber || null
-			}
-		});
-
-		if (result.success) {
-			setSubscribed(true);
-		}
-	};
-
-	const handleReset = () => {
-		reset();
-		setSubscribed(false);
-		setEmail('');
-		setFirstName('');
-		setLastName('');
-		setPhoneNumber('');
-		setSelectedNewsletters([]);
-		setConsentChecked(false);
-	};
-
-	if (hasExistingSubscriptions) {
+	if (subscriptions.length > 0) {
 		return (
 			<SDKWrapper
 				title="Newsletter SDK / Subscription Form"
@@ -138,6 +79,77 @@ export const NewsletterExample = () => {
 		);
 	}
 
+	return <>{children}</>;
+};
+
+export const NewsletterExample = () => {
+	const iconMap = {
+		trophy: <Trophy className="size-5 text-neutral-strong" />,
+		users: <Users className="size-5 text-neutral-strong" />,
+		bell: <Bell className="size-5 text-neutral-strong" />
+	};
+
+	const session = useSession();
+	const [mounted, setMounted] = useState(false);
+	const [email, setEmail] = useState('');
+	const [firstName, setFirstName] = useState('');
+	const [lastName, setLastName] = useState('');
+	const [phoneNumber, setPhoneNumber] = useState('');
+	const [selectedNewsletters, setSelectedNewsletters] = useState<string[]>([]);
+	const [consentChecked, setConsentChecked] = useState(false);
+	const [subscribed, setSubscribed] = useState(false);
+
+	const isLoggedIn = mounted && session.isAuthenticated;
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	useEffect(() => {
+		if (isLoggedIn && session.email) {
+			setEmail(session.email);
+		}
+	}, [isLoggedIn, session.email]);
+
+	const { isLoading, fieldErrors, subscribe, reset } = useNewsletterSubscribe({
+		callbacks: mutationCallbackOptions
+	});
+
+	const toggleNewsletter = (id: string) => {
+		setSelectedNewsletters((prev) =>
+			prev.includes(id)
+				? prev.filter((newsletterId) => newsletterId !== id)
+				: [...prev, id]
+		);
+	};
+
+	const handleSubmit = async () => {
+		const result = await subscribe({
+			email,
+			newsletters: buildNewslettersPayload(selectedNewsletters),
+			additionalFields: {
+				first_name: firstName || null,
+				last_name: lastName || null,
+				phone_number: phoneNumber || null
+			}
+		});
+
+		if (result.success) {
+			setSubscribed(true);
+		}
+	};
+
+	const handleReset = () => {
+		reset();
+		setSubscribed(false);
+		setEmail('');
+		setFirstName('');
+		setLastName('');
+		setPhoneNumber('');
+		setSelectedNewsletters([]);
+		setConsentChecked(false);
+	};
+
 	if (subscribed) {
 		return (
 			<SDKWrapper
@@ -170,7 +182,7 @@ await subscribe({ email, newsletters });`}
 		);
 	}
 
-	return (
+	const form = (
 		<SDKWrapper
 			title="Newsletter SDK / Subscription Form"
 			codeSnippet={`const { subscribe, isLoading, fieldErrors } = useNewsletterSubscribe();
@@ -318,7 +330,7 @@ await subscribe({ email, newsletters, additionalFields });`}
 				{/* Newsletter Selection */}
 				<FormLabel title="Select Newsletters" required>
 					<div className="flex flex-col gap-3 w-full">
-						{newsletterOptions.map((newsletter) => (
+						{subscribableOptions.map((newsletter) => (
 							<CardSelect
 								key={newsletter.id}
 								icon={iconMap[newsletter.icon]}
@@ -383,4 +395,12 @@ await subscribe({ email, newsletters, additionalFields });`}
 			</div>
 		</SDKWrapper>
 	);
+
+	if (isLoggedIn) {
+		return (
+			<ExistingSubscriptionsGate>{form}</ExistingSubscriptionsGate>
+		);
+	}
+
+	return form;
 };

@@ -2,7 +2,6 @@
 
 import { Loader2 } from 'lucide-react';
 import type { FC } from 'react';
-import { Button } from '@/components/shadcn/ui/button';
 import { NewsletterPicker } from '@/modules/newsletter/components/newsletter-picker';
 import { newsletterCategories } from '@/modules/newsletter/constants/newsletter-data';
 import { useNewsletterPreferences } from '@/modules/newsletter/hooks/use-newsletter-preferences';
@@ -11,10 +10,8 @@ export const ProfileNewsletterPage: FC = () => {
 	const {
 		isLoading,
 		isAnythingMutating,
-		effectiveSelectedIds,
-		setSelectedIds,
-		handleSave,
-		handleUnsubscribeAll
+		subscribedIds,
+		togglePreference
 	} = useNewsletterPreferences({ categories: newsletterCategories });
 
 	return (
@@ -40,35 +37,11 @@ export const ProfileNewsletterPage: FC = () => {
 						) : (
 							<NewsletterPicker
 								categories={newsletterCategories}
-								selectedIds={effectiveSelectedIds}
-								onChange={setSelectedIds}
+								selectedIds={subscribedIds}
+								onToggle={togglePreference}
 								disabled={isAnythingMutating}
 							/>
 						)}
-					</div>
-
-					<div className="flex gap-4">
-						<Button
-							theme="accent"
-							variant="solid"
-							size="md"
-							onClick={handleSave}
-							disabled={isAnythingMutating}
-						>
-							{isAnythingMutating ? (
-								<Loader2 className="size-4 animate-spin" />
-							) : null}
-							Save Preferences
-						</Button>
-						<Button
-							theme="neutral"
-							variant="outline"
-							size="md"
-							onClick={handleUnsubscribeAll}
-							disabled={isAnythingMutating}
-						>
-							Unsubscribe from All
-						</Button>
 					</div>
 
 					<div className="bg-neutral-weak border border-neutral-medium rounded-[10px] p-4 flex flex-col gap-2">

@@ -15,11 +15,34 @@ import {
 
 export interface NewsletterSubscriptionShowcaseProps {
 	className?: string;
+	showSidebarCopy?: boolean;
+	showCardTitle?: boolean;
 }
 
 export const NewsletterSubscriptionShowcase = ({
-	className
+	className,
+	showSidebarCopy = true,
+	showCardTitle = false
 }: NewsletterSubscriptionShowcaseProps) => {
+	const cardContent = (
+		<div className="flex-1 min-w-0 w-full">
+			{showCardTitle && (
+				<div className="mb-6">
+					<h2 className="title-2 text-neutral">
+						{newsletterSectionCopy.title}
+					</h2>
+				</div>
+			)}
+			<Card className="relative">
+				<NewsletterExample />
+			</Card>
+		</div>
+	);
+
+	if (!showSidebarCopy) {
+		return <div className={cn('w-full', className)}>{cardContent}</div>;
+	}
+
 	return (
 		<div
 			className={cn(
@@ -27,11 +50,7 @@ export const NewsletterSubscriptionShowcase = ({
 				className
 			)}
 		>
-			<div className="flex-1 min-w-0 w-full">
-				<Card className="relative">
-					<NewsletterExample />
-				</Card>
-			</div>
+			{cardContent}
 
 			<div className="flex flex-col gap-6 flex-1 min-w-0 w-full">
 				<SectionHeading

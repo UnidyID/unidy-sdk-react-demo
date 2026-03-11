@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from '@unidy.io/sdk-react';
-import { KeyRound, Mail, Users } from 'lucide-react';
+import { KeyRound, Lock, Mail, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/card';
 import { FeatureItem } from '@/components/feature-item';
@@ -52,6 +52,23 @@ export const AuthenticationSection = () => {
 
 	const features = [
 		{
+			icon: <Lock className="size-4 text-accent" />,
+			title: 'Password',
+			description:
+				'Secure email and password sign-in for a familiar login experience'
+		},
+		{
+			icon: <Users className="size-4 text-accent" />,
+			title: 'Social Login',
+			description:
+				'Connect with Google, Facebook, Apple, or many other providers.'
+		},
+		{
+			icon: <Mail className="size-4 text-accent" />,
+			title: 'Magic Code',
+			description: 'One-time code sent directly to email for quick access'
+		},
+		{
 			icon: <KeyRound className="size-4 text-accent" />,
 			title: (
 				<span className="flex flex-wrap items-center gap-2">
@@ -63,17 +80,6 @@ export const AuthenticationSection = () => {
 			),
 			description:
 				'Passwordless authentication with Face ID, Touch ID, or device security'
-		},
-		{
-			icon: <Mail className="size-4 text-accent" />,
-			title: 'Magic Code',
-			description: 'One-time code sent directly to email for quick access'
-		},
-		{
-			icon: <Users className="size-4 text-accent" />,
-			title: 'Social Login',
-			description:
-				'Connect with Google, Facebook, Apple, or many other providers.'
 		}
 	];
 

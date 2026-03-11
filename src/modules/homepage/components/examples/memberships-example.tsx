@@ -18,23 +18,6 @@ import {
 } from '@/modules/tickets/components/subscription-card';
 import { formatDate, formatPrice, mapItemState } from '@/modules/tickets/utils';
 
-const fallbackSubscriptions: (SubscriptionCardProps & { id: string })[] = [
-	{
-		id: 'sub-001',
-		title: 'Season Ticket 2024/25',
-		subtitle: 'Season Pass',
-		status: 'active' as const,
-		validUntil: '30/05/2025',
-		remainingMatches: '12 matches',
-		benefits: [
-			'Priority seating',
-			'Exclusive merchandise discount',
-			'Early ticket access'
-		],
-		annualPrice: '$850'
-	}
-];
-
 function mapSubscriptionToCardProps(
 	subscription: Subscription
 ): SubscriptionCardProps & { id: string } {
@@ -46,7 +29,8 @@ function mapSubscriptionToCardProps(
 		validUntil: formatDate(subscription.ends_at),
 		remainingMatches: subscription.payment_frequency ?? 'N/A',
 		benefits: [],
-		annualPrice: formatPrice(subscription.price, subscription.currency)
+		annualPrice: formatPrice(subscription.price, subscription.currency),
+		exportable: subscription.exportable_to_wallet
 	};
 }
 
@@ -60,7 +44,7 @@ export const MembershipsExample = ({
 	const [mounted, setMounted] = useState(false);
 	const { isAuthenticated } = useSession();
 	const pagination = usePagination({ perPage });
-	const { items, isLoading } = useTicketables({
+	const { items, isLoading, getExportLink } = useTicketables({
 		type: 'subscription',
 		pagination,
 		filter: {
@@ -72,15 +56,23 @@ export const MembershipsExample = ({
 		callbacks: fetchCallbackOptions
 	});
 
+	const handleExport = async (
+		subscriptionId: string,
+		format: 'pdf' | 'pkpass'
+	) => {
+		const result = await getExportLink(subscriptionId, format);
+		if (result?.url) {
+			window.open(result.url, '_blank');
+		}
+	};
+
 	useEffect(() => {
 		setMounted(true);
 	}, []);
 
 	const loggedIn = mounted && isAuthenticated;
 
-	const subscriptions = loggedIn
-		? items.map(mapSubscriptionToCardProps)
-		: fallbackSubscriptions;
+	const subscriptions = loggedIn ? items.map(mapSubscriptionToCardProps) : [];
 
 	return (
 		<div className="relative flex flex-col gap-2 w-full">
@@ -93,7 +85,7 @@ export const MembershipsExample = ({
 				<SDKWrapper
 					key={subscription.id}
 					title="Tickets SDK / Subscription Card"
-					codeSnippet={`const { items } = useTicketables({
+					codeSnippet={`const { items, getExportLink } = useTicketables({
   type: 'subscription',
   pagination,
   filter: { orderBy: 'starts_at', orderDirection: 'desc' },
@@ -104,7 +96,8 @@ export const MembershipsExample = ({
 				>
 					<SubscriptionCard
 						{...subscription}
-						onRenew={() => console.log('Renew subscription', subscription.id)}
+						onDownloadPdf={() => handleExport(subscription.id, 'pdf')}
+						onDownloadPkpass={() => handleExport(subscription.id, 'pkpass')}
 					/>
 				</SDKWrapper>
 			))}

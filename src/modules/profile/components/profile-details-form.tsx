@@ -1,8 +1,10 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import { type FC, useEffect, useState } from 'react';
 import { FormLabel } from '@/components/form-label';
 import { Button } from '@/components/shadcn/ui/button';
+import { cn } from '@/components/shadcn/utils';
 import {
 	InputGroup,
 	InputGroupInput
@@ -39,6 +41,7 @@ export interface ProfileDetailsFormProps {
 	onCancel?: () => void;
 	fieldErrors?: Record<string, string>;
 	isMutating?: boolean;
+	isLoading?: boolean;
 	className?: string;
 	/** Which sections to show. Defaults to all. */
 	sections?: ProfileFormSection[];
@@ -63,6 +66,7 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 	onCancel,
 	fieldErrors,
 	isMutating,
+	isLoading,
 	className,
 	sections
 }) => {
@@ -114,8 +118,16 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className={`bg-section border border-neutral-weak rounded-[12px] p-[33px] flex flex-col gap-6 ${className || ''}`}
+			className={cn(
+				'bg-section border border-neutral-weak rounded-[12px] p-[33px] flex flex-col gap-6 relative',
+				className
+			)}
 		>
+			{isLoading && (
+				<div className="absolute inset-0 bg-section/50 rounded-[12px] z-10 flex items-center justify-center">
+					<Loader2 className="size-6 animate-spin text-neutral-strong" />
+				</div>
+			)}
 			<h2 className="title-1 text-neutral">Profile Information</h2>
 
 			<div className="flex flex-col gap-6">

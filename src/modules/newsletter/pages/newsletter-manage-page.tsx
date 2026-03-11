@@ -31,14 +31,13 @@ export const NewsletterManagePage: FC = () => {
 	const {
 		isLoading: isPreferencesLoading,
 		isAnythingMutating,
-		effectiveSelectedIds,
-		setSelectedIds,
-		handleSave,
-		handleUnsubscribeAll
+		subscribedIds,
+		togglePreference
 	} = useNewsletterPreferences({
 		categories: newsletterCategories,
 		preferenceToken
 	});
+	const hasExistingNewsletters = subscribedIds.length > 0;
 
 	const handleLogin = async () => {
 		if (!email) return;
@@ -153,38 +152,31 @@ export const NewsletterManagePage: FC = () => {
 										<div className="flex items-center justify-center py-8">
 											<Loader2 className="size-6 animate-spin text-neutral-strong" />
 										</div>
+									) : !hasExistingNewsletters ? (
+										<div className="bg-neutral-weak border border-neutral-medium rounded-[10px] p-6 flex flex-col gap-4">
+											<div className="flex flex-col gap-1">
+												<p className="title-3 text-neutral">
+													No newsletters yet
+												</p>
+												<p className="body-2 text-neutral-strong">
+													You do not have any active newsletter subscriptions to
+													manage yet. Visit the subscribe page to create one.
+												</p>
+											</div>
+											<Link href="/newsletter" className="w-fit">
+												<Button theme="accent" variant="solid" size="md">
+													Create a Newsletter
+												</Button>
+											</Link>
+										</div>
 									) : (
 										<NewsletterPicker
 											categories={newsletterCategories}
-											selectedIds={effectiveSelectedIds}
-											onChange={setSelectedIds}
+											selectedIds={subscribedIds}
+											onToggle={togglePreference}
 											disabled={isAnythingMutating}
 										/>
 									)}
-								</div>
-
-								<div className="flex gap-4">
-									<Button
-										theme="accent"
-										variant="solid"
-										size="md"
-										onClick={handleSave}
-										disabled={!isLoggedIn || isAnythingMutating}
-									>
-										{isAnythingMutating ? (
-											<Loader2 className="size-4 animate-spin" />
-										) : null}
-										Save Preferences
-									</Button>
-									<Button
-										theme="neutral"
-										variant="outline"
-										size="md"
-										onClick={handleUnsubscribeAll}
-										disabled={!isLoggedIn || isAnythingMutating}
-									>
-										Unsubscribe from All
-									</Button>
 								</div>
 
 								<div className="bg-neutral-weak border border-neutral-medium rounded-[10px] p-4 flex flex-col gap-2">
