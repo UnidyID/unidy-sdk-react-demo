@@ -6,18 +6,20 @@ import { Button } from '@/components/shadcn/ui/button';
 import { cn } from '@/components/shadcn/utils';
 import { toastCallbacks } from '@/deps/unidy/callbacks';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
-import { useNewsletterSubscribe } from '@unidy.io/sdk-react';
+import { useNewsletterPreferenceCenter, useNewsletterSubscribe, useSession } from '@unidy.io/sdk-react';
 import {
 	Bell,
 	Check,
 	CheckCircle2,
+	ExternalLink,
 	Loader2,
 	Mail,
 	Phone,
 	Trophy,
 	User
 } from 'lucide-react';
-import { useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 const newsletters = [
 	{
@@ -35,6 +37,8 @@ const newsletters = [
 ];
 
 export const NewsletterExample = () => {
+	const session = useSession();
+	const [mounted, setMounted] = useState(false);
 	const [email, setEmail] = useState('');
 	const [firstName, setFirstName] = useState('');
 	const [lastName, setLastName] = useState('');
@@ -42,6 +46,23 @@ export const NewsletterExample = () => {
 	const [selectedNewsletters, setSelectedNewsletters] = useState<string[]>([]);
 	const [consentChecked, setConsentChecked] = useState(false);
 	const [subscribed, setSubscribed] = useState(false);
+
+	const isLoggedIn = mounted && session.isAuthenticated;
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	useEffect(() => {
+		if (isLoggedIn && session.email) {
+			setEmail(session.email);
+		}
+	}, [isLoggedIn, session.email]);
+
+	const { subscriptions, isLoading: isPreferencesLoading } =
+		useNewsletterPreferenceCenter({ callbacks: toastCallbacks });
+
+	const hasExistingSubscriptions = isLoggedIn && !isPreferencesLoading && subscriptions.length > 0;
 
 	const { isLoading, fieldErrors, subscribe, reset } =
 		useNewsletterSubscribe({ callbacks: toastCallbacks });
@@ -80,6 +101,42 @@ export const NewsletterExample = () => {
 		setSelectedNewsletters([]);
 		setConsentChecked(false);
 	};
+
+	if (hasExistingSubscriptions) {
+		return (
+			<SDKWrapper
+				title="Newsletter SDK / Subscription Form"
+				codeSnippet={`const { subscriptions } = useNewsletterPreferenceCenter();
+// User already has ${subscriptions.length} subscription(s)`}
+				size="lg"
+				labelPosition="top-left"
+				detatched
+				popoverPosition="right"
+			>
+				<div className="flex flex-col gap-6 w-full items-center py-12">
+					<CheckCircle2 className="size-12 text-accent" />
+					<div className="flex flex-col gap-2 items-center text-center">
+						<h3 className="title-2 text-neutral">
+							You&apos;re already subscribed!
+						</h3>
+						<p className="body-2 text-neutral-strong">
+							You have {subscriptions.length} active newsletter{subscriptions.length !== 1 ? 's' : ''}. Manage your preferences from your profile.
+						</p>
+					</div>
+					<Link href="/profile/newsletter">
+						<Button
+							theme="accent"
+							variant="solid"
+							size="md"
+						>
+							<ExternalLink className="size-4" />
+							Edit Newsletter Preferences
+						</Button>
+					</Link>
+				</div>
+			</SDKWrapper>
+		);
+	}
 
 	if (subscribed) {
 		return (
@@ -139,8 +196,11 @@ await subscribe({ email, newsletters, additionalFields });`}
 						>
 							<div
 								className={cn(
-									'border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
-									fieldErrors.email
+									'border rounded-[10px] h-[50px] flex gap-2 items-center px-4',
+									isLoggedIn
+										? 'border-neutral-medium bg-neutral-weak'
+										: 'bg-section',
+									!isLoggedIn && fieldErrors.email
 										? 'border-red-500'
 										: 'border-neutral-medium'
 								)}
@@ -151,10 +211,26 @@ await subscribe({ email, newsletters, additionalFields });`}
 									value={email}
 									onChange={(e) => setEmail(e.target.value)}
 									placeholder="john.doe@example.com"
-									className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
+									disabled={isLoggedIn}
+									className={cn(
+										'flex-1 min-w-0 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium',
+										isLoggedIn && 'cursor-not-allowed'
+									)}
 								/>
 							</div>
 						</SDKWrapper>
+						{isLoggedIn && (
+							<p className="body-3 text-neutral-strong mt-1">
+								<button
+									type="button"
+									onClick={() => session.logout()}
+									className="text-accent underline hover:text-accent-strong cursor-pointer"
+								>
+									Logout
+								</button>
+								{' '}to use a different email
+							</p>
+						)}
 						{fieldErrors.email && (
 							<p className="body-3 text-red-500 mt-1">{fieldErrors.email}</p>
 						)}

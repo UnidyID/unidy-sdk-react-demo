@@ -1,8 +1,8 @@
 'use client';
 
 import { ArrowLeft, CheckCircle2, Lock, Mail, ShieldCheck, User } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useRegistration } from '@unidy.io/sdk-react';
 import { toastCallbacks } from '@/deps/unidy/callbacks';
@@ -28,11 +28,14 @@ const REGISTRATION_STORAGE_KEY = 'unidy_pending_registration';
 
 export const LoginPage = () => {
 	const router = useRouter();
+	const searchParams = useSearchParams();
+	const redirectTo = useMemo(() => searchParams.get('redirect') || '/profile', [searchParams]);
 	const registration = useRegistration({ callbacks: toastCallbacks });
 
 	const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
 	// Key to force LoginForm remount when switching tabs (resets its internal state)
 	const [loginFormKey, setLoginFormKey] = useState(0);
+	const [loginStep, setLoginStep] = useState('idle');
 
 	// Register form state
 	const [registerFirstName, setRegisterFirstName] = useState('');
@@ -51,9 +54,9 @@ export const LoginPage = () => {
 	useEffect(() => {
 		if (registration.registration?.auth) {
 			localStorage.removeItem(REGISTRATION_STORAGE_KEY);
-			router.push('/profile');
+			router.push(redirectTo);
 		}
-	}, [registration.registration?.auth, router]);
+	}, [registration.registration?.auth, router, redirectTo]);
 
 	// Recover pending registration from URL query params (resume link) or localStorage
 	useEffect(() => {
@@ -231,7 +234,11 @@ export const LoginPage = () => {
 								<ButtonTabsTrigger value="login" className="flex-1">
 									Login
 								</ButtonTabsTrigger>
-								<ButtonTabsTrigger value="register" className="flex-1">
+								<ButtonTabsTrigger
+									value="register"
+									className="flex-1"
+									disabled={activeTab === 'login' && loginStep !== 'idle' && loginStep !== 'email'}
+								>
 									Register
 								</ButtonTabsTrigger>
 							</ButtonTabsGroup>
@@ -241,8 +248,9 @@ export const LoginPage = () => {
 						<ButtonTabsContent value="login" className="w-full mt-6">
 							<LoginForm
 								key={loginFormKey}
-								onAuthenticated={() => router.push('/profile')}
+								onAuthenticated={() => router.push(redirectTo)}
 								onRegisterClick={() => setActiveTab('register')}
+								onStepChange={setLoginStep}
 							/>
 						</ButtonTabsContent>
 

@@ -7,6 +7,7 @@ import { useLogin } from '@unidy.io/sdk-react';
 import { toastCallbacks } from '@/deps/unidy/callbacks';
 
 import { FormLabel } from '@/components/form-label';
+import { GoogleIcon } from '@/components/icons/google-icon';
 import { Button } from '@/components/shadcn/ui/button';
 import {
 	InputGroup,
@@ -19,9 +20,11 @@ interface LoginFormProps {
 	onAuthenticated?: () => void;
 	/** Called when user clicks "Register" / "Sign Up" link */
 	onRegisterClick?: () => void;
+	/** Called whenever the login step changes */
+	onStepChange?: (step: string) => void;
 }
 
-export const LoginForm = ({ onAuthenticated, onRegisterClick }: LoginFormProps) => {
+export const LoginForm = ({ onAuthenticated, onRegisterClick, onStepChange }: LoginFormProps) => {
 	const login = useLogin({ callbacks: toastCallbacks });
 
 	const [emailInput, setEmailInput] = useState('');
@@ -49,12 +52,13 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick }: LoginFormProps) 
 		return () => clearInterval(timer);
 	}, [magicCodeRemainingMs]);
 
-	// Notify parent on successful authentication
+	// Notify parent on step changes
 	useEffect(() => {
+		onStepChange?.(login.step);
 		if (login.step === 'authenticated') {
 			onAuthenticated?.();
 		}
-	}, [login.step, onAuthenticated]);
+	}, [login.step, onAuthenticated, onStepChange]);
 
 	const handleSubmitEmail = async () => {
 		await login.submitEmail(emailInput);
@@ -221,6 +225,7 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick }: LoginFormProps) 
 											}}
 											disabled={login.isLoading}
 										>
+											{provider === 'google' && <GoogleIcon className="size-5" />}
 											Continue with {provider}
 										</Button>
 									))}
@@ -353,11 +358,11 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick }: LoginFormProps) 
 							</InputGroupAddon>
 							<InputGroupInput
 								type="text"
-								placeholder="Enter 6-digit code"
+								placeholder="Enter 4-digit code"
 								value={magicCodeInput}
 								onChange={(e) => setMagicCodeInput(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && handleSubmitMagicCode()}
-								maxLength={6}
+								maxLength={4}
 								className="text-neutral placeholder:text-neutral-medium"
 							/>
 						</InputGroup>
@@ -368,7 +373,7 @@ export const LoginForm = ({ onAuthenticated, onRegisterClick }: LoginFormProps) 
 					)}
 
 					<p className="body-2 text-neutral-strong text-center">
-						A 6-digit code has been sent to your email.
+						A 4-digit code has been sent to your email.
 					</p>
 
 					<Button

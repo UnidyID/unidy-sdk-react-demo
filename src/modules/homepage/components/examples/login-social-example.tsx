@@ -7,16 +7,25 @@ import {
 	InputGroupAddon,
 	InputGroupInput
 } from '@/components/shadcn/ui/input-group';
+import { GoogleIcon } from '@/components/icons/google-icon';
 import { toastCallbacks } from '@/deps/unidy/callbacks';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { useLogin } from '@unidy.io/sdk-react';
 import { ArrowLeft, Lock, Mail } from 'lucide-react';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export const LoginSocialExample = () => {
 	const login = useLogin({ callbacks: toastCallbacks });
+	const router = useRouter();
 	const [emailInput, setEmailInput] = useState('');
 	const [passwordInput, setPasswordInput] = useState('');
+
+	useEffect(() => {
+		if (login.step === 'authenticated') {
+			router.refresh();
+		}
+	}, [login.step, router]);
 
 	const isEmailStep = login.step === 'idle' || login.step === 'email';
 	const isVerificationStep = login.step === 'verification';
@@ -132,6 +141,7 @@ export const LoginSocialExample = () => {
 											}}
 											disabled={login.isLoading}
 										>
+											{provider === 'google' && <GoogleIcon className="size-5" />}
 											Continue with {provider}
 										</Button>
 									</SDKWrapper>

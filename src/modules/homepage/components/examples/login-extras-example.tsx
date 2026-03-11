@@ -11,13 +11,21 @@ import { toastCallbacks } from '@/deps/unidy/callbacks';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { useLogin } from '@unidy.io/sdk-react';
 import { ArrowLeft, KeyRound, Lock, Mail, Send } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
 export const LoginExtrasExample = () => {
 	const login = useLogin({ callbacks: toastCallbacks });
+	const router = useRouter();
 	const [emailInput, setEmailInput] = useState('');
 	const [magicCodeInput, setMagicCodeInput] = useState('');
 	const [passwordInput, setPasswordInput] = useState('');
+
+	useEffect(() => {
+		if (login.step === 'authenticated') {
+			router.refresh();
+		}
+	}, [login.step, router]);
 
 	const isEmailStep = login.step === 'idle' || login.step === 'email';
 	const isVerificationStep = login.step === 'verification';
@@ -207,11 +215,11 @@ export const LoginExtrasExample = () => {
 							</InputGroupAddon>
 							<InputGroupInput
 								type="text"
-								placeholder="Enter 6-digit code"
+								placeholder="Enter 4-digit code"
 								value={magicCodeInput}
 								onChange={(e) => setMagicCodeInput(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && login.submitMagicCode(magicCodeInput)}
-								maxLength={6}
+								maxLength={4}
 								className="text-neutral placeholder:text-neutral-medium"
 							/>
 						</InputGroup>
@@ -222,7 +230,7 @@ export const LoginExtrasExample = () => {
 					)}
 
 					<p className="body-2 text-neutral-strong text-center">
-						A 6-digit code has been sent to your email.
+						A 4-digit code has been sent to your email.
 					</p>
 
 					<Button

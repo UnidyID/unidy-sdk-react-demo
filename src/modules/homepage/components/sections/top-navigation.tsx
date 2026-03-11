@@ -78,7 +78,7 @@ export const TopNavigation = () => {
 								popoverPosition="left"
 								detatched
 							>
-								<Link href="/login">
+								<Link href="/login?redirect=/">
 									<Button
 										theme="accent"
 										variant="solid"
