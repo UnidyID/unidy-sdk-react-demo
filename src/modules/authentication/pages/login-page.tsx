@@ -28,7 +28,7 @@ import {
 	InputGroupAddon,
 	InputGroupInput
 } from '@/components/shadcn/ui/input-group';
-import { toastCallbacks } from '@/deps/unidy/callbacks';
+import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import { translateAuthError } from '@/locales/translate-auth-error';
 import { LoginForm } from '../components/login-form';
 
@@ -41,7 +41,7 @@ export const LoginPage = () => {
 		() => searchParams.get('redirect') || '/profile',
 		[searchParams]
 	);
-	const registration = useRegistration({ callbacks: toastCallbacks });
+	const registration = useRegistration({ callbacks: mutationCallbackOptions });
 
 	const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
 	// Key to force LoginForm remount when switching tabs (resets its internal state)

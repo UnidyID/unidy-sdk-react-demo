@@ -18,7 +18,7 @@ import {
 	InputGroupAddon,
 	InputGroupInput
 } from '@/components/shadcn/ui/input-group';
-import { toastCallbacks } from '@/deps/unidy/callbacks';
+import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import { translateAuthError } from '@/locales/translate-auth-error';
 
 interface LoginFormProps {
@@ -32,7 +32,7 @@ export const LoginForm = ({
 	onAuthenticated,
 	onStepChange
 }: LoginFormProps) => {
-	const login = useLogin({ callbacks: toastCallbacks });
+	const login = useLogin({ callbacks: mutationCallbackOptions });
 
 	const [emailInput, setEmailInput] = useState('');
 	const [passwordInput, setPasswordInput] = useState('');
@@ -95,7 +95,13 @@ export const LoginForm = ({
 		<>
 			{/* Email Step */}
 			{isEmailStep && (
-				<div className="flex flex-col gap-6 w-full">
+				<form
+					className="flex flex-col gap-6 w-full"
+					onSubmit={(e) => {
+						e.preventDefault();
+						handleSubmitEmail();
+					}}
+				>
 					<FormLabel title="Email Address" required>
 						<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
 							<InputGroupAddon>
@@ -106,7 +112,7 @@ export const LoginForm = ({
 								placeholder="you@example.com"
 								value={emailInput}
 								onChange={(e) => setEmailInput(e.target.value)}
-								onKeyDown={(e) => e.key === 'Enter' && handleSubmitEmail()}
+								required
 								className="text-neutral placeholder:text-neutral-medium"
 							/>
 						</InputGroup>
@@ -123,12 +129,12 @@ export const LoginForm = ({
 						variant="solid"
 						size="lg"
 						className="w-full"
-						onClick={handleSubmitEmail}
-						disabled={login.isLoading}
+						type="submit"
+						disabled={login.isLoading || !emailInput.trim()}
 					>
 						{login.isLoading ? 'Loading...' : 'Continue'}
 					</Button>
-				</div>
+				</form>
 			)}
 
 			{/* Verification Step - show available login methods */}
@@ -185,10 +191,13 @@ export const LoginForm = ({
 							variant="solid-weak"
 							size="lg"
 							className="w-full"
-							disabled={login.isLoading}
+							disabled
 						>
 							<KeyRound className="size-5" />
 							Continue with Passkey
+							<span className="caption rounded-full border border-neutral-medium bg-neutral-weak px-2 py-0.5 text-neutral-strong">
+								Coming soon
+							</span>
 						</Button>
 					)}
 

@@ -1,5 +1,8 @@
 'use client';
 
+import { useSession } from '@unidy.io/sdk-react';
+import { KeyRound, Mail, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Card } from '@/components/card';
 import { FeatureItem } from '@/components/feature-item';
 import { IntegrationCode } from '@/components/integration-code';
@@ -10,12 +13,8 @@ import {
 	TabsList,
 	TabsTrigger
 } from '@/components/shadcn/ui/tabs';
-import { useSession } from '@unidy.io/sdk-react';
-import { KeyRound, Mail, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { LoggedInPlaceholder } from '../examples/logged-in-placeholder';
 import { LoginKitchenSinkExample } from '../examples/login-kitchen-sink-example';
-import { LoginPasskeyExample } from '../examples/login-passkey-example';
 import { LoginSimpleExample } from '../examples/login-simple-example';
 import { LoginSocialExample } from '../examples/login-social-example';
 
@@ -54,7 +53,14 @@ export const AuthenticationSection = () => {
 	const features = [
 		{
 			icon: <KeyRound className="size-4 text-accent" />,
-			title: 'Passkey & Biometric',
+			title: (
+				<span className="flex flex-wrap items-center gap-2">
+					<span>Passkey &amp; Biometric</span>
+					<span className="caption rounded-full border border-neutral-medium bg-neutral-weak px-2 py-0.5 text-neutral-strong">
+						Coming soon
+					</span>
+				</span>
+			),
 			description:
 				'Passwordless authentication with Face ID, Touch ID, or device security'
 		},
@@ -110,9 +116,6 @@ export const AuthenticationSection = () => {
 							<TabsTrigger value="social" className="flex-1">
 								Social
 							</TabsTrigger>
-							<TabsTrigger value="passkey" className="flex-1">
-								Passkey
-							</TabsTrigger>
 							<TabsTrigger value="kitchen-sink" className="flex-1">
 								Kitchen Sink
 							</TabsTrigger>
@@ -121,27 +124,11 @@ export const AuthenticationSection = () => {
 						{/* Card with Form */}
 						<Card className="mt-6">
 							<TabsContent value="simple">
-								{isLoggedIn ? (
-									<LoggedInPlaceholder />
-								) : (
-									<LoginSimpleExample />
-								)}
+								{isLoggedIn ? <LoggedInPlaceholder /> : <LoginSimpleExample />}
 							</TabsContent>
 
 							<TabsContent value="social">
-								{isLoggedIn ? (
-									<LoggedInPlaceholder />
-								) : (
-									<LoginSocialExample />
-								)}
-							</TabsContent>
-
-							<TabsContent value="passkey">
-								{isLoggedIn ? (
-									<LoggedInPlaceholder />
-								) : (
-									<LoginPasskeyExample />
-								)}
+								{isLoggedIn ? <LoggedInPlaceholder /> : <LoginSocialExample />}
 							</TabsContent>
 
 							<TabsContent value="kitchen-sink">

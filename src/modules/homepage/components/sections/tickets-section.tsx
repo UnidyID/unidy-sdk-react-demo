@@ -10,9 +10,14 @@ import {
 	TabsTrigger
 } from '@/components/shadcn/ui/tabs';
 import { Button } from '@/components/shadcn/ui/button';
+import {
+	StatusFilter,
+	type StatusFilterValue
+} from '@/modules/tickets/components/status-filter';
 import { useSession } from '@unidy.io/sdk-react';
 import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LoggedOutPlaceholder } from '../examples/logged-out-placeholder';
 import { MembershipsExample } from '../examples/memberships-example';
@@ -53,7 +58,10 @@ export const TicketsSection = () => {
 		setMounted(true);
 	}, []);
 
+	const searchParams = useSearchParams();
+	const perPage = Number(searchParams.get('per_page')) || 4;
 	const isLoggedIn = mounted && session.isAuthenticated;
+	const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('');
 
 	return (
 		<section
@@ -73,18 +81,26 @@ export const TicketsSection = () => {
 
 				{/* Tabs */}
 				<Tabs defaultValue="tickets" className="w-full">
-					<TabsList className="w-full">
-						<TabsTrigger value="tickets">Event Tickets</TabsTrigger>
-						<TabsTrigger value="subscriptions">
-							Subscriptions & Memberships
-						</TabsTrigger>
-					</TabsList>
+					<div className="flex items-center gap-4">
+						<TabsList className="flex-1">
+							<TabsTrigger value="tickets">Event Tickets</TabsTrigger>
+							<TabsTrigger value="subscriptions">
+								Subscriptions & Memberships
+							</TabsTrigger>
+						</TabsList>
+						{isLoggedIn && (
+							<StatusFilter
+								value={statusFilter}
+								onChange={setStatusFilter}
+							/>
+						)}
+					</div>
 
 					{/* Event Tickets Tab */}
 					<TabsContent value="tickets" className="flex-1 min-w-0 w-full">
 						{isLoggedIn ? (
 							<>
-								<TicketsExample />
+								<TicketsExample statusFilter={statusFilter} perPage={perPage} />
 								<div className="flex justify-center pt-6">
 									<Link href="/profile/tickets">
 										<Button theme="accent" variant="outline" size="md">
@@ -105,7 +121,7 @@ export const TicketsSection = () => {
 					<TabsContent value="subscriptions">
 						{isLoggedIn ? (
 							<>
-								<MembershipsExample />
+								<MembershipsExample statusFilter={statusFilter} perPage={perPage} />
 								<div className="flex justify-center pt-6">
 									<Link href="/profile/subscriptions">
 										<Button theme="accent" variant="outline" size="md">

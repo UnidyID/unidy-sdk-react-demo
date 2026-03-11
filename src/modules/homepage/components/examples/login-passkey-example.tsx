@@ -1,5 +1,9 @@
 'use client';
 
+import { useLogin } from '@unidy.io/sdk-react';
+import { ArrowLeft, KeyRound, Mail } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { FormLabel } from '@/components/form-label';
 import { Button } from '@/components/shadcn/ui/button';
 import {
@@ -7,16 +11,12 @@ import {
 	InputGroupAddon,
 	InputGroupInput
 } from '@/components/shadcn/ui/input-group';
-import { toastCallbacks } from '@/deps/unidy/callbacks';
+import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import { translateAuthError } from '@/locales/translate-auth-error';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
-import { useLogin } from '@unidy.io/sdk-react';
-import { ArrowLeft, KeyRound, Mail } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 
 export const LoginPasskeyExample = () => {
-	const login = useLogin({ callbacks: toastCallbacks });
+	const login = useLogin({ callbacks: mutationCallbackOptions });
 	const router = useRouter();
 	const [emailInput, setEmailInput] = useState('');
 
@@ -37,8 +37,14 @@ export const LoginPasskeyExample = () => {
 		<div className="flex flex-col gap-6 w-full">
 			{/* Email Step */}
 			{isEmailStep && (
-				<>
-					<FormLabel title="Email Address">
+				<form
+					className="contents"
+					onSubmit={(e) => {
+						e.preventDefault();
+						login.submitEmail(emailInput);
+					}}
+				>
+					<FormLabel title="Email Address" required>
 						<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
 							<InputGroupAddon>
 								<Mail className="size-5 text-neutral-medium" />
@@ -48,9 +54,7 @@ export const LoginPasskeyExample = () => {
 								placeholder="you@example.com"
 								value={emailInput}
 								onChange={(e) => setEmailInput(e.target.value)}
-								onKeyDown={(e) =>
-									e.key === 'Enter' && login.submitEmail(emailInput)
-								}
+								required
 								className="text-neutral placeholder:text-neutral-medium"
 							/>
 						</InputGroup>
@@ -74,13 +78,13 @@ export const LoginPasskeyExample = () => {
 							variant="solid"
 							size="lg"
 							className="w-full"
-							onClick={() => login.submitEmail(emailInput)}
-							disabled={login.isLoading}
+							type="submit"
+							disabled={login.isLoading || !emailInput.trim()}
 						>
 							{login.isLoading ? 'Loading...' : 'Continue'}
 						</Button>
 					</SDKWrapper>
-				</>
+				</form>
 			)}
 
 			{/* Verification Step - passkey option */}
@@ -103,32 +107,26 @@ export const LoginPasskeyExample = () => {
 						</InputGroup>
 					</FormLabel>
 
-					{login.loginOptions?.passkey ? (
-						<SDKWrapper
-							title="Auth SDK / Passkey"
-							codeSnippet={`const login = useLogin();\n// login.loginOptions?.passkey === true\n// Passkey authentication via WebAuthn`}
-							size="sm"
-							popoverPosition="left"
+					<SDKWrapper
+						title="Auth SDK / Passkey"
+						codeSnippet={`const login = useLogin();\n// login.loginOptions?.passkey === true\n// Passkey authentication via WebAuthn`}
+						size="sm"
+						popoverPosition="left"
+					>
+						<Button
+							theme="accent"
+							variant="solid"
+							size="lg"
+							className="w-full"
+							disabled
 						>
-							<Button
-								theme="accent"
-								variant="solid"
-								size="lg"
-								className="w-full"
-								disabled={login.isLoading}
-							>
-								<KeyRound className="size-5" />
-								Continue with Passkey
-							</Button>
-						</SDKWrapper>
-					) : (
-						<div className="border border-neutral-medium rounded-[10px] p-4 bg-neutral-weak">
-							<p className="body-2 text-neutral-strong text-center">
-								Passkey is not available for this account. Set up a passkey in
-								your profile to use this method.
-							</p>
-						</div>
-					)}
+							<KeyRound className="size-5" />
+							Continue with Passkey
+							<span className="caption rounded-full border border-white/30 bg-white/10 px-2 py-0.5 text-current">
+								Coming soon
+							</span>
+						</Button>
+					</SDKWrapper>
 
 					{login.errors.global && (
 						<p className="body-2 text-red-500">

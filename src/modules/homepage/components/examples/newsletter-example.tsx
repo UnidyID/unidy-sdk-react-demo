@@ -1,11 +1,5 @@
 'use client';
 
-import { CardSelect } from '@/components/card-select';
-import { FormLabel } from '@/components/form-label';
-import { Button } from '@/components/shadcn/ui/button';
-import { cn } from '@/components/shadcn/utils';
-import { toastCallbacks } from '@/deps/unidy/callbacks';
-import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import {
 	useNewsletterPreferenceCenter,
 	useNewsletterSubscribe,
@@ -20,27 +14,29 @@ import {
 	Mail,
 	Phone,
 	Trophy,
-	User
+	User,
+	Users
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-
-const newsletters = [
-	{
-		id: 'main',
-		icon: <Trophy className="size-5 text-neutral-strong" />,
-		title: 'News & Updates',
-		description: 'All the latest news, events, tickets, and partner offers'
-	},
-	{
-		id: 'weather',
-		icon: <Bell className="size-5 text-neutral-strong" />,
-		title: 'Weather Forecast',
-		description: 'Temperature, wind, and precipitation updates'
-	}
-];
+import { CardSelect } from '@/components/card-select';
+import { FormLabel } from '@/components/form-label';
+import { Button } from '@/components/shadcn/ui/button';
+import { cn } from '@/components/shadcn/utils';
+import {
+	fetchCallbackOptions,
+	mutationCallbackOptions
+} from '@/deps/unidy/callbacks';
+import { newsletterOptions } from '@/modules/newsletter/constants/newsletter-data';
+import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 
 export const NewsletterExample = () => {
+	const iconMap = {
+		trophy: <Trophy className="size-5 text-neutral-strong" />,
+		users: <Users className="size-5 text-neutral-strong" />,
+		bell: <Bell className="size-5 text-neutral-strong" />
+	};
+
 	const session = useSession();
 	const [mounted, setMounted] = useState(false);
 	const [email, setEmail] = useState('');
@@ -64,13 +60,13 @@ export const NewsletterExample = () => {
 	}, [isLoggedIn, session.email]);
 
 	const { subscriptions, isLoading: isPreferencesLoading } =
-		useNewsletterPreferenceCenter({ callbacks: toastCallbacks });
+		useNewsletterPreferenceCenter({ callbacks: fetchCallbackOptions });
 
 	const hasExistingSubscriptions =
 		isLoggedIn && !isPreferencesLoading && subscriptions.length > 0;
 
 	const { isLoading, fieldErrors, subscribe, reset } = useNewsletterSubscribe({
-		callbacks: toastCallbacks
+		callbacks: mutationCallbackOptions
 	});
 
 	const toggleNewsletter = (id: string) => {
@@ -128,10 +124,10 @@ export const NewsletterExample = () => {
 						<p className="body-2 text-neutral-strong">
 							You have {subscriptions.length} active newsletter
 							{subscriptions.length !== 1 ? 's' : ''}. Manage your preferences
-							from your profile.
+							from the preference center.
 						</p>
 					</div>
-					<Link href="/profile/newsletter">
+					<Link href="/newsletter/manage">
 						<Button theme="accent" variant="solid" size="md">
 							<ExternalLink className="size-4" />
 							Edit Newsletter Preferences
@@ -241,91 +237,91 @@ await subscribe({ email, newsletters, additionalFields });`}
 
 				{/* Additional Fields */}
 				{!isLoggedIn && (
-				<FormLabel title="Additional Fields">
-					<div className="flex flex-col gap-3 w-full">
-						<div>
-							<div
-								className={cn(
-									'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
-									fieldErrors.first_name
-										? 'border-red-500'
-										: 'border-neutral-medium'
+					<FormLabel title="Additional Fields">
+						<div className="flex flex-col gap-3 w-full">
+							<div>
+								<div
+									className={cn(
+										'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
+										fieldErrors.first_name
+											? 'border-red-500'
+											: 'border-neutral-medium'
+									)}
+								>
+									<User className="size-5 text-neutral-medium shrink-0" />
+									<input
+										type="text"
+										value={firstName}
+										onChange={(e) => setFirstName(e.target.value)}
+										placeholder="First Name"
+										className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
+									/>
+								</div>
+								{fieldErrors.first_name && (
+									<p className="body-3 text-red-500 mt-1">
+										{fieldErrors.first_name}
+									</p>
 								)}
-							>
-								<User className="size-5 text-neutral-medium shrink-0" />
-								<input
-									type="text"
-									value={firstName}
-									onChange={(e) => setFirstName(e.target.value)}
-									placeholder="First Name"
-									className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
-								/>
 							</div>
-							{fieldErrors.first_name && (
-								<p className="body-3 text-red-500 mt-1">
-									{fieldErrors.first_name}
-								</p>
-							)}
-						</div>
-						<div>
-							<div
-								className={cn(
-									'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
-									fieldErrors.last_name
-										? 'border-red-500'
-										: 'border-neutral-medium'
+							<div>
+								<div
+									className={cn(
+										'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
+										fieldErrors.last_name
+											? 'border-red-500'
+											: 'border-neutral-medium'
+									)}
+								>
+									<User className="size-5 text-neutral-medium shrink-0" />
+									<input
+										type="text"
+										value={lastName}
+										onChange={(e) => setLastName(e.target.value)}
+										placeholder="Last Name"
+										className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
+									/>
+								</div>
+								{fieldErrors.last_name && (
+									<p className="body-3 text-red-500 mt-1">
+										{fieldErrors.last_name}
+									</p>
 								)}
-							>
-								<User className="size-5 text-neutral-medium shrink-0" />
-								<input
-									type="text"
-									value={lastName}
-									onChange={(e) => setLastName(e.target.value)}
-									placeholder="Last Name"
-									className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
-								/>
 							</div>
-							{fieldErrors.last_name && (
-								<p className="body-3 text-red-500 mt-1">
-									{fieldErrors.last_name}
-								</p>
-							)}
-						</div>
-						<div>
-							<div
-								className={cn(
-									'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
-									fieldErrors.phone_number
-										? 'border-red-500'
-										: 'border-neutral-medium'
+							<div>
+								<div
+									className={cn(
+										'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
+										fieldErrors.phone_number
+											? 'border-red-500'
+											: 'border-neutral-medium'
+									)}
+								>
+									<Phone className="size-5 text-neutral-medium shrink-0" />
+									<input
+										type="tel"
+										value={phoneNumber}
+										onChange={(e) => setPhoneNumber(e.target.value)}
+										placeholder="Phone Number"
+										className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
+									/>
+								</div>
+								{fieldErrors.phone_number && (
+									<p className="body-3 text-red-500 mt-1">
+										{fieldErrors.phone_number}
+									</p>
 								)}
-							>
-								<Phone className="size-5 text-neutral-medium shrink-0" />
-								<input
-									type="tel"
-									value={phoneNumber}
-									onChange={(e) => setPhoneNumber(e.target.value)}
-									placeholder="Phone Number"
-									className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
-								/>
 							</div>
-							{fieldErrors.phone_number && (
-								<p className="body-3 text-red-500 mt-1">
-									{fieldErrors.phone_number}
-								</p>
-							)}
 						</div>
-					</div>
-				</FormLabel>
+					</FormLabel>
 				)}
 
 				{/* Newsletter Selection */}
 				<FormLabel title="Select Newsletters" required>
 					<div className="flex flex-col gap-3 w-full">
-						{newsletters.map((newsletter) => (
+						{newsletterOptions.map((newsletter) => (
 							<CardSelect
 								key={newsletter.id}
-								icon={newsletter.icon}
+								icon={iconMap[newsletter.icon]}
 								title={newsletter.title}
 								description={newsletter.description}
 								selected={selectedNewsletters.includes(newsletter.id)}

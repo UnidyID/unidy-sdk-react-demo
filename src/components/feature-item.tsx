@@ -1,9 +1,9 @@
+import type { FC, ReactNode } from 'react';
 import { cn } from '@/components/shadcn/utils';
-import { type FC, type ReactNode } from 'react';
 
 export interface FeatureItemProps {
 	icon: ReactNode;
-	title: string;
+	title: ReactNode;
 	description: string;
 	className?: string;
 	iconBgClassName?: string;

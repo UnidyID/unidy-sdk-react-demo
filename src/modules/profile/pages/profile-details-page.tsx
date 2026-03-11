@@ -1,9 +1,8 @@
 'use client';
 
-import { type FC } from 'react';
 import { useProfile } from '@unidy.io/sdk-react';
-import { toastCallbacks } from '@/deps/unidy/callbacks';
-import { ConnectedAccounts } from '../components/connected-accounts';
+import type { FC } from 'react';
+import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import {
 	ProfileDetailsForm,
 	type ProfileDetailsFormData
@@ -11,7 +10,7 @@ import {
 
 export const ProfileDetailsPage: FC = () => {
 	const { profile, fieldErrors, isMutating, updateProfile } = useProfile({
-		callbacks: toastCallbacks
+		callbacks: mutationCallbackOptions
 	});
 
 	const initialData: Partial<ProfileDetailsFormData> = profile
@@ -47,7 +46,6 @@ export const ProfileDetailsPage: FC = () => {
 				fieldErrors={fieldErrors}
 				isMutating={isMutating}
 			/>
-			<ConnectedAccounts />
 		</div>
 	);
 };

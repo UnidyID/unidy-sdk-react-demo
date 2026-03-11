@@ -1,10 +1,22 @@
 'use client';
 
+import {
+	type Ticket,
+	usePagination,
+	useTicketables
+} from '@unidy.io/sdk-react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { type FC, useState } from 'react';
 import { Button } from '@/components/shadcn/ui/button';
-import { toastCallbacks } from '@/deps/unidy/callbacks';
+import { fetchCallbackOptions } from '@/deps/unidy/callbacks';
+import {
+	StatusFilter,
+	type StatusFilterValue
+} from '@/modules/tickets/components/status-filter';
 import {
 	TicketCard,
-	TicketCardProps
+	type TicketCardProps
 } from '@/modules/tickets/components/ticket-card';
 import {
 	formatDate,
@@ -12,13 +24,6 @@ import {
 	formatTime,
 	mapItemState
 } from '@/modules/tickets/utils';
-import {
-	usePagination,
-	useTicketables,
-	type Ticket
-} from '@unidy.io/sdk-react';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import type { FC } from 'react';
 
 function mapTicketToCardProps(
 	ticket: Ticket
@@ -32,18 +37,26 @@ function mapTicketToCardProps(
 		date: formatDate(ticket.starts_at),
 		time: formatTime(ticket.starts_at),
 		venue: ticket.venue ?? 'TBA',
-		seat: ticket.seating ?? undefined
+		seat: ticket.seating ?? undefined,
+		exportable: ticket.exportable_to_wallet
 	};
 }
 
 export const ProfileTicketsPage: FC = () => {
-	const pagination = usePagination({ perPage: 10 });
+	const searchParams = useSearchParams();
+	const perPage = Number(searchParams.get('per_page')) || 4;
+	const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('');
+	const pagination = usePagination({ perPage });
 	const { items, isLoading, getExportLink } = useTicketables({
 		type: 'ticket',
 		pagination,
-		filter: { orderBy: 'starts_at', orderDirection: 'desc' },
+		filter: {
+			orderBy: 'starts_at',
+			orderDirection: 'desc',
+			...(statusFilter ? { state: statusFilter } : {})
+		},
 		fetchOnMount: true,
-		callbacks: toastCallbacks
+		callbacks: fetchCallbackOptions
 	});
 
 	const handleDownload = async (ticketId: string) => {
@@ -65,29 +78,29 @@ export const ProfileTicketsPage: FC = () => {
 							View and manage your event tickets.
 						</p>
 					</div>
+					<StatusFilter value={statusFilter} onChange={setStatusFilter} />
 				</div>
 
-				{isLoading ? (
-					<div className="flex items-center justify-center py-12">
-						<Loader2 className="size-6 animate-spin text-neutral-strong" />
-					</div>
-				) : (
-					<div className="flex flex-col gap-2">
-						{tickets.map((ticket) => (
-							<TicketCard
-								key={ticket.id}
-								{...ticket}
-								onDownload={() => handleDownload(ticket.id)}
-							/>
-						))}
+				<div className="relative flex flex-col gap-2">
+					{isLoading && (
+						<div className="absolute inset-0 z-10 flex items-center justify-center bg-section/50 rounded-lg">
+							<Loader2 className="size-6 animate-spin text-neutral-strong" />
+						</div>
+					)}
+					{tickets.map((ticket) => (
+						<TicketCard
+							key={ticket.id}
+							{...ticket}
+							onDownload={() => handleDownload(ticket.id)}
+						/>
+					))}
 
-						{tickets.length === 0 && (
-							<p className="body-2 text-neutral-strong text-center py-8">
-								No tickets found.
-							</p>
-						)}
-					</div>
-				)}
+					{tickets.length === 0 && !isLoading && (
+						<p className="body-2 text-neutral-strong text-center py-8">
+							No tickets found.
+						</p>
+					)}
+				</div>
 
 				{(pagination.hasNextPage || pagination.hasPrevPage) && (
 					<div className="flex items-center justify-center gap-4 pt-4">

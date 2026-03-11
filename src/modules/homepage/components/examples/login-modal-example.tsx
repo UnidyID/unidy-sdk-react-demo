@@ -12,10 +12,18 @@ export const LoginModalExample = () => {
 	return (
 		<div className="flex flex-col md:flex-row md:h-[784px] overflow-hidden relative w-full">
 			{/* Gradient Background Side */}
-			<div className="min-h-[120px] md:h-full md:flex-1 md:shrink-0 relative flex items-center justify-center bg-linear-[135deg,var(--color-accent-strong),var(--color-accent)_50%,var(--color-accent-strong)]">
-				<p className="display-3 text-white text-center whitespace-nowrap">
-					Login Modal Example
+			<div className="min-h-[120px] md:h-full md:flex-1 md:shrink-0 relative flex flex-col items-center justify-center gap-6 px-10 py-12 bg-linear-[135deg,var(--color-accent-strong),var(--color-accent)_50%,var(--color-accent-strong)]">
+				<p className="display-3 text-white text-center">
+					Welcome Back
 				</p>
+				<div className="flex flex-col gap-3 items-center max-w-[280px]">
+					<p className="body-1 text-white/80 text-center">
+						Sign in to access your tickets, manage subscriptions, and update your profile.
+					</p>
+					<p className="body-3 text-white/50 text-center">
+						Powered by the Unidy SDK — drop-in auth for any app.
+					</p>
+				</div>
 			</div>
 
 			{/* Content Side */}

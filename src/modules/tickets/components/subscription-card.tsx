@@ -6,7 +6,7 @@ import { type FC } from 'react';
 export interface SubscriptionCardProps {
 	title: string;
 	subtitle: string;
-	status?: 'active' | 'inactive' | 'expired';
+	status?: 'active' | 'passive' | 'inactive';
 	validUntil: string;
 	remainingMatches: string;
 	benefits: string[];

@@ -1,30 +1,38 @@
 'use client';
 
-import { Button } from '@/components/shadcn/ui/button';
-import { cn } from '@/components/shadcn/utils';
 import { CreditCard, Mail, Ticket, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { type FC } from 'react';
+import type { FC } from 'react';
+import { Button } from '@/components/shadcn/ui/button';
+import { cn } from '@/components/shadcn/utils';
 
 export interface ProfileSidebarProps {
 	userName?: string;
 	userInitials?: string;
 	memberSince?: string;
+	statusText?: string;
 	className?: string;
 	children?: React.ReactNode;
 	showNavigation?: boolean;
+	isLoadingUser?: boolean;
 }
 
 export const ProfileSidebar: FC<ProfileSidebarProps> = ({
-	userName = 'John Doe',
-	userInitials = 'JD',
-	memberSince = '2020',
+	userName,
+	userInitials,
+	memberSince,
+	statusText,
 	className,
 	children,
-	showNavigation = true
+	showNavigation = true,
+	isLoadingUser = false
 }) => {
 	const pathname = usePathname();
+	const displayName = isLoadingUser ? 'Loading' : userName || 'Signed out';
+	const secondaryText = isLoadingUser
+		? 'Loading'
+		: statusText || (memberSince ? `Member since ${memberSince}` : '');
 
 	const navItems = [
 		{
@@ -71,7 +79,7 @@ export const ProfileSidebar: FC<ProfileSidebarProps> = ({
 				{/* User Info */}
 				<div className="flex flex-col gap-4 items-center px-9">
 					<div className="relative size-24">
-						{userInitials ? (
+						{!isLoadingUser && userInitials ? (
 							<>
 								<div className="absolute bg-accent rounded-full size-24 flex items-center justify-center">
 									<p className="text-[30px] leading-[36px] text-white font-normal tracking-[0.3955px]">
@@ -90,16 +98,10 @@ export const ProfileSidebar: FC<ProfileSidebarProps> = ({
 					</div>
 
 					<div className="flex flex-col gap-1 items-center text-center">
-						<p className="body-1 text-neutral">{userName}</p>
-						{memberSince ? (
-							<p className="body-2 text-neutral-strong">
-								Member since {memberSince}
-							</p>
-						) : (
-							<p className="body-2 text-neutral-strong">
-								Sign in to change preferences
-							</p>
-						)}
+						<p className="body-1 text-neutral">{displayName}</p>
+						{secondaryText ? (
+							<p className="body-2 text-neutral-strong">{secondaryText}</p>
+						) : null}
 					</div>
 				</div>
 

@@ -1,10 +1,20 @@
 'use client';
 
-import { toastCallbacks } from '@/deps/unidy/callbacks';
+import {
+	type Ticket,
+	usePagination,
+	useSession,
+	useTicketables
+} from '@unidy.io/sdk-react';
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/shadcn/ui/button';
+import { fetchCallbackOptions } from '@/deps/unidy/callbacks';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
+import type { StatusFilterValue } from '@/modules/tickets/components/status-filter';
 import {
 	TicketCard,
-	TicketCardProps
+	type TicketCardProps
 } from '@/modules/tickets/components/ticket-card';
 import {
 	formatDate,
@@ -12,15 +22,6 @@ import {
 	formatTime,
 	mapItemState
 } from '@/modules/tickets/utils';
-import {
-	usePagination,
-	useSession,
-	useTicketables,
-	type Ticket
-} from '@unidy.io/sdk-react';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/shadcn/ui/button';
 
 const fallbackTickets: (TicketCardProps & { id: string })[] = [
 	{
@@ -61,14 +62,21 @@ function mapTicketToCardProps(
 		date: formatDate(ticket.starts_at),
 		time: formatTime(ticket.starts_at),
 		venue: ticket.venue ?? 'TBA',
-		seat: ticket.seating ?? undefined
+		seat: ticket.seating ?? undefined,
+		exportable: ticket.exportable_to_wallet
 	};
 }
 
-export const TicketsExample = () => {
+export const TicketsExample = ({
+	statusFilter,
+	perPage = 4
+}: {
+	statusFilter?: StatusFilterValue;
+	perPage?: number;
+}) => {
 	const [mounted, setMounted] = useState(false);
 	const { isAuthenticated } = useSession();
-	const pagination = usePagination({ perPage: 10 });
+	const pagination = usePagination({ perPage });
 
 	useEffect(() => {
 		setMounted(true);
@@ -76,9 +84,13 @@ export const TicketsExample = () => {
 	const { items, isLoading, getExportLink } = useTicketables({
 		type: 'ticket',
 		pagination,
-		filter: { orderBy: 'starts_at', orderDirection: 'desc' },
+		filter: {
+			orderBy: 'starts_at',
+			orderDirection: 'desc',
+			...(statusFilter ? { state: statusFilter } : {})
+		},
 		fetchOnMount: isAuthenticated,
-		callbacks: toastCallbacks
+		callbacks: fetchCallbackOptions
 	});
 
 	const handleDownload = async (ticketId: string) => {
@@ -92,16 +104,13 @@ export const TicketsExample = () => {
 
 	const tickets = loggedIn ? items.map(mapTicketToCardProps) : fallbackTickets;
 
-	if (loggedIn && isLoading) {
-		return (
-			<div className="flex items-center justify-center py-12">
-				<Loader2 className="size-6 animate-spin text-neutral-strong" />
-			</div>
-		);
-	}
-
 	return (
-		<div className="flex flex-col gap-2 w-full">
+		<div className="relative flex flex-col gap-2 w-full">
+			{loggedIn && isLoading && (
+				<div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50 rounded-lg">
+					<Loader2 className="size-6 animate-spin text-neutral-strong" />
+				</div>
+			)}
 			{tickets.map((ticket) => (
 				<SDKWrapper
 					key={ticket.id}
@@ -110,7 +119,7 @@ export const TicketsExample = () => {
   type: 'ticket',
   pagination,
   filter: { orderBy: 'starts_at', orderDirection: 'desc' },
-  callbacks: toastCallbacks,
+  callbacks: fetchCallbackOptions,
 });`}
 					size="sm"
 				>

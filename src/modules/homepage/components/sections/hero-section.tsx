@@ -1,10 +1,20 @@
 'use client';
 
-import { LinkSmooth } from '@/components/link-smooth';
 import { Button } from '@/components/shadcn/ui/button';
+import { useSession } from '@unidy.io/sdk-react';
 import { ArrowRight, Shield } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export const HeroSection = () => {
+	const [mounted, setMounted] = useState(false);
+	const session = useSession();
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	const isLoggedIn = mounted && session.isAuthenticated;
 	return (
 		<section
 			className="relative flex flex-col items-center px-6 py-[120px] gap-[10px] w-full"
@@ -48,12 +58,12 @@ export const HeroSection = () => {
 
 				{/* CTA Buttons */}
 				<div className="relative h-[52px] w-full flex gap-4">
-					<LinkSmooth href="#options">
+					<Link href={isLoggedIn ? '/profile/details' : '/login?redirect=/'}>
 						<Button theme="accent-contrast" variant="solid" size="lg">
 							Try Demo
 							<ArrowRight />
 						</Button>
-					</LinkSmooth>
+					</Link>
 
 					<a
 						href="https://github.com/UnidyID/unidy-sdk/tree/master/packages/sdk-react#readme"

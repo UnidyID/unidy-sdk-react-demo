@@ -6,7 +6,10 @@ import {
 	useUnidyClient
 } from '@unidy.io/sdk-react';
 import { useMemo, useState } from 'react';
-import { toastCallbacks } from '@/deps/unidy/callbacks';
+import {
+	fetchCallbackOptions,
+	mutationCallbackOptions
+} from '@/deps/unidy/callbacks';
 import type { NewsletterCategory } from '../components/newsletter-picker';
 
 export function useNewsletterPreferences({
@@ -16,7 +19,7 @@ export function useNewsletterPreferences({
 	categories: NewsletterCategory[];
 	preferenceToken?: string;
 }) {
-	const session = useSession({ callbacks: toastCallbacks });
+	const session = useSession({ callbacks: fetchCallbackOptions });
 	const client = useUnidyClient();
 
 	const {
@@ -28,7 +31,7 @@ export function useNewsletterPreferences({
 		refetch
 	} = useNewsletterPreferenceCenter({
 		preferenceToken,
-		callbacks: toastCallbacks
+		callbacks: mutationCallbackOptions
 	});
 
 	const subscribedIds = useMemo(
@@ -70,7 +73,7 @@ export function useNewsletterPreferences({
 							}
 						});
 						if (error) {
-							toastCallbacks.onError?.(error);
+							mutationCallbackOptions.onError?.(error);
 						}
 					} else {
 						await subscribe(id);
@@ -84,7 +87,9 @@ export function useNewsletterPreferences({
 				await refetch();
 			}
 		} catch (error) {
-			toastCallbacks.onError?.('Failed to update newsletter preferences');
+			mutationCallbackOptions.onError?.(
+				'Failed to update newsletter preferences'
+			);
 		} finally {
 			setIsSaving(false);
 		}
@@ -99,7 +104,7 @@ export function useNewsletterPreferences({
 				subscriptions.map((s) => unsubscribe(s.newsletter_internal_name))
 			);
 		} catch (error) {
-			toastCallbacks.onError?.('Failed to unsubscribe');
+			mutationCallbackOptions.onError?.('Failed to unsubscribe');
 		} finally {
 			setIsSaving(false);
 		}

@@ -11,7 +11,7 @@ export const ProfileNavigation: FC<
 > = ({ backHref = '/', children }) => {
 	return (
 		<div className="bg-section border-b border-neutral-weak sticky top-0 z-10">
-			<div className="max-w-[1024px] mx-auto h-16 flex items-center justify-between px-4">
+			<div className="max-w-[1200px] mx-auto h-16 flex items-center justify-between px-4">
 				<Link href={backHref}>
 					<Logo />
 				</Link>

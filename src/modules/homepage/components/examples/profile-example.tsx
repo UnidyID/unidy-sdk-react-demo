@@ -1,7 +1,7 @@
 'use client';
 
 import { useProfile } from '@unidy.io/sdk-react';
-import { toastCallbacks } from '@/deps/unidy/callbacks';
+import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import {
 	ProfileDetailsForm,
 	type ProfileDetailsFormData
@@ -10,7 +10,7 @@ import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 
 export const ProfileExample = () => {
 	const { profile, fieldErrors, isMutating, updateProfile } = useProfile({
-		callbacks: toastCallbacks
+		callbacks: mutationCallbackOptions
 	});
 
 	const initialData: Partial<ProfileDetailsFormData> = profile
@@ -42,7 +42,7 @@ export const ProfileExample = () => {
 		<SDKWrapper
 			title="Profile SDK / useProfile"
 			codeSnippet={`const { profile, fieldErrors, isMutating, updateProfile } = useProfile({
-  callbacks: toastCallbacks
+  callbacks: mutationCallbackOptions
 });`}
 			size="lg"
 			labelPosition="top-left"

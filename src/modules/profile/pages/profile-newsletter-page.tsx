@@ -1,43 +1,11 @@
 'use client';
 
-import { Button } from '@/components/shadcn/ui/button';
-import type { NewsletterCategory } from '@/modules/newsletter/components/newsletter-picker';
-import { NewsletterPicker } from '@/modules/newsletter/components/newsletter-picker';
-import { useNewsletterPreferences } from '@/modules/newsletter/hooks/use-newsletter-preferences';
 import { Loader2 } from 'lucide-react';
-import { type FC } from 'react';
-
-const newsletterCategories: NewsletterCategory[] = [
-	{
-		id: 'main',
-		name: 'Main Newsletter',
-		description:
-			'Manage your email subscriptions and choose what content you want to receive.',
-		options: [
-			{
-				id: 'main',
-				title: 'News & Updates',
-				description: 'All the latest news, events, tickets, and partner offers',
-				icon: 'trophy',
-				category: 'main'
-			}
-		]
-	},
-	{
-		id: 'weather',
-		name: 'Weather Forecast',
-		description: 'Stay up to date with the latest weather forecasts.',
-		options: [
-			{
-				id: 'weather',
-				title: 'Weather Forecast',
-				description: 'Temperature, wind, and precipitation updates',
-				icon: 'bell',
-				category: 'weather'
-			}
-		]
-	}
-];
+import type { FC } from 'react';
+import { Button } from '@/components/shadcn/ui/button';
+import { NewsletterPicker } from '@/modules/newsletter/components/newsletter-picker';
+import { newsletterCategories } from '@/modules/newsletter/constants/newsletter-data';
+import { useNewsletterPreferences } from '@/modules/newsletter/hooks/use-newsletter-preferences';
 
 export const ProfileNewsletterPage: FC = () => {
 	const {

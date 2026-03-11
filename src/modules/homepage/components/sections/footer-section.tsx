@@ -53,21 +53,21 @@ export const FooterSection: FC = () => {
 	const productLinks = [
 		{ label: 'Auth SDK', href: '#authentication' },
 		{ label: 'Newsletter SDK', href: '#newsletter' },
-		{ label: 'API SDK', href: '#api' },
+		{ label: 'API SDK', href: 'https://demo.unidy.de/swagger/api/html?urls.primaryName=SDK+API+V1' },
 		{ label: 'Documentation', href: '#documentation' }
 	];
 
 	const companyLinks = [
-		{ label: 'About', href: 'https://unidy.de' },
-		{ label: 'Blog', href: 'https://unidy.de/blog' },
-		{ label: 'Careers', href: 'https://unidy.de/careers' },
-		{ label: 'Contact', href: 'https://unidy.de/contact' }
+		{ label: 'About', href: 'https://unidy.io' },
+		{ label: 'Blog', href: 'https://unidy.io/blog' },
+		{ label: 'Careers', href: 'https://unidy.io/careers' },
+		{ label: 'Contact', href: 'https://unidy.io/contact' }
 	];
 
 	const legalLinks = [
-		{ label: 'Privacy', href: 'https://unidy.de/privacy' },
-		{ label: 'Terms', href: 'https://unidy.de/terms' },
-		{ label: 'Security', href: 'https://unidy.de/security' }
+		{ label: 'Privacy Policy', href: 'https://www.unidy.io/privacy-policy' },
+		{ label: 'Terms & Conditions', href: 'https://www.unidy.io/terms-and-conditions' },
+		{ label: 'Imprint', href: 'https://www.unidy.io/imprint' }
 	];
 
 	return (

@@ -28,12 +28,12 @@ export function formatTime(date: Date): string {
 	}).format(new Date(date));
 }
 
-export function mapItemState(state: string): 'active' | 'inactive' | 'expired' {
+export function mapItemState(state: string): 'active' | 'passive' | 'inactive' {
 	switch (state.toLowerCase()) {
 		case 'active':
 			return 'active';
-		case 'expired':
-			return 'expired';
+		case 'passive':
+			return 'passive';
 		default:
 			return 'inactive';
 	}

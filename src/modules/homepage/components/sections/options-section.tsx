@@ -120,7 +120,19 @@ export const OptionsSection = () => {
 								className="w-full justify-start"
 							>
 								<ExternalLink className="size-4" />
-								Dedicated Page Demo
+								Subscribe Page
+							</Button>
+						</Link>
+
+						<Link href="/newsletter/manage">
+							<Button
+								theme="neutral"
+								variant="ghost"
+								size="md"
+								className="w-full justify-start"
+							>
+								<ExternalLink className="size-4" />
+								Manage Page
 							</Button>
 						</Link>
 					</OptionItem>
@@ -156,10 +168,10 @@ export const OptionsSection = () => {
 						</Link>
 					</OptionItem>
 
-					{/* Tickets */}
+					{/* Tickets / Subscriptions */}
 					<OptionItem
 						icon={<Ticket className="size-6 text-accent-contrast" />}
-						title="Tickets"
+						title="Tickets / Subscriptions"
 						description="Manage tickets & subs"
 					>
 						<LinkSmooth href="#tickets">
@@ -182,7 +194,19 @@ export const OptionsSection = () => {
 								className="w-full justify-start"
 							>
 								<ExternalLink className="size-4" />
-								Dedicated Page Demo
+								Tickets Page
+							</Button>
+						</Link>
+
+						<Link href="/profile/subscriptions">
+							<Button
+								theme="neutral"
+								variant="ghost"
+								size="md"
+								className="w-full justify-start"
+							>
+								<ExternalLink className="size-4" />
+								Subscriptions Page
 							</Button>
 						</Link>
 					</OptionItem>
