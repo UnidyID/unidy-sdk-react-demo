@@ -93,7 +93,7 @@ export const OptionsSection = () => {
 							</DialogContent>
 						</Dialog>
 
-						<Link href="/login">
+						<Link href={isLoggedIn ? '/profile/details' : '/login'}>
 							<Button
 								theme="neutral"
 								variant="ghost"
