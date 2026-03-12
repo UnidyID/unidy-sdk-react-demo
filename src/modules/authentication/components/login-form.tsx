@@ -145,6 +145,31 @@ export const LoginForm = ({
 					>
 						{login.isLoading ? 'Loading...' : 'Continue'}
 					</Button>
+
+					<div className="flex items-center justify-center gap-2">
+						<div className="flex-1 h-px bg-neutral-weak" />
+						<p className="body-2 text-neutral-strong">or continue with</p>
+						<div className="flex-1 h-px bg-neutral-weak" />
+					</div>
+
+					<Button
+						type="button"
+						theme="neutral"
+						variant="outline"
+						size="lg"
+						className="w-full"
+						onClick={() => {
+							const url = login.getSocialAuthUrl(
+								'google',
+								window.location.origin + '/login'
+							);
+							window.location.href = url;
+						}}
+						disabled={login.isLoading}
+					>
+						<GoogleIcon className="size-5" />
+						Continue with Google
+					</Button>
 				</form>
 			)}
 
