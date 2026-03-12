@@ -1,6 +1,7 @@
 'use client';
 
 import { useRegistration } from '@unidy.io/sdk-react';
+import { formatDuration, intervalToDuration } from 'date-fns';
 import {
 	ArrowLeft,
 	CheckCircle2,
@@ -533,7 +534,7 @@ export const LoginPage = () => {
 											disabled={registration.isLoading || resendCountdown > 0}
 										>
 											{resendCountdown > 0
-												? `Resend code in ${resendCountdown}s`
+												? `Resend code in ${formatDuration(intervalToDuration({ start: 0, end: resendCountdown * 1000 }))}`
 												: 'Resend code'}
 										</Button>
 									</div>

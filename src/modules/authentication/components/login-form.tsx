@@ -1,6 +1,7 @@
 'use client';
 
 import { useLogin } from '@unidy.io/sdk-react';
+import { formatDuration, intervalToDuration } from 'date-fns';
 import {
 	ArrowLeft,
 	CheckCircle2,
@@ -410,7 +411,7 @@ export const LoginForm = ({
 							}
 						>
 							{Math.ceil(magicCodeRemainingMs / 1000) > 0
-								? `Resend code in ${Math.ceil(magicCodeRemainingMs / 1000)}s`
+								? `Resend code in ${formatDuration(intervalToDuration({ start: 0, end: Math.ceil(magicCodeRemainingMs / 1000) * 1000 }))}`
 								: 'Resend code'}
 						</Button>
 					</div>

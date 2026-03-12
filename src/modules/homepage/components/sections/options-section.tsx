@@ -1,5 +1,6 @@
 'use client';
 
+import { useSession } from '@unidy.io/sdk-react';
 import {
 	ArrowDown,
 	Expand,
@@ -10,6 +11,7 @@ import {
 	User
 } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { LinkSmooth } from '@/components/link-smooth';
 import { SectionHeading } from '@/components/section-heading';
 import { Button } from '@/components/shadcn/ui/button';
@@ -25,6 +27,15 @@ import { OptionItem } from '@/modules/homepage/components/option-item';
 import { LoginModalExample } from '../examples/login-modal-example';
 
 export const OptionsSection = () => {
+	const [mounted, setMounted] = useState(false);
+	const session = useSession();
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	const isLoggedIn = mounted && session.isAuthenticated;
+
 	return (
 		<section
 			className="bg-background flex flex-col items-center py-20 w-full px-6"
@@ -65,6 +76,7 @@ export const OptionsSection = () => {
 									variant="ghost"
 									size="md"
 									className="w-full justify-start"
+									disabled={isLoggedIn}
 								>
 									<Expand className="size-4" />
 									Modal Demo
