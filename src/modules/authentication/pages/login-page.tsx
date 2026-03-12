@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card } from '@/components/card';
 import { FormLabel } from '@/components/form-label';
 import { Button } from '@/components/shadcn/ui/button';
@@ -62,6 +62,7 @@ export const LoginPage = () => {
 	const [confirmPasswordError, setConfirmPasswordError] = useState('');
 	const [resendCountdown, setResendCountdown] = useState(0);
 	const [resumeLinkSent, setResumeLinkSent] = useState(false);
+	const [pendingRegistrationNotice, setPendingRegistrationNotice] = useState(false);
 	const didAutoFetchRef = useRef(false);
 
 	// Redirect on successful registration auth & clear localStorage
@@ -71,6 +72,24 @@ export const LoginPage = () => {
 			router.push(redirectTo);
 		}
 	}, [registration.registration?.auth, router, redirectTo]);
+
+	// Clear pending registration from localStorage when user logs in
+	const handleLoginAuthenticated = useCallback(() => {
+		localStorage.removeItem(REGISTRATION_STORAGE_KEY);
+		router.push(redirectTo);
+	}, [router, redirectTo]);
+
+	// When login returns account_not_found, try sending a resume link in case
+	// there's a pending registration for that email
+	const handleAccountNotFound = useCallback(
+		async (email: string) => {
+			const sent = await registration.sendResumeLink(email);
+			if (sent) {
+				setPendingRegistrationNotice(true);
+			}
+		},
+		[registration]
+	);
 
 	// Recover pending registration from URL query params (resume link) or localStorage
 	useEffect(() => {
@@ -138,6 +157,7 @@ export const LoginPage = () => {
 		// Remount LoginForm to reset its internal state
 		if (value === 'login') {
 			setLoginFormKey((k) => k + 1);
+			setPendingRegistrationNotice(false);
 		}
 		// Reset registration state when switching away from register tab
 		if (value !== 'register') {
@@ -149,6 +169,37 @@ export const LoginPage = () => {
 			registration.reset();
 		}
 	};
+
+	// Track whether we need to auto-send the verification code after transitioning
+	const needsVerificationCodeRef = useRef(false);
+
+	// Auto-send verification code once the rid is available in state after registration creation
+	useEffect(() => {
+		if (!needsVerificationCodeRef.current) return;
+		if (!registration.rid) return;
+		if (registerStep !== 'verify-email') return;
+		needsVerificationCodeRef.current = false;
+		// Now that the rid is in state, persist it to localStorage
+		localStorage.setItem(
+			REGISTRATION_STORAGE_KEY,
+			JSON.stringify({ email: registerEmail, rid: registration.rid })
+		);
+		void (async () => {
+			const result = await registration.sendEmailVerificationCode();
+			if (result.success) {
+				const cooldown =
+					result.data?.enable_resend_after ?? registration.enableResendAfter;
+				if (cooldown) setResendCountdown(cooldown);
+			}
+		})();
+	}, [registration.rid, registerStep]);
+
+	const isRegisterFormComplete =
+		registerEmail.trim() &&
+		registerFirstName.trim() &&
+		registerLastName.trim() &&
+		registerPassword &&
+		registerConfirmPassword;
 
 	const handleCreateRegistration = async () => {
 		setConfirmPasswordError('');
@@ -174,25 +225,15 @@ export const LoginPage = () => {
 			}
 		});
 		if (success) {
-			await transitionToVerifyEmail();
+			// Transition to verify-email immediately; the useEffect above will send
+			// the verification code and persist to localStorage once React re-renders
+			// with the new rid in state.
+			needsVerificationCodeRef.current = true;
+			setRegisterStep('verify-email');
 		} else if (registration.error === 'registration_flow_already_exists') {
 			// A flow already exists for this email — send a resume link so the user can continue
 			const sent = await registration.sendResumeLink(registerEmail);
 			if (sent) setResumeLinkSent(true);
-		}
-	};
-
-	const transitionToVerifyEmail = async () => {
-		const result = await registration.sendEmailVerificationCode();
-		if (result.success) {
-			const cooldown =
-				result.data?.enable_resend_after ?? registration.enableResendAfter;
-			if (cooldown) setResendCountdown(cooldown);
-			localStorage.setItem(
-				REGISTRATION_STORAGE_KEY,
-				JSON.stringify({ email: registerEmail, rid: registration.rid })
-			);
-			setRegisterStep('verify-email');
 		}
 	};
 
@@ -281,9 +322,24 @@ export const LoginPage = () => {
 						<ButtonTabsContent value="login" className="w-full mt-6">
 							<LoginForm
 								key={loginFormKey}
-								onAuthenticated={() => router.push(redirectTo)}
+								onAuthenticated={handleLoginAuthenticated}
 								onStepChange={setLoginStep}
+								onAccountNotFound={handleAccountNotFound}
 							/>
+							{pendingRegistrationNotice && (
+								<div className="border border-neutral-medium rounded-[10px] p-4 flex gap-4 items-start bg-neutral-weak mt-4">
+									<CheckCircle2 className="size-10 text-theme shrink-0" />
+									<div className="flex flex-col gap-1">
+										<p className="body-1 text-neutral-strong font-semibold">
+											Pending registration found
+										</p>
+										<p className="body-2 text-neutral-strong">
+											It looks like you started registering but haven&apos;t
+											finished. Check your inbox for a link to continue.
+										</p>
+									</div>
+								</div>
+							)}
 						</ButtonTabsContent>
 
 						{/* Register Content */}
@@ -307,6 +363,7 @@ export const LoginPage = () => {
 												onKeyDown={(e) =>
 													e.key === 'Enter' && handleCreateRegistration()
 												}
+												required
 												className="text-neutral placeholder:text-neutral-medium"
 											/>
 										</InputGroup>
@@ -333,6 +390,7 @@ export const LoginPage = () => {
 													onKeyDown={(e) =>
 														e.key === 'Enter' && handleCreateRegistration()
 													}
+													required
 													className="text-neutral placeholder:text-neutral-medium"
 												/>
 											</InputGroup>
@@ -358,6 +416,7 @@ export const LoginPage = () => {
 													onKeyDown={(e) =>
 														e.key === 'Enter' && handleCreateRegistration()
 													}
+													required
 													className="text-neutral placeholder:text-neutral-medium"
 												/>
 											</InputGroup>
@@ -383,6 +442,7 @@ export const LoginPage = () => {
 												onKeyDown={(e) =>
 													e.key === 'Enter' && handleCreateRegistration()
 												}
+												required
 												className="text-neutral placeholder:text-neutral-medium"
 											/>
 										</InputGroup>
@@ -407,6 +467,7 @@ export const LoginPage = () => {
 												onKeyDown={(e) =>
 													e.key === 'Enter' && handleCreateRegistration()
 												}
+												required
 												className="text-neutral placeholder:text-neutral-medium"
 											/>
 										</InputGroup>
@@ -439,7 +500,9 @@ export const LoginPage = () => {
 										size="lg"
 										className="w-full"
 										onClick={handleCreateRegistration}
-										disabled={registration.isLoading}
+										disabled={
+											registration.isLoading || !isRegisterFormComplete
+										}
 									>
 										{registration.isLoading ? 'Registering...' : 'Register'}
 									</Button>
@@ -482,62 +545,105 @@ export const LoginPage = () => {
 										</InputGroup>
 									</FormLabel>
 
-									<FormLabel title="Verification Code" required>
-										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
-											<InputGroupAddon>
-												<ShieldCheck className="size-5 text-neutral-medium" />
-											</InputGroupAddon>
-											<InputGroupInput
-												type="text"
-												placeholder="Enter 6-digit code"
-												value={verificationCode}
-												onChange={(e) => setVerificationCode(e.target.value)}
-												onKeyDown={(e) =>
-													e.key === 'Enter' && handleVerifyEmail()
-												}
-												maxLength={6}
-												className="text-neutral placeholder:text-neutral-medium"
-											/>
-										</InputGroup>
-									</FormLabel>
+									{registration.registration?.can_finalize ? (
+										<>
+											<div className="border border-neutral-medium rounded-[10px] p-4 flex gap-4 items-start bg-neutral-weak">
+												<CheckCircle2 className="size-10 text-theme shrink-0" />
+												<div className="flex flex-col gap-1">
+													<p className="body-1 text-neutral-strong font-semibold">
+														Email verified
+													</p>
+													<p className="body-2 text-neutral-strong">
+														Your email has been verified. Click below to
+														complete your registration.
+													</p>
+												</div>
+											</div>
 
-									<p className="body-2 text-neutral-strong text-center">
-										A 6-digit verification code has been sent to your email.
-									</p>
+											{registration.error && (
+												<p className="body-2 text-danger">
+													{translateAuthError(registration.error)}
+												</p>
+											)}
 
-									{registration.error && (
-										<p className="body-2 text-danger">
-											{translateAuthError(registration.error)}
-										</p>
+											<Button
+												theme="accent"
+												variant="solid"
+												size="lg"
+												className="w-full"
+												onClick={() => registration.finalizeRegistration()}
+												disabled={registration.isLoading}
+											>
+												{registration.isLoading
+													? 'Completing...'
+													: 'Complete Registration'}
+											</Button>
+										</>
+									) : (
+										<>
+											<FormLabel title="Verification Code" required>
+												<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
+													<InputGroupAddon>
+														<ShieldCheck className="size-5 text-neutral-medium" />
+													</InputGroupAddon>
+													<InputGroupInput
+														type="text"
+														placeholder="Enter 6-digit code"
+														value={verificationCode}
+														onChange={(e) =>
+															setVerificationCode(e.target.value)
+														}
+														onKeyDown={(e) =>
+															e.key === 'Enter' && handleVerifyEmail()
+														}
+														maxLength={6}
+														className="text-neutral placeholder:text-neutral-medium"
+													/>
+												</InputGroup>
+											</FormLabel>
+
+											<p className="body-2 text-neutral-strong text-center">
+												A 6-digit verification code has been sent to your
+												email.
+											</p>
+
+											{registration.error && (
+												<p className="body-2 text-danger">
+													{translateAuthError(registration.error)}
+												</p>
+											)}
+
+											<Button
+												theme="accent"
+												variant="solid"
+												size="lg"
+												className="w-full"
+												onClick={handleVerifyEmail}
+												disabled={registration.isLoading}
+											>
+												{registration.isLoading
+													? 'Verifying...'
+													: 'Verify & Complete Registration'}
+											</Button>
+
+											{/* Resend code */}
+											<div className="flex justify-center">
+												<Button
+													type="button"
+													size="link"
+													variant="link"
+													onClick={handleResendVerificationCode}
+													disabled={
+														registration.isLoading || resendCountdown > 0
+													}
+												>
+													{resendCountdown > 0
+														? `Resend code in ${formatDuration(intervalToDuration({ start: 0, end: resendCountdown * 1000 }))}`
+														: 'Resend code'}
+												</Button>
+											</div>
+										</>
 									)}
-
-									<Button
-										theme="accent"
-										variant="solid"
-										size="lg"
-										className="w-full"
-										onClick={handleVerifyEmail}
-										disabled={registration.isLoading}
-									>
-										{registration.isLoading
-											? 'Verifying...'
-											: 'Verify & Complete Registration'}
-									</Button>
-
-									{/* Resend code */}
-									<div className="flex justify-center">
-										<Button
-											type="button"
-											size="link"
-											variant="link"
-											onClick={handleResendVerificationCode}
-											disabled={registration.isLoading || resendCountdown > 0}
-										>
-											{resendCountdown > 0
-												? `Resend code in ${formatDuration(intervalToDuration({ start: 0, end: resendCountdown * 1000 }))}`
-												: 'Resend code'}
-										</Button>
-									</div>
 
 									{/* Back button */}
 									<Button

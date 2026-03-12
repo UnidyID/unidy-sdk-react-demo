@@ -27,11 +27,14 @@ interface LoginFormProps {
 	onAuthenticated?: () => void;
 	/** Called whenever the login step changes */
 	onStepChange?: (step: string) => void;
+	/** Called when submitEmail returns account_not_found, with the email that was tried */
+	onAccountNotFound?: (email: string) => void;
 }
 
 export const LoginForm = ({
 	onAuthenticated,
-	onStepChange
+	onStepChange,
+	onAccountNotFound
 }: LoginFormProps) => {
 	const login = useLogin({ callbacks: mutationCallbackOptions });
 
@@ -71,6 +74,13 @@ export const LoginForm = ({
 	const handleSubmitEmail = async () => {
 		await login.submitEmail(emailInput);
 	};
+
+	// Notify parent when account_not_found so it can check for pending registrations
+	useEffect(() => {
+		if (login.errors.email === 'account_not_found') {
+			onAccountNotFound?.(emailInput);
+		}
+	}, [login.errors.email]);
 
 	const handleSubmitPassword = async () => {
 		await login.submitPassword(passwordInput);
