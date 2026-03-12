@@ -1,15 +1,8 @@
 'use client';
 
-import {
-	useNewsletterPreferenceCenter,
-	useSession,
-	useUnidyClient
-} from '@unidy.io/sdk-react';
-import { useCallback, useMemo, useState } from 'react';
-import {
-	fetchCallbackOptions,
-	mutationCallbackOptions
-} from '@/deps/unidy/callbacks';
+import { useNewsletterPreferenceCenter } from '@unidy.io/sdk-react';
+import { useCallback, useMemo } from 'react';
+import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import type { NewsletterCategory } from '../components/newsletter-picker';
 
 
@@ -20,16 +13,13 @@ export function useNewsletterPreferences({
 	categories: NewsletterCategory[];
 	preferenceToken?: string;
 }) {
-	const session = useSession({ callbacks: fetchCallbackOptions });
-	const client = useUnidyClient();
-
 	const {
 		subscriptions,
 		isLoading,
 		isMutating,
 		subscribe,
 		unsubscribe,
-		refetch
+		updatePreferences
 	} = useNewsletterPreferenceCenter({
 		preferenceToken,
 		callbacks: mutationCallbackOptions
@@ -55,14 +45,11 @@ export function useNewsletterPreferences({
 		return ids;
 	}, [subscriptions, categories]);
 
-	const [isSaving, setIsSaving] = useState(false);
-
 	const allNewsletterIds = useMemo(
 		() => categories.map((c) => c.id),
 		[categories]
 	);
-	const isAnythingMutating =
-		isSaving || allNewsletterIds.some((id) => isMutating(id));
+	const isAnythingMutating = allNewsletterIds.some((id) => isMutating(id));
 
 	const togglePreference = useCallback(
 		async (toggledId: string) => {
@@ -83,42 +70,22 @@ export function useNewsletterPreferences({
 				? currentForCategory.filter((id) => id !== toggledId)
 				: [...currentForCategory, toggledId];
 
-			setIsSaving(true);
-			try {
-				if (newForCategory.length === 0) {
-					// No preferences left → unsubscribe from the newsletter
-					await unsubscribe(category.id);
-				} else if (session.email) {
-					// Subscribe/update with the new preference set
-					const [error] = await client.newsletters.create({
-						payload: {
-							email: session.email,
-							newsletter_subscriptions: [
-								{
-									newsletter_internal_name: category.id,
-									preference_identifiers: newForCategory
-								}
-							],
-							redirect_to_after_confirmation: window.location.href
-						}
-					});
-					if (error) {
-						mutationCallbackOptions.onError?.(error);
-					} else {
-						await refetch();
-					}
-				} else {
-					await subscribe(category.id);
-				}
-			} catch {
-				mutationCallbackOptions.onError?.(
-					'Failed to update newsletter preference'
-				);
-			} finally {
-				setIsSaving(false);
+			const isAlreadySubscribed = subscriptions.some(
+				(s) => s.newsletter_internal_name === category.id
+			);
+
+			if (newForCategory.length === 0) {
+				// No preferences left → unsubscribe from the newsletter
+				await unsubscribe(category.id);
+			} else if (isAlreadySubscribed) {
+				// Already subscribed → update preferences
+				await updatePreferences(category.id, newForCategory);
+			} else {
+				// Not subscribed yet → subscribe with selected preferences
+				await subscribe(category.id, newForCategory);
 			}
 		},
-		[categories, subscribedIds, session.email, client, subscribe, unsubscribe, refetch]
+		[categories, subscribedIds, subscriptions, subscribe, unsubscribe, updatePreferences]
 	);
 
 	return {
