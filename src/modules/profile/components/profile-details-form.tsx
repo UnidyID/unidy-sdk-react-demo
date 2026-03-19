@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { ChevronDown, Loader2 } from 'lucide-react';
 import { type FC, useEffect, useState } from 'react';
 import { FormLabel } from '@/components/form-label';
 import { Button } from '@/components/shadcn/ui/button';
@@ -9,6 +9,7 @@ import {
 	InputGroup,
 	InputGroupInput
 } from '@/components/shadcn/ui/input-group';
+import { countryOptions } from '@/modules/profile/constants/countries';
 
 export interface ProfileDetailsFormData {
 	firstName: string;
@@ -33,7 +34,11 @@ const fieldToSdkKey: Record<keyof ProfileDetailsFormData, string> = {
 	dateOfBirth: 'date_of_birth'
 };
 
-export type ProfileFormSection = 'personal' | 'contact' | 'address' | 'additional';
+export type ProfileFormSection =
+	| 'personal'
+	| 'contact'
+	| 'address'
+	| 'additional';
 
 export interface ProfileDetailsFormProps {
 	initialData?: Partial<ProfileDetailsFormData>;
@@ -46,6 +51,9 @@ export interface ProfileDetailsFormProps {
 	/** Which sections to show. Defaults to all. */
 	sections?: ProfileFormSection[];
 }
+
+const normalizeCountryCode = (countryCode?: string) =>
+	countryCode?.trim().toUpperCase() || '';
 
 function FieldError({
 	fieldKey,
@@ -78,7 +86,7 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 		phone: initialData.phone || '',
 		streetAddress: initialData.streetAddress || '',
 		city: initialData.city || '',
-		country: initialData.country || '',
+		country: normalizeCountryCode(initialData.country),
 		dateOfBirth: initialData.dateOfBirth || ''
 	});
 
@@ -90,7 +98,7 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 			phone: initialData.phone || '',
 			streetAddress: initialData.streetAddress || '',
 			city: initialData.city || '',
-			country: initialData.country || '',
+			country: normalizeCountryCode(initialData.country),
 			dateOfBirth: initialData.dateOfBirth || ''
 		});
 	}, [
@@ -106,7 +114,7 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 
 	const handleChange =
 		(field: keyof ProfileDetailsFormData) =>
-		(e: React.ChangeEvent<HTMLInputElement>) => {
+		(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
 			setFormData((prev) => ({ ...prev, [field]: e.target.value }));
 		};
 
@@ -213,7 +221,10 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 										placeholder="Text"
 									/>
 								</InputGroup>
-								<FieldError fieldKey="streetAddress" fieldErrors={fieldErrors} />
+								<FieldError
+									fieldKey="streetAddress"
+									fieldErrors={fieldErrors}
+								/>
 							</FormLabel>
 							<div className="flex gap-3">
 								<FormLabel title="City" required className="flex-1">
@@ -230,13 +241,20 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 								</FormLabel>
 								<FormLabel title="Country" required className="flex-1">
 									<InputGroup>
-										<InputGroupInput
-											type="text"
+										<select
+											data-slot="input-group-control"
 											value={formData.country}
 											onChange={handleChange('country')}
-											className="text-neutral"
-											placeholder="Text"
-										/>
+											className="input h-full min-w-0 flex-1 cursor-pointer appearance-none bg-transparent px-3 py-0 pr-9 text-neutral outline-none"
+										>
+											<option value="">Select country</option>
+											{countryOptions.map((country) => (
+												<option key={country.code} value={country.code}>
+													{country.label}
+												</option>
+											))}
+										</select>
+										<ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-neutral-strong" />
 									</InputGroup>
 									<FieldError fieldKey="country" fieldErrors={fieldErrors} />
 								</FormLabel>
