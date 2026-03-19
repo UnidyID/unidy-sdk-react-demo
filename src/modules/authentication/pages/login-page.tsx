@@ -59,12 +59,11 @@ export const LoginPage = () => {
 	const [registerLastName, setRegisterLastName] = useState('');
 	const [registerEmail, setRegisterEmail] = useState('');
 	const [registerPassword, setRegisterPassword] = useState('');
-	const [registerConfirmPassword, setRegisterConfirmPassword] = useState('');
 	const [registerStep, setRegisterStep] = useState<'form' | 'verify-email'>(
 		'form'
 	);
 	const [verificationCode, setVerificationCode] = useState('');
-	const [confirmPasswordError, setConfirmPasswordError] = useState('');
+	const [passwordError, setPasswordError] = useState('');
 	const [resendCountdown, setResendCountdown] = useState(0);
 	const [resumeLinkSent, setResumeLinkSent] = useState(false);
 	const [pendingRegistrationNotice, setPendingRegistrationNotice] =
@@ -175,7 +174,7 @@ export const LoginPage = () => {
 		if (value !== 'register') {
 			setRegisterStep('form');
 			setVerificationCode('');
-			setConfirmPasswordError('');
+			setPasswordError('');
 			setResumeLinkSent(false);
 			didAutoFetchRef.current = false;
 			registration.reset();
@@ -210,21 +209,16 @@ export const LoginPage = () => {
 		registerEmail.trim() &&
 		registerFirstName.trim() &&
 		registerLastName.trim() &&
-		registerPassword &&
-		registerConfirmPassword;
+		registerPassword;
 
 	const handleCreateRegistration = async () => {
-		setConfirmPasswordError('');
+		setPasswordError('');
 		setResumeLinkSent(false);
 		if (!registerFirstName.trim() || !registerLastName.trim()) {
 			return;
 		}
 		if (!registerPassword) {
-			setConfirmPasswordError('Password is required');
-			return;
-		}
-		if (registerPassword !== registerConfirmPassword) {
-			setConfirmPasswordError('Passwords do not match');
+			setPasswordError('Password is required');
 			return;
 		}
 		const success = await registration.createRegistration({
@@ -271,7 +265,7 @@ export const LoginPage = () => {
 	const handleRegistrationGoBack = () => {
 		setRegisterStep('form');
 		setVerificationCode('');
-		setConfirmPasswordError('');
+		setPasswordError('');
 		registration.clearErrors();
 	};
 
@@ -442,9 +436,10 @@ export const LoginPage = () => {
 									<FormLabel
 										title="Password"
 										required
-										error={translateAuthError(
-											registration.fieldErrors.password
-										)}
+										error={
+											passwordError ||
+											translateAuthError(registration.fieldErrors.password)
+										}
 									>
 										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
 											<InputGroupAddon>
@@ -454,32 +449,12 @@ export const LoginPage = () => {
 												type="password"
 												placeholder="••••••••"
 												value={registerPassword}
-												onChange={(e) => setRegisterPassword(e.target.value)}
-												onKeyDown={(e) =>
-													e.key === 'Enter' && handleCreateRegistration()
-												}
-												required
-												className="text-neutral placeholder:text-neutral-medium"
-											/>
-										</InputGroup>
-									</FormLabel>
-
-									<FormLabel
-										title="Confirm Password"
-										required
-										error={confirmPasswordError}
-									>
-										<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
-											<InputGroupAddon>
-												<Lock className="size-5 text-neutral-medium" />
-											</InputGroupAddon>
-											<InputGroupInput
-												type="password"
-												placeholder="••••••••"
-												value={registerConfirmPassword}
-												onChange={(e) =>
-													setRegisterConfirmPassword(e.target.value)
-												}
+												onChange={(e) => {
+													setRegisterPassword(e.target.value);
+													if (passwordError) {
+														setPasswordError('');
+													}
+												}}
 												onKeyDown={(e) =>
 													e.key === 'Enter' && handleCreateRegistration()
 												}
