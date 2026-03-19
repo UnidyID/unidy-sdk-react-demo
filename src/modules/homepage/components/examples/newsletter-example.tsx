@@ -100,6 +100,12 @@ export const NewsletterExample = () => {
 	const [subscribed, setSubscribed] = useState(false);
 
 	const isLoggedIn = mounted && session.isAuthenticated;
+	const trimmedEmail = email.trim();
+	const trimmedFirstName = firstName.trim();
+	const trimmedLastName = lastName.trim();
+	const trimmedPhoneNumber = phoneNumber.trim();
+	const isMissingAnonymousRequiredFields =
+		!isLoggedIn && (!trimmedFirstName || !trimmedLastName);
 
 	useEffect(() => {
 		setMounted(true);
@@ -124,13 +130,17 @@ export const NewsletterExample = () => {
 	};
 
 	const handleSubmit = async () => {
+		if (isMissingAnonymousRequiredFields) {
+			return;
+		}
+
 		const result = await subscribe({
-			email,
+			email: trimmedEmail,
 			newsletters: buildNewslettersPayload(selectedNewsletters),
 			additionalFields: {
-				first_name: firstName || null,
-				last_name: lastName || null,
-				phone_number: phoneNumber || null
+				first_name: trimmedFirstName || null,
+				last_name: trimmedLastName || null,
+				phone_number: trimmedPhoneNumber || null
 			},
 			redirectToAfterConfirmation: window.location.origin + '/newsletter/manage'
 		});
@@ -143,7 +153,7 @@ export const NewsletterExample = () => {
 	const handleReset = () => {
 		reset();
 		setSubscribed(false);
-		setEmail('');
+		setEmail(isLoggedIn ? session.email ?? '' : '');
 		setFirstName('');
 		setLastName('');
 		setPhoneNumber('');
@@ -255,9 +265,14 @@ await subscribe({
 
 				{/* Additional Fields */}
 				{!isLoggedIn && (
-					<FormLabel title="Additional Fields">
-						<div className="flex flex-col gap-3 w-full">
-							<div>
+					<div className="flex flex-col gap-3 w-full">
+						<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+							<FormLabel
+								title="First Name"
+								required
+								className="min-w-0"
+								error={fieldErrors.first_name}
+							>
 								<div
 									className={cn(
 										'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
@@ -272,16 +287,18 @@ await subscribe({
 										value={firstName}
 										onChange={(e) => setFirstName(e.target.value)}
 										placeholder="First Name"
+										required
 										className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
 									/>
 								</div>
-								{fieldErrors.first_name && (
-									<p className="body-3 text-red-500 mt-1">
-										{fieldErrors.first_name}
-									</p>
-								)}
-							</div>
-							<div>
+							</FormLabel>
+
+							<FormLabel
+								title="Last Name"
+								required
+								className="min-w-0"
+								error={fieldErrors.last_name}
+							>
 								<div
 									className={cn(
 										'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
@@ -296,41 +313,33 @@ await subscribe({
 										value={lastName}
 										onChange={(e) => setLastName(e.target.value)}
 										placeholder="Last Name"
+										required
 										className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
 									/>
 								</div>
-								{fieldErrors.last_name && (
-									<p className="body-3 text-red-500 mt-1">
-										{fieldErrors.last_name}
-									</p>
-								)}
-							</div>
-							<div>
-								<div
-									className={cn(
-										'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
-										fieldErrors.phone_number
-											? 'border-red-500'
-											: 'border-neutral-medium'
-									)}
-								>
-									<Phone className="size-5 text-neutral-medium shrink-0" />
-									<input
-										type="tel"
-										value={phoneNumber}
-										onChange={(e) => setPhoneNumber(e.target.value)}
-										placeholder="Phone Number"
-										className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
-									/>
-								</div>
-								{fieldErrors.phone_number && (
-									<p className="body-3 text-red-500 mt-1">
-										{fieldErrors.phone_number}
-									</p>
-								)}
-							</div>
+							</FormLabel>
 						</div>
-					</FormLabel>
+
+						<FormLabel title="Phone Number" error={fieldErrors.phone_number}>
+							<div
+								className={cn(
+									'relative border rounded-[10px] h-[50px] flex gap-2 items-center px-4 bg-section',
+									fieldErrors.phone_number
+										? 'border-red-500'
+										: 'border-neutral-medium'
+								)}
+							>
+								<Phone className="size-5 text-neutral-medium shrink-0" />
+								<input
+									type="tel"
+									value={phoneNumber}
+									onChange={(e) => setPhoneNumber(e.target.value)}
+									placeholder="Phone Number"
+									className="flex-1 bg-transparent border-0 outline-none input text-neutral placeholder:text-neutral-medium"
+								/>
+							</div>
+						</FormLabel>
+					</div>
 				)}
 
 				{/* Newsletter Selection */}
@@ -389,7 +398,8 @@ await subscribe({
 						onClick={handleSubmit}
 						disabled={
 							isLoading ||
-							!email ||
+							!trimmedEmail ||
+							isMissingAnonymousRequiredFields ||
 							selectedNewsletters.length === 0 ||
 							!consentChecked
 						}
