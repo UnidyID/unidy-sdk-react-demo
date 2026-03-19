@@ -10,9 +10,18 @@ export const ProfileNewsletterPage: FC = () => {
 	const {
 		isLoading,
 		isAnythingMutating,
+		isNewsletterMutating,
+		subscriptionsByCategory,
 		subscribedIds,
+		subscribeNewsletter,
+		unsubscribeNewsletter,
+		resendConfirmationEmail,
 		togglePreference
 	} = useNewsletterPreferences({ categories: newsletterCategories });
+	const confirmationReturnUrl =
+		typeof window === 'undefined'
+			? undefined
+			: `${window.location.origin}/newsletter/manage`;
 
 	return (
 		<div className="flex flex-col gap-6 grow">
@@ -28,7 +37,7 @@ export const ProfileNewsletterPage: FC = () => {
 				<div className="flex flex-col gap-6">
 					<div className="flex flex-col gap-3">
 						<p className="title-3 text-neutral-strong">
-							Subscribed Newsletters
+							Newsletter Subscriptions
 						</p>
 						{isLoading ? (
 							<div className="flex items-center justify-center py-8">
@@ -38,8 +47,18 @@ export const ProfileNewsletterPage: FC = () => {
 							<NewsletterPicker
 								categories={newsletterCategories}
 								selectedIds={subscribedIds}
+								subscriptionsByCategory={subscriptionsByCategory}
 								onToggle={togglePreference}
+								onSubscribeNewsletter={subscribeNewsletter}
+								onUnsubscribeNewsletter={unsubscribeNewsletter}
+								onResendConfirmation={(internalName) =>
+									void resendConfirmationEmail(
+										internalName,
+										confirmationReturnUrl
+									)
+								}
 								disabled={isAnythingMutating}
+								isNewsletterMutating={isNewsletterMutating}
 							/>
 						)}
 					</div>

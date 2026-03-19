@@ -123,7 +123,7 @@ export const AuthenticationSection = () => {
 								Social
 							</TabsTrigger>
 							<TabsTrigger value="kitchen-sink" className="flex-1">
-								Kitchen Sink
+								Full demo
 							</TabsTrigger>
 						</TabsList>
 

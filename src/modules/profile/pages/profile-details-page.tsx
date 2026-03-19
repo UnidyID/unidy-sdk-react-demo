@@ -18,7 +18,6 @@ export const ProfileDetailsPage: FC = () => {
 		? {
 				firstName: profile.first_name?.value ?? '',
 				lastName: profile.last_name?.value ?? '',
-				email: profile.email?.value ?? '',
 				phone: profile.phone_number?.value ?? '',
 				streetAddress: profile.address_line_1?.value ?? '',
 				city: profile.city?.value ?? '',

@@ -1,10 +1,19 @@
 'use client';
 
-import { useNewsletterPreferenceCenter } from '@unidy.io/sdk-react';
-import { useCallback, useMemo } from 'react';
+import {
+	useNewsletterPreferenceCenter,
+	useNewsletterResendConfirmation,
+	type ExistingSubscription
+} from '@unidy.io/sdk-react';
+import { useCallback, useMemo, useState } from 'react';
 import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import type { NewsletterCategory } from '../components/newsletter-picker';
 
+export type NewsletterSubscriptionState = {
+	subscription?: ExistingSubscription;
+	isSubscribed: boolean;
+	isConfirmed: boolean;
+};
 
 export function useNewsletterPreferences({
 	categories,
@@ -24,45 +33,86 @@ export function useNewsletterPreferences({
 		preferenceToken,
 		callbacks: mutationCallbackOptions
 	});
+	const { resendConfirmation } = useNewsletterResendConfirmation({
+		preferenceToken,
+		callbacks: mutationCallbackOptions
+	});
+	const [resendingNewsletter, setResendingNewsletter] = useState<string | null>(
+		null
+	);
+
+	const subscriptionsByCategory = useMemo<
+		Record<string, NewsletterSubscriptionState>
+	>(() => {
+		return Object.fromEntries(
+			categories.map((category) => {
+				const subscription = subscriptions.find(
+					(sub) => sub.newsletter_internal_name === category.id
+				);
+
+				return [
+					category.id,
+					{
+						subscription,
+						isSubscribed: !!subscription,
+						isConfirmed: subscription?.confirmed ?? false
+					}
+				];
+			})
+		);
+	}, [categories, subscriptions]);
 
 	const subscribedIds = useMemo(() => {
 		const ids: string[] = [];
-		for (const sub of subscriptions) {
-			const category = categories.find(
-				(c) => c.id === sub.newsletter_internal_name
-			);
-			if (!category) continue;
+
+		for (const category of categories) {
+			const subscription = subscriptionsByCategory[category.id]?.subscription;
+			if (!subscription) continue;
+			if (category.selectablePreferences === false) continue;
 
 			if (
-				sub.preference_identifiers &&
-				sub.preference_identifiers.length > 0
+				subscription.preference_identifiers &&
+				subscription.preference_identifiers.length > 0
 			) {
-				ids.push(...sub.preference_identifiers);
+				ids.push(...subscription.preference_identifiers);
 			} else {
-				ids.push(...category.options.map((o) => o.id));
+				ids.push(...category.options.map((option) => option.id));
 			}
 		}
+
 		return ids;
-	}, [subscriptions, categories]);
+	}, [subscriptionsByCategory, categories]);
 
 	const allNewsletterIds = useMemo(
-		() => categories.map((c) => c.id),
+		() => categories.map((category) => category.id),
 		[categories]
 	);
-	const isAnythingMutating = allNewsletterIds.some((id) => isMutating(id));
+
+	const isNewsletterMutating = useCallback(
+		(internalName: string) =>
+			isMutating(internalName) || resendingNewsletter === internalName,
+		[isMutating, resendingNewsletter]
+	);
+
+	const isAnythingMutating = allNewsletterIds.some((internalName) =>
+		isNewsletterMutating(internalName)
+	);
 
 	const togglePreference = useCallback(
 		async (toggledId: string) => {
-			// Find which category this option belongs to
-			const category = categories.find((c) =>
-				c.options.some((o) => o.id === toggledId)
+			const category = categories.find((currentCategory) =>
+				currentCategory.options.some((option) => option.id === toggledId)
 			);
 			if (!category) return;
+			if (category.selectablePreferences === false) return;
+
+			const subscriptionState = subscriptionsByCategory[category.id];
+			if (subscriptionState?.isSubscribed && !subscriptionState.isConfirmed) {
+				return;
+			}
 
 			const isCurrentlySelected = subscribedIds.includes(toggledId);
-			const optionIds = category.options.map((o) => o.id);
-
-			// Compute new selected preferences for this category after toggle
+			const optionIds = category.options.map((option) => option.id);
 			const currentForCategory = optionIds.filter((id) =>
 				subscribedIds.includes(id)
 			);
@@ -70,28 +120,66 @@ export function useNewsletterPreferences({
 				? currentForCategory.filter((id) => id !== toggledId)
 				: [...currentForCategory, toggledId];
 
-			const isAlreadySubscribed = subscriptions.some(
-				(s) => s.newsletter_internal_name === category.id
-			);
-
 			if (newForCategory.length === 0) {
-				// No preferences left → unsubscribe from the newsletter
 				await unsubscribe(category.id);
-			} else if (isAlreadySubscribed) {
-				// Already subscribed → update preferences
+			} else if (subscriptionState?.isSubscribed) {
 				await updatePreferences(category.id, newForCategory);
 			} else {
-				// Not subscribed yet → subscribe with selected preferences
 				await subscribe(category.id, newForCategory);
 			}
 		},
-		[categories, subscribedIds, subscriptions, subscribe, unsubscribe, updatePreferences]
+		[
+			categories,
+			subscribedIds,
+			subscriptionsByCategory,
+			subscribe,
+			unsubscribe,
+			updatePreferences
+		]
+	);
+
+	const subscribeNewsletter = useCallback(
+		async (internalName: string) => {
+			await subscribe(internalName);
+		},
+		[subscribe]
+	);
+
+	const unsubscribeNewsletter = useCallback(
+		async (internalName: string) => {
+			await unsubscribe(internalName);
+		},
+		[unsubscribe]
+	);
+
+	const resendConfirmationEmail = useCallback(
+		async (internalName: string, redirectToAfterConfirmation?: string) => {
+			setResendingNewsletter(internalName);
+
+			try {
+				return await resendConfirmation(
+					internalName,
+					redirectToAfterConfirmation
+				);
+			} finally {
+				setResendingNewsletter((current) =>
+					current === internalName ? null : current
+				);
+			}
+		},
+		[resendConfirmation]
 	);
 
 	return {
 		isLoading,
 		isAnythingMutating,
+		isNewsletterMutating,
 		subscribedIds,
-		togglePreference
+		subscriptionsByCategory,
+		subscriptionCount: subscriptions.length,
+		togglePreference,
+		subscribeNewsletter,
+		unsubscribeNewsletter,
+		resendConfirmationEmail
 	};
 }

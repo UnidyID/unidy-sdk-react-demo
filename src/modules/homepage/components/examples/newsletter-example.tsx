@@ -131,7 +131,8 @@ export const NewsletterExample = () => {
 				first_name: firstName || null,
 				last_name: lastName || null,
 				phone_number: phoneNumber || null
-			}
+			},
+			redirectToAfterConfirmation: window.location.origin + '/newsletter/manage'
 		});
 
 		if (result.success) {
@@ -186,7 +187,12 @@ await subscribe({ email, newsletters });`}
 		<SDKWrapper
 			title="Newsletter SDK / Subscription Form"
 			codeSnippet={`const { subscribe, isLoading, fieldErrors } = useNewsletterSubscribe();
-await subscribe({ email, newsletters, additionalFields });`}
+await subscribe({
+  email,
+  newsletters,
+  additionalFields,
+  redirectToAfterConfirmation: 'https://example.com/newsletter/manage',
+});`}
 			size="lg"
 			labelPosition="top-left"
 			detatched
@@ -397,9 +403,7 @@ await subscribe({ email, newsletters, additionalFields });`}
 	);
 
 	if (isLoggedIn) {
-		return (
-			<ExistingSubscriptionsGate>{form}</ExistingSubscriptionsGate>
-		);
+		return <ExistingSubscriptionsGate>{form}</ExistingSubscriptionsGate>;
 	}
 
 	return form;

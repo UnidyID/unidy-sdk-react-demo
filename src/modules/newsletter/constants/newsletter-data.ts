@@ -162,6 +162,7 @@ function SubscribeForm() {
       email: 'user@example.com',
       newsletters: [{ internalName: 'sports' }],
       additionalFields: { first_name: 'John' },
+      redirectToAfterConfirmation: 'https://example.com/newsletter/manage',
     });
   };
 }`;

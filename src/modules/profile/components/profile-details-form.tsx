@@ -14,7 +14,6 @@ import { countryOptions } from '@/modules/profile/constants/countries';
 export interface ProfileDetailsFormData {
 	firstName: string;
 	lastName: string;
-	email: string;
 	phone: string;
 	streetAddress: string;
 	city: string;
@@ -26,7 +25,6 @@ export interface ProfileDetailsFormData {
 const fieldToSdkKey: Record<keyof ProfileDetailsFormData, string> = {
 	firstName: 'first_name',
 	lastName: 'last_name',
-	email: 'email',
 	phone: 'phone_number',
 	streetAddress: 'address_line_1',
 	city: 'city',
@@ -82,7 +80,6 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 	const [formData, setFormData] = useState<ProfileDetailsFormData>({
 		firstName: initialData.firstName || '',
 		lastName: initialData.lastName || '',
-		email: initialData.email || '',
 		phone: initialData.phone || '',
 		streetAddress: initialData.streetAddress || '',
 		city: initialData.city || '',
@@ -94,7 +91,6 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 		setFormData({
 			firstName: initialData.firstName || '',
 			lastName: initialData.lastName || '',
-			email: initialData.email || '',
 			phone: initialData.phone || '',
 			streetAddress: initialData.streetAddress || '',
 			city: initialData.city || '',
@@ -104,7 +100,6 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 	}, [
 		initialData.firstName,
 		initialData.lastName,
-		initialData.email,
 		initialData.phone,
 		initialData.streetAddress,
 		initialData.city,
@@ -177,19 +172,6 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 					<div className="flex flex-col gap-4">
 						<h3 className="title-3 text-neutral">Contact Information</h3>
 						<div className="flex flex-col gap-4">
-							<FormLabel title="Email Address" required>
-								<InputGroup>
-									<InputGroupInput
-										type="email"
-										value={formData.email}
-										onChange={handleChange('email')}
-										className="text-neutral"
-										placeholder="Text"
-										readOnly
-									/>
-								</InputGroup>
-								<FieldError fieldKey="email" fieldErrors={fieldErrors} />
-							</FormLabel>
 							<FormLabel title="Phone Number" required>
 								<InputGroup>
 									<InputGroupInput
