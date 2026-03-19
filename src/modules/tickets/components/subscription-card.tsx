@@ -94,12 +94,12 @@ export const SubscriptionCard: FC<SubscriptionCardProps> = ({
 						<p className="caption text-neutral-strong">Annual Price</p>
 						<p className="body-1 text-neutral">{annualPrice}</p>
 					</div>
-					<div className="flex flex-wrap justify-end gap-3">
-						<Button theme="accent" onClick={onDownloadPdf}>
-							<Download className="size-4" />
-							Download PDF
-						</Button>
-						{exportable && (
+					{exportable && (
+						<div className="flex flex-wrap justify-end gap-3">
+							<Button theme="accent" onClick={onDownloadPdf}>
+								<Download className="size-4" />
+								Download PDF
+							</Button>
 							<Button
 								theme="accent"
 								variant="outline"
@@ -108,8 +108,8 @@ export const SubscriptionCard: FC<SubscriptionCardProps> = ({
 								<WalletCards className="size-4" />
 								Add to Apple Wallet
 							</Button>
-						)}
-					</div>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

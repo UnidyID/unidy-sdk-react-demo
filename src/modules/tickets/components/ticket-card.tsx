@@ -105,18 +105,18 @@ export const TicketCard: FC<TicketCardProps> = ({
 				)}
 			</div>
 
-			<div className="flex flex-wrap gap-3">
-				<Button theme="accent" onClick={onDownloadPdf}>
-					<Download className="size-4" />
-					Download PDF
-				</Button>
-				{exportable && (
+			{exportable && (
+				<div className="flex flex-wrap gap-3">
+					<Button theme="accent" onClick={onDownloadPdf}>
+						<Download className="size-4" />
+						Download PDF
+					</Button>
 					<Button theme="accent" variant="outline" onClick={onDownloadPkpass}>
 						<WalletCards className="size-4" />
 						Add to Apple Wallet
 					</Button>
-				)}
-			</div>
+				</div>
+			)}
 		</div>
 	);
 };

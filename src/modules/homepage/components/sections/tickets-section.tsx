@@ -85,7 +85,7 @@ export const TicketsSection = () => {
 
 				{/* Tabs */}
 				<Tabs defaultValue="tickets" className="w-full">
-					<div className="flex items-center gap-4">
+					<div className="flex flex-col gap-4 md:flex-row md:items-center">
 						<TabsList className="flex-1">
 							<TabsTrigger value="tickets">Event Tickets</TabsTrigger>
 							<TabsTrigger value="subscriptions">
@@ -101,7 +101,10 @@ export const TicketsSection = () => {
 					<TabsContent value="tickets" className="flex-1 min-w-0 w-full">
 						{isLoggedIn ? (
 							<>
-								<TicketsExample statusFilter={statusFilter} perPage={perPage} />
+								<TicketsExample
+									statusFilter={statusFilter}
+									perPage={perPage}
+								/>
 								<div className="flex justify-center pt-6">
 									<Link href="/profile/tickets">
 										<Button theme="accent" variant="outline" size="md">

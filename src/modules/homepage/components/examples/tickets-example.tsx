@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/shadcn/ui/button';
 import { fetchCallbackOptions } from '@/deps/unidy/callbacks';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
+import { CreateDummyTicketablesButton } from '@/modules/tickets/components/create-dummy-ticketables-button';
 import type { StatusFilterValue } from '@/modules/tickets/components/status-filter';
 import {
 	TicketCard,
@@ -54,7 +55,7 @@ export const TicketsExample = ({
 	useEffect(() => {
 		setMounted(true);
 	}, []);
-	const { items, isLoading, getExportLink } = useTicketables({
+	const { items, isLoading, getExportLink, refetch } = useTicketables({
 		type: 'ticket',
 		pagination,
 		filter: {
@@ -105,9 +106,17 @@ export const TicketsExample = ({
 			))}
 
 			{loggedIn && tickets.length === 0 && !isLoading && (
-				<p className="body-2 text-neutral-strong text-center py-8">
-					No tickets found.
-				</p>
+				<div className="flex flex-col items-center gap-4 py-8">
+					<p className="body-2 text-neutral-strong text-center">
+						No tickets found.
+					</p>
+					<CreateDummyTicketablesButton
+						size="sm"
+						variant="outline"
+						theme="accent"
+						onCreated={refetch}
+					/>
+				</div>
 			)}
 
 			{loggedIn && (pagination.hasNextPage || pagination.hasPrevPage) && (

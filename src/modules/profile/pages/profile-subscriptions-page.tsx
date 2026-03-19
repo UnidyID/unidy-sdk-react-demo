@@ -10,6 +10,7 @@ import { useSearchParams } from 'next/navigation';
 import { type FC, useState } from 'react';
 import { Button } from '@/components/shadcn/ui/button';
 import { fetchCallbackOptions } from '@/deps/unidy/callbacks';
+import { CreateDummyTicketablesButton } from '@/modules/tickets/components/create-dummy-ticketables-button';
 import {
 	StatusFilter,
 	type StatusFilterValue
@@ -41,7 +42,7 @@ export const ProfileSubscriptionsPage: FC = () => {
 	const perPage = Number(searchParams.get('per_page')) || 4;
 	const [statusFilter, setStatusFilter] = useState<StatusFilterValue>('');
 	const pagination = usePagination({ perPage });
-	const { items, isLoading, getExportLink } = useTicketables({
+	const { items, isLoading, getExportLink, refetch } = useTicketables({
 		type: 'subscription',
 		pagination,
 		filter: {
@@ -68,14 +69,22 @@ export const ProfileSubscriptionsPage: FC = () => {
 	return (
 		<div className="flex flex-col gap-6 grow">
 			<div className="bg-section border border-neutral-weak rounded-[12px] p-10 flex flex-col gap-6 grow">
-				<div className="flex items-start justify-between">
+				<div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
 					<div className="flex flex-col gap-1">
 						<h2 className="title-2 text-neutral">My Subscriptions</h2>
 						<p className="body-2 text-neutral-strong">
 							View and manage your subscriptions.
 						</p>
 					</div>
-					<StatusFilter value={statusFilter} onChange={setStatusFilter} />
+					<div className="flex flex-wrap items-center gap-3">
+						<CreateDummyTicketablesButton
+							size="sm"
+							variant="outline"
+							theme="accent"
+							onCreated={refetch}
+						/>
+						<StatusFilter value={statusFilter} onChange={setStatusFilter} />
+					</div>
 				</div>
 
 				<div className="relative flex flex-col gap-2">
