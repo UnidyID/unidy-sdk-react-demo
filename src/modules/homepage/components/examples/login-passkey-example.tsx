@@ -109,7 +109,7 @@ export const LoginPasskeyExample = () => {
 
 					<SDKWrapper
 						title="Auth SDK / Passkey"
-						codeSnippet={`const login = useLogin();\n// login.loginOptions?.passkey === true\n// Passkey authentication via WebAuthn`}
+						codeSnippet={`const login = useLogin();\nawait login.authenticateWithPasskey();\n// Handles full WebAuthn flow`}
 						size="sm"
 						popoverPosition="left"
 					>
@@ -118,15 +118,19 @@ export const LoginPasskeyExample = () => {
 							variant="solid"
 							size="lg"
 							className="w-full"
-							disabled
+							onClick={() => login.authenticateWithPasskey()}
+							disabled={login.isLoading}
 						>
 							<KeyRound className="size-5" />
-							Continue with Passkey
-							<span className="caption rounded-full border border-white/30 bg-white/10 px-2 py-0.5 text-current">
-								Coming soon
-							</span>
+							{login.isLoading ? 'Authenticating...' : 'Continue with Passkey'}
 						</Button>
 					</SDKWrapper>
+
+					{login.errors.passkey && (
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.passkey)}
+						</p>
+					)}
 
 					{login.errors.global && (
 						<p className="body-2 text-red-500">

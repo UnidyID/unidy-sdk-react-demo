@@ -101,14 +101,7 @@ export const AuthenticationSection = () => {
 		},
 		{
 			icon: <KeyRound className="size-4 text-accent" />,
-			title: (
-				<span className="flex flex-wrap items-center gap-2">
-					<span>Passkey &amp; Biometric</span>
-					<span className="caption rounded-full border border-neutral-medium bg-neutral-weak px-2 py-0.5 text-neutral-strong">
-						Coming soon
-					</span>
-				</span>
-			),
+			title: 'Passkey & Biometric',
 			description:
 				'Passwordless authentication with Face ID, Touch ID, or device security'
 		}

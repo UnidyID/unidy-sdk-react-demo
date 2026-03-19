@@ -1,7 +1,7 @@
 'use client';
 
 import { useLogin } from '@unidy.io/sdk-react';
-import { ArrowLeft, Lock, Mail } from 'lucide-react';
+import { ArrowLeft, KeyRound, Lock, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { FormLabel } from '@/components/form-label';
@@ -198,6 +198,32 @@ export const LoginSimpleExample = ({
 							{login.isLoading ? 'Signing in...' : 'Sign In'}
 						</Button>
 					</SDKWrapper>
+
+					{login.loginOptions?.passkey && (
+						<>
+							<div className="flex items-center justify-center gap-2">
+								<div className="flex-1 h-px bg-neutral-weak" />
+								<p className="body-2 text-neutral-strong">or</p>
+								<div className="flex-1 h-px bg-neutral-weak" />
+							</div>
+							<Button
+								theme="accent"
+								variant="solid-weak"
+								size="lg"
+								className="w-full"
+								onClick={() => login.authenticateWithPasskey()}
+								disabled={login.isLoading}
+							>
+								<KeyRound className="size-5" />
+								{login.isLoading ? 'Authenticating...' : 'Sign in with Passkey'}
+							</Button>
+							{login.errors.passkey && (
+								<p className="body-2 text-red-500">
+									{translateAuthError(login.errors.passkey)}
+								</p>
+							)}
+						</>
+					)}
 
 					{login.errors.global && (
 						<p className="body-2 text-red-500">

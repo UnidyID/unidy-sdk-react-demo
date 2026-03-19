@@ -298,19 +298,24 @@ export const LoginForm = ({
 					)}
 
 					{login.loginOptions?.passkey && (
-						<Button
-							theme="accent"
-							variant="solid-weak"
-							size="lg"
-							className="w-full"
-							disabled
-						>
-							<KeyRound className="size-5" />
-							Continue with Passkey
-							<span className="caption rounded-full border border-neutral-medium bg-neutral-weak px-2 py-0.5 text-neutral-strong">
-								Coming soon
-							</span>
-						</Button>
+						<>
+							<Button
+								theme="accent"
+								variant="solid-weak"
+								size="lg"
+								className="w-full"
+								onClick={() => login.authenticateWithPasskey()}
+								disabled={login.isLoading}
+							>
+								<KeyRound className="size-5" />
+								{login.isLoading ? 'Authenticating...' : 'Continue with Passkey'}
+							</Button>
+							{login.errors.passkey && (
+								<p className="body-2 text-red-500">
+									{translateAuthError(login.errors.passkey)}
+								</p>
+							)}
+						</>
 					)}
 
 					{availableSocialProviders.length > 0 && (

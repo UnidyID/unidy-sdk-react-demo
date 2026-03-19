@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "kampus-platform",
@@ -20,7 +21,7 @@
         "@tanstack/react-table": "^8.20.5",
         "@types/react-syntax-highlighter": "^15.5.13",
         "@unidy.io/sdk": "^1.3.0",
-        "@unidy.io/sdk-react": "^0.0.3",
+        "@unidy.io/sdk-react": "^0.0.4",
         "bcryptjs": "^3.0.3",
         "better-auth": "^1.3.12",
         "class-variance-authority": "^0.7.1",
@@ -475,7 +476,7 @@
 
     "@unidy.io/sdk": ["@unidy.io/sdk@1.3.3", "", { "dependencies": { "@sentry/browser": "^10.38.0", "@stencil/store": "^2.2.2", "date-fns": "^4.1.0", "i18next": "^25.8.0", "jwt-decode": "^4.0.0", "react": "^19.2.4", "react-dom": "^19.2.4", "rollup-plugin-visualizer": "^6.0.5", "zod": "^4.3.6" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-RHYaKeoJ5Se+acdJjJbKIkk1Ok1fVkgKCuZ3mL/hbuOcWzgmaj2H0HeMpTgxzAN0Vba5FpJvf8P1M1v3kMReQQ=="],
 
-    "@unidy.io/sdk-react": ["@unidy.io/sdk-react@0.0.3", "", { "dependencies": { "jwt-decode": "^4.0.0" }, "peerDependencies": { "@unidy.io/sdk": "1.3.0", "react": ">=18" } }, "sha512-gVhXUnwnSVAdldhViVBit6kSTt7tZDNduBFnlgJbNbS6nISq0hGesZBCgTifZcGd7Q3oOQR31lDHe9vOLeQ4+g=="],
+    "@unidy.io/sdk-react": ["@unidy.io/sdk-react@0.0.4", "", { "dependencies": { "jwt-decode": "^4.0.0" }, "peerDependencies": { "@unidy.io/sdk": "1.3.0", "react": ">=18" } }, "sha512-l1BCWgziRl3RM8Rbn2P+ekNHbIHef8N+aR+D6Cvs2u+uIpE9LG2/9Q1Wp6nizToMWgR+U8jR9q1G9FwJPbe3mg=="],
 
     "@unrs/resolver-binding-android-arm-eabi": ["@unrs/resolver-binding-android-arm-eabi@1.11.1", "", { "os": "android", "cpu": "arm" }, "sha512-ppLRUgHVaGRWUx0R0Ut06Mjo9gBaBkg3v/8AxusGLhsIotbBLuRk51rAzqLC8gq6NyyAojEXglNjzf6R948DNw=="],
 
