@@ -565,7 +565,9 @@ export const LoginPage = () => {
 
 									<div className="flex items-center justify-center gap-2">
 										<div className="flex-1 h-px bg-neutral-weak" />
-										<p className="body-2 text-neutral-strong">or continue with</p>
+										<p className="body-2 text-neutral-strong">
+											or continue with
+										</p>
 										<div className="flex-1 h-px bg-neutral-weak" />
 									</div>
 
