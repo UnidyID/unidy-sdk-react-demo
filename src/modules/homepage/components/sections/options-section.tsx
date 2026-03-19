@@ -16,6 +16,10 @@ import { LinkSmooth } from '@/components/link-smooth';
 import { SectionHeading } from '@/components/section-heading';
 import { Button } from '@/components/shadcn/ui/button';
 import {
+	buildLoginHref,
+	useCurrentReturnTo
+} from '@/modules/authentication/utils/return-to';
+import {
 	Dialog,
 	DialogContent,
 	DialogDescription,
@@ -29,6 +33,7 @@ import { LoginModalExample } from '../examples/login-modal-example';
 export const OptionsSection = () => {
 	const [mounted, setMounted] = useState(false);
 	const session = useSession();
+	const returnTo = useCurrentReturnTo('/');
 
 	useEffect(() => {
 		setMounted(true);
@@ -93,7 +98,11 @@ export const OptionsSection = () => {
 							</DialogContent>
 						</Dialog>
 
-						<Link href={isLoggedIn ? '/profile/details' : '/login'}>
+						<Link
+							href={
+								isLoggedIn ? '/profile/details' : buildLoginHref(returnTo, '/')
+							}
+						>
 							<Button
 								theme="neutral"
 								variant="ghost"

@@ -7,6 +7,10 @@ import { useSearchParams } from 'next/navigation';
 import { type FC, useState } from 'react';
 import { Button } from '@/components/shadcn/ui/button';
 import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
+import {
+	buildLoginHref,
+	useCurrentReturnTo
+} from '@/modules/authentication/utils/return-to';
 import { ProfileNavigation } from '@/modules/profile/components/profile-navigation';
 import { ProfileSidebar } from '@/modules/profile/components/profile-sidebar';
 import { NewsletterPicker } from '../components/newsletter-picker';
@@ -16,6 +20,7 @@ import { useNewsletterPreferences } from '../hooks/use-newsletter-preferences';
 export const NewsletterManagePage: FC = () => {
 	const searchParams = useSearchParams();
 	const preferenceToken = searchParams.get('preference_token') ?? undefined;
+	const returnTo = useCurrentReturnTo('/newsletter/manage');
 
 	const session = useSession();
 	const isLoggedIn = !!preferenceToken || session.isAuthenticated;
@@ -61,7 +66,7 @@ export const NewsletterManagePage: FC = () => {
 						</Link>
 					</div>
 				) : (
-					<Link href="/login">
+					<Link href={buildLoginHref(returnTo, '/newsletter/manage')}>
 						<Button theme="neutral" variant="solid" size="md">
 							Log in
 						</Button>

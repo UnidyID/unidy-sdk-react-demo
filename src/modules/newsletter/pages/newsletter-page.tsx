@@ -4,6 +4,10 @@ import { useSession } from '@unidy.io/sdk-react';
 import Link from 'next/link';
 import type { FC } from 'react';
 import { Button } from '@/components/shadcn/ui/button';
+import {
+	buildLoginHref,
+	useCurrentReturnTo
+} from '@/modules/authentication/utils/return-to';
 import { ProfileNavigation } from '@/modules/profile/components/profile-navigation';
 import { ProfileSidebar } from '@/modules/profile/components/profile-sidebar';
 import { NewsletterSubscriptionShowcase } from '../components/newsletter-subscription-showcase';
@@ -11,6 +15,7 @@ import { NewsletterSubscriptionShowcase } from '../components/newsletter-subscri
 export const NewsletterPage: FC = () => {
 	const session = useSession();
 	const isLoggedIn = session.isAuthenticated;
+	const returnTo = useCurrentReturnTo('/newsletter');
 
 	return (
 		<div className="bg-background min-h-screen flex flex-col">
@@ -29,7 +34,7 @@ export const NewsletterPage: FC = () => {
 						</Link>
 					</div>
 				) : (
-					<Link href="/login">
+					<Link href={buildLoginHref(returnTo, '/newsletter')}>
 						<Button theme="neutral" variant="solid" size="md">
 							Log in
 						</Button>

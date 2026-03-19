@@ -1,5 +1,9 @@
 'use client';
 
+import {
+	buildLoginHref,
+	useCurrentReturnTo
+} from '@/modules/authentication/utils/return-to';
 import { Button } from '@/components/shadcn/ui/button';
 import { useSession } from '@unidy.io/sdk-react';
 import { ArrowRight, Shield } from 'lucide-react';
@@ -9,6 +13,7 @@ import { useEffect, useState } from 'react';
 export const HeroSection = () => {
 	const [mounted, setMounted] = useState(false);
 	const session = useSession();
+	const returnTo = useCurrentReturnTo('/');
 
 	useEffect(() => {
 		setMounted(true);
@@ -58,7 +63,11 @@ export const HeroSection = () => {
 
 				{/* CTA Buttons */}
 				<div className="relative h-[52px] w-full flex gap-4">
-					<Link href={isLoggedIn ? '/profile/details' : '/login?redirect=/'}>
+					<Link
+						href={
+							isLoggedIn ? '/profile/details' : buildLoginHref(returnTo, '/')
+						}
+					>
 						<Button theme="accent-contrast" variant="solid" size="lg">
 							Try Demo
 							<ArrowRight />

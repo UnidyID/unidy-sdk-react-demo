@@ -21,6 +21,7 @@ import {
 } from '@/components/shadcn/ui/input-group';
 import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import { translateAuthError } from '@/locales/translate-auth-error';
+import { buildAbsoluteLoginHref } from '../utils/return-to';
 
 interface LoginFormProps {
 	/** Called when login.step becomes 'authenticated' */
@@ -29,12 +30,14 @@ interface LoginFormProps {
 	onStepChange?: (step: string) => void;
 	/** Called when submitEmail returns account_not_found, with the email that was tried */
 	onAccountNotFound?: (email: string) => void;
+	returnTo?: string;
 }
 
 export const LoginForm = ({
 	onAuthenticated,
 	onStepChange,
-	onAccountNotFound
+	onAccountNotFound,
+	returnTo
 }: LoginFormProps) => {
 	const login = useLogin({ callbacks: mutationCallbackOptions });
 
@@ -80,7 +83,7 @@ export const LoginForm = ({
 		if (login.errors.email === 'account_not_found') {
 			onAccountNotFound?.(emailInput);
 		}
-	}, [login.errors.email]);
+	}, [login.errors.email, onAccountNotFound, emailInput]);
 
 	const handleSubmitPassword = async () => {
 		await login.submitPassword(passwordInput);
@@ -161,7 +164,7 @@ export const LoginForm = ({
 						onClick={() => {
 							const url = login.getSocialAuthUrl(
 								'google',
-								window.location.origin + '/login'
+								buildAbsoluteLoginHref(window.location.origin, returnTo, '/')
 							);
 							window.location.href = url;
 						}}
@@ -257,7 +260,11 @@ export const LoginForm = ({
 											onClick={() => {
 												const url = login.getSocialAuthUrl(
 													provider,
-													window.location.origin + '/login'
+													buildAbsoluteLoginHref(
+														window.location.origin,
+														returnTo,
+														'/'
+													)
 												);
 												window.location.href = url;
 											}}

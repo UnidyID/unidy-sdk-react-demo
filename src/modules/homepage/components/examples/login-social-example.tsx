@@ -2,11 +2,16 @@
 
 import { GoogleIcon } from '@/components/icons/google-icon';
 import { Button } from '@/components/shadcn/ui/button';
+import {
+	buildAbsoluteLoginHref,
+	useCurrentReturnTo
+} from '@/modules/authentication/utils/return-to';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { useLogin } from '@unidy.io/sdk-react';
 
 export const LoginSocialExample = () => {
 	const login = useLogin();
+	const returnTo = useCurrentReturnTo('/');
 
 	return (
 		<div className="flex flex-col gap-6 w-full items-center py-6">
@@ -33,7 +38,7 @@ export const LoginSocialExample = () => {
 					onClick={() => {
 						const url = login.getSocialAuthUrl(
 							'google',
-							window.location.origin + '/login'
+							buildAbsoluteLoginHref(window.location.origin, returnTo, '/')
 						);
 						window.location.href = url;
 					}}

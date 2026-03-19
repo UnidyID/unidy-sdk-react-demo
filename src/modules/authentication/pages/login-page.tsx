@@ -1,6 +1,6 @@
 'use client';
 
-import { useRegistration } from '@unidy.io/sdk-react';
+import { useRegistration, useSession } from '@unidy.io/sdk-react';
 import { formatDuration, intervalToDuration } from 'date-fns';
 import {
 	ArrowLeft,
@@ -32,14 +32,19 @@ import {
 import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import { translateAuthError } from '@/locales/translate-auth-error';
 import { LoginForm } from '../components/login-form';
+import {
+	buildAbsoluteLoginHref,
+	getReturnToFromSearchParams
+} from '../utils/return-to';
 
 const REGISTRATION_STORAGE_KEY = 'unidy_pending_registration';
 
 export const LoginPage = () => {
 	const router = useRouter();
 	const searchParams = useSearchParams();
+	const session = useSession();
 	const redirectTo = useMemo(
-		() => searchParams.get('redirect') || '/profile',
+		() => getReturnToFromSearchParams(searchParams),
 		[searchParams]
 	);
 	const registration = useRegistration({ callbacks: mutationCallbackOptions });
@@ -62,21 +67,28 @@ export const LoginPage = () => {
 	const [confirmPasswordError, setConfirmPasswordError] = useState('');
 	const [resendCountdown, setResendCountdown] = useState(0);
 	const [resumeLinkSent, setResumeLinkSent] = useState(false);
-	const [pendingRegistrationNotice, setPendingRegistrationNotice] = useState(false);
+	const [pendingRegistrationNotice, setPendingRegistrationNotice] =
+		useState(false);
 	const didAutoFetchRef = useRef(false);
 
 	// Redirect on successful registration auth & clear localStorage
 	useEffect(() => {
 		if (registration.registration?.auth) {
 			localStorage.removeItem(REGISTRATION_STORAGE_KEY);
-			router.push(redirectTo);
+			router.replace(redirectTo);
 		}
 	}, [registration.registration?.auth, router, redirectTo]);
+
+	useEffect(() => {
+		if (session.isAuthenticated) {
+			router.replace(redirectTo);
+		}
+	}, [session.isAuthenticated, router, redirectTo]);
 
 	// Clear pending registration from localStorage when user logs in
 	const handleLoginAuthenticated = useCallback(() => {
 		localStorage.removeItem(REGISTRATION_STORAGE_KEY);
-		router.push(redirectTo);
+		router.replace(redirectTo);
 	}, [router, redirectTo]);
 
 	// When login returns account_not_found, try sending a resume link in case
@@ -216,7 +228,10 @@ export const LoginPage = () => {
 			return;
 		}
 		const success = await registration.createRegistration({
-			registration_url: window.location.origin + '/login',
+			registration_url: buildAbsoluteLoginHref(
+				window.location.origin,
+				redirectTo
+			),
 			email: registerEmail,
 			password: registerPassword,
 			registration_profile_data: {
@@ -322,6 +337,7 @@ export const LoginPage = () => {
 						<ButtonTabsContent value="login" className="w-full mt-6">
 							<LoginForm
 								key={loginFormKey}
+								returnTo={redirectTo}
 								onAuthenticated={handleLoginAuthenticated}
 								onStepChange={setLoginStep}
 								onAccountNotFound={handleAccountNotFound}
@@ -500,9 +516,7 @@ export const LoginPage = () => {
 										size="lg"
 										className="w-full"
 										onClick={handleCreateRegistration}
-										disabled={
-											registration.isLoading || !isRegisterFormComplete
-										}
+										disabled={registration.isLoading || !isRegisterFormComplete}
 									>
 										{registration.isLoading ? 'Registering...' : 'Register'}
 									</Button>
@@ -603,8 +617,7 @@ export const LoginPage = () => {
 											</FormLabel>
 
 											<p className="body-2 text-neutral-strong text-center">
-												A 6-digit verification code has been sent to your
-												email.
+												A 6-digit verification code has been sent to your email.
 											</p>
 
 											{registration.error && (

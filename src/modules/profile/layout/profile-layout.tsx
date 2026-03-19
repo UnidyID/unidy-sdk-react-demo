@@ -6,6 +6,10 @@ import { useRouter } from 'next/navigation';
 import { type FC, type PropsWithChildren, useEffect, useState } from 'react';
 import { Button } from '@/components/shadcn/ui/button';
 import { fetchCallbackOptions } from '@/deps/unidy/callbacks';
+import {
+	buildLoginHref,
+	useCurrentReturnTo
+} from '@/modules/authentication/utils/return-to';
 import { ProfileNavigation } from '../components/profile-navigation';
 import { ProfileSidebar } from '../components/profile-sidebar';
 
@@ -16,6 +20,7 @@ export const ProfileLayout: FC<PropsWithChildren> = ({ children }) => {
 		callbacks: fetchCallbackOptions
 	});
 	const router = useRouter();
+	const returnTo = useCurrentReturnTo('/profile');
 
 	useEffect(() => {
 		setMounted(true);
@@ -58,7 +63,7 @@ export const ProfileLayout: FC<PropsWithChildren> = ({ children }) => {
 						Log out
 					</Button>
 				) : (
-					<Link href="/login">
+					<Link href={buildLoginHref(returnTo, '/profile')}>
 						<Button theme="neutral" variant="solid" size="md">
 							Log in
 						</Button>

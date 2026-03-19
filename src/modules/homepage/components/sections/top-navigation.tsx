@@ -3,6 +3,10 @@
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/shadcn/ui/button';
 import { ThemeToggler } from '@/lib/theme/components/theme-toggler';
+import {
+	buildLoginHref,
+	useCurrentReturnTo
+} from '@/modules/authentication/utils/return-to';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { LogIn, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
@@ -13,6 +17,7 @@ import { useSession } from '@unidy.io/sdk-react';
 export const TopNavigation = () => {
 	const [mounted, setMounted] = useState(false);
 	const session = useSession();
+	const returnTo = useCurrentReturnTo('/');
 
 	useEffect(() => {
 		setMounted(true);
@@ -78,7 +83,7 @@ export const TopNavigation = () => {
 								popoverPosition="left"
 								detatched
 							>
-								<Link href="/login?redirect=/">
+								<Link href={buildLoginHref(returnTo, '/')}>
 									<Button theme="accent" variant="solid" size="md">
 										<LogIn />
 										Log in
