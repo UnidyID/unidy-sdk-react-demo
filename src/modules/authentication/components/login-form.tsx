@@ -246,6 +246,25 @@ export const LoginForm = ({
 						onSelect={handleSocialAuth}
 						disabled={login.isLoading}
 					/>
+
+					<Button
+						type="button"
+						theme="neutral"
+						variant="outline"
+						size="lg"
+						className="w-full"
+						onClick={() => login.authenticateWithPasskey()}
+						disabled={login.isLoading}
+					>
+						<KeyRound className="size-5" />
+						{login.isLoading ? 'Authenticating...' : 'Sign in with Passkey'}
+					</Button>
+
+					{login.errors.passkey && (
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.passkey)}
+						</p>
+					)}
 				</form>
 			)}
 
