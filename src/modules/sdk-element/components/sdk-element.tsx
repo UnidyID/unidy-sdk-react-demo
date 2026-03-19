@@ -1,14 +1,13 @@
 'use client';
 
+import { PopoverAnchor } from '@radix-ui/react-popover';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Code, ExternalLink } from 'lucide-react';
-
+import { type FC, useState } from 'react';
 import { Button } from '@/components/shadcn/ui/button';
 import { Popover, PopoverContent } from '@/components/shadcn/ui/popover';
 import { cn } from '@/components/shadcn/utils';
 import { useViewportSize } from '@/lib/viewport-size';
-import { PopoverAnchor } from '@radix-ui/react-popover';
-import { FC, useState } from 'react';
 
 const sdkElementOutlineVariants = cva(
 	cn(
@@ -231,16 +230,18 @@ export function SDKElement({
 export const SDKWrapper: FC<
 	SDKElementProps & { children: React.ReactNode; className?: string }
 > = ({ children, className, ...props }) => {
-	return (
-		<div
-			className={cn(
-				'relative',
-				'has-[>.sdk-label[data-active=true]]:z-1000',
-				className
-			)}
-		>
-			<SDKElement {...props} />
-			{children}
-		</div>
-	);
+	return <>{children}</>;
+
+	// return (
+	// 	<div
+	// 		className={cn(
+	// 			'relative',
+	// 			'has-[>.sdk-label[data-active=true]]:z-1000',
+	// 			className
+	// 		)}
+	// 	>
+	// 		<SDKElement {...props} />
+	// 		{children}
+	// 	</div>
+	// );
 };

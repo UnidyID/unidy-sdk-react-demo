@@ -138,27 +138,25 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 				{show('personal') && (
 					<div className="flex flex-col gap-4">
 						<h3 className="title-3 text-neutral">Personal Information</h3>
-						<div className="flex gap-3">
-							<FormLabel title="First Name" required className="flex-1">
+						<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+							<FormLabel title="First Name" required className="min-w-0">
 								<InputGroup>
 									<InputGroupInput
 										type="text"
 										value={formData.firstName}
 										onChange={handleChange('firstName')}
 										className="text-neutral"
-										placeholder="Text"
 									/>
 								</InputGroup>
 								<FieldError fieldKey="firstName" fieldErrors={fieldErrors} />
 							</FormLabel>
-							<FormLabel title="Last Name" required className="flex-1">
+							<FormLabel title="Last Name" required className="min-w-0">
 								<InputGroup>
 									<InputGroupInput
 										type="text"
 										value={formData.lastName}
 										onChange={handleChange('lastName')}
 										className="text-neutral"
-										placeholder="Text"
 									/>
 								</InputGroup>
 								<FieldError fieldKey="lastName" fieldErrors={fieldErrors} />
@@ -179,7 +177,6 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 										value={formData.phone}
 										onChange={handleChange('phone')}
 										className="text-neutral"
-										placeholder="Text"
 									/>
 								</InputGroup>
 								<FieldError fieldKey="phone" fieldErrors={fieldErrors} />
@@ -200,7 +197,6 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 										value={formData.streetAddress}
 										onChange={handleChange('streetAddress')}
 										className="text-neutral"
-										placeholder="Text"
 									/>
 								</InputGroup>
 								<FieldError
@@ -208,20 +204,19 @@ export const ProfileDetailsForm: FC<ProfileDetailsFormProps> = ({
 									fieldErrors={fieldErrors}
 								/>
 							</FormLabel>
-							<div className="flex gap-3">
-								<FormLabel title="City" required className="flex-1">
+							<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+								<FormLabel title="City" required className="min-w-0">
 									<InputGroup>
 										<InputGroupInput
 											type="text"
 											value={formData.city}
 											onChange={handleChange('city')}
 											className="text-neutral"
-											placeholder="Text"
 										/>
 									</InputGroup>
 									<FieldError fieldKey="city" fieldErrors={fieldErrors} />
 								</FormLabel>
-								<FormLabel title="Country" required className="flex-1">
+								<FormLabel title="Country" required className="min-w-0">
 									<InputGroup>
 										<select
 											data-slot="input-group-control"

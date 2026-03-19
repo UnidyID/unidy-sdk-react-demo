@@ -2,7 +2,7 @@
 
 import { useSession } from '@unidy.io/sdk-react';
 import { KeyRound, Lock, Mail, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Card } from '@/components/card';
 import { FeatureItem } from '@/components/feature-item';
 import { IntegrationCode } from '@/components/integration-code';
@@ -17,6 +17,9 @@ import { LoggedInPlaceholder } from '../examples/logged-in-placeholder';
 import { LoginKitchenSinkExample } from '../examples/login-kitchen-sink-example';
 import { LoginSimpleExample } from '../examples/login-simple-example';
 import { LoginSocialExample } from '../examples/login-social-example';
+import { RegisterExample } from '../examples/register-example';
+
+type AuthExampleTab = 'simple' | 'social' | 'kitchen-sink' | 'register';
 
 const integrationCode = `import { useLogin } from '@unidy.io/sdk-react';
 
@@ -42,6 +45,12 @@ function LoginForm() {
 
 export const AuthenticationSection = () => {
 	const [mounted, setMounted] = useState(false);
+	const [activeExampleTab, setActiveExampleTab] =
+		useState<AuthExampleTab>('simple');
+	const [lastNonRegisterTab, setLastNonRegisterTab] =
+		useState<AuthExampleTab>('simple');
+	const [registerPrefillEmail, setRegisterPrefillEmail] = useState('');
+	const [registerPrefillKey, setRegisterPrefillKey] = useState(0);
 	const session = useSession();
 
 	useEffect(() => {
@@ -49,6 +58,29 @@ export const AuthenticationSection = () => {
 	}, []);
 
 	const isLoggedIn = mounted && session.isAuthenticated;
+	const handleExampleTabChange = useCallback((value: string) => {
+		const nextTab = value as AuthExampleTab;
+		if (nextTab !== 'register') {
+			setLastNonRegisterTab(nextTab);
+		}
+		setActiveExampleTab(nextTab);
+	}, []);
+
+	const handleRegisterInstead = useCallback(
+		(email: string) => {
+			setRegisterPrefillEmail(email);
+			setRegisterPrefillKey((current) => current + 1);
+			if (activeExampleTab !== 'register') {
+				setLastNonRegisterTab(activeExampleTab);
+			}
+			setActiveExampleTab('register');
+		},
+		[activeExampleTab]
+	);
+
+	const handleLoginInstead = useCallback(() => {
+		setActiveExampleTab(lastNonRegisterTab);
+	}, [lastNonRegisterTab]);
 
 	const features = [
 		{
@@ -60,8 +92,7 @@ export const AuthenticationSection = () => {
 		{
 			icon: <Users className="size-4 text-accent" />,
 			title: 'Social Login',
-			description:
-				'Connect with Google, Facebook, Apple, or many other providers.'
+			description: 'Connect with Google in one click.'
 		},
 		{
 			icon: <Mail className="size-4 text-accent" />,
@@ -114,7 +145,11 @@ export const AuthenticationSection = () => {
 				{/* Right Column - Tabs and Card */}
 				<div className="flex flex-col gap-6 flex-1 min-w-0 w-full">
 					{/* Tabs */}
-					<Tabs defaultValue="simple" className="w-full">
+					<Tabs
+						value={activeExampleTab}
+						onValueChange={handleExampleTabChange}
+						className="w-full"
+					>
 						<TabsList className="w-full">
 							<TabsTrigger value="simple" className="flex-1">
 								Simple
@@ -125,12 +160,21 @@ export const AuthenticationSection = () => {
 							<TabsTrigger value="kitchen-sink" className="flex-1">
 								Full demo
 							</TabsTrigger>
+							<TabsTrigger value="register" className="flex-1">
+								Register
+							</TabsTrigger>
 						</TabsList>
 
 						{/* Card with Form */}
 						<Card className="mt-6">
 							<TabsContent value="simple">
-								{isLoggedIn ? <LoggedInPlaceholder /> : <LoginSimpleExample />}
+								{isLoggedIn ? (
+									<LoggedInPlaceholder />
+								) : (
+									<LoginSimpleExample
+										onRegisterInstead={handleRegisterInstead}
+									/>
+								)}
 							</TabsContent>
 
 							<TabsContent value="social">
@@ -141,7 +185,21 @@ export const AuthenticationSection = () => {
 								{isLoggedIn ? (
 									<LoggedInPlaceholder />
 								) : (
-									<LoginKitchenSinkExample />
+									<LoginKitchenSinkExample
+										onRegisterInstead={handleRegisterInstead}
+									/>
+								)}
+							</TabsContent>
+
+							<TabsContent value="register">
+								{isLoggedIn ? (
+									<LoggedInPlaceholder />
+								) : (
+									<RegisterExample
+										key={`${registerPrefillKey}:${registerPrefillEmail}`}
+										initialEmail={registerPrefillEmail}
+										onLoginInstead={handleLoginInstead}
+									/>
 								)}
 							</TabsContent>
 						</Card>

@@ -41,7 +41,7 @@ export const newsletterCategories: NewsletterCategory[] = [
 		name: 'Weather Forecast',
 		description:
 			'Get match-day weather updates including temperature, wind, and precipitation.',
-		selectablePreferences: false,
+		selectablePreferences: true,
 		options: [
 			{
 				id: 'temperature',

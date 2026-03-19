@@ -1,11 +1,10 @@
 'use client';
 
-import { GoogleIcon } from '@/components/icons/google-icon';
-import { Button } from '@/components/shadcn/ui/button';
 import {
 	buildAbsoluteLoginHref,
 	useCurrentReturnTo
 } from '@/modules/authentication/utils/return-to';
+import { SocialAuthButtons } from '@/modules/authentication/components/social-auth-buttons';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { useLogin } from '@unidy.io/sdk-react';
 
@@ -30,22 +29,16 @@ export const LoginSocialExample = () => {
 				popoverPosition="left"
 				className="w-full"
 			>
-				<Button
-					theme="neutral"
-					variant="outline"
-					size="lg"
-					className="w-full"
-					onClick={() => {
+				<SocialAuthButtons
+					providers={['google']}
+					onSelect={(provider) => {
 						const url = login.getSocialAuthUrl(
-							'google',
+							provider,
 							buildAbsoluteLoginHref(window.location.origin, returnTo, '/')
 						);
 						window.location.href = url;
 					}}
-				>
-					<GoogleIcon className="size-5" />
-					Continue with Google
-				</Button>
+				/>
 			</SDKWrapper>
 		</div>
 	);

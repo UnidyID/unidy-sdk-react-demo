@@ -109,22 +109,16 @@ export const NewsletterPicker: FC<NewsletterPickerProps> = ({
 							</div>
 
 							<div className="flex flex-wrap items-center gap-2">
-								<span
-									className={cn(
-										'caption rounded-full border px-3 py-1',
-										isSubscribed
-											? isConfirmed
-												? 'border-accent bg-accent-weak text-accent'
-												: 'border-neutral-medium bg-section text-neutral-strong'
-											: 'border-neutral-medium bg-section text-neutral-strong'
-									)}
-								>
-									{isSubscribed
-										? isConfirmed
-											? 'Confirmed'
-											: 'Confirmation pending'
-										: 'Not subscribed'}
-								</span>
+								{(!isSubscribed || !isConfirmed) && (
+									<span
+										className={cn(
+											'caption rounded-full border px-3 py-1',
+											'border-neutral-medium bg-section text-neutral-strong'
+										)}
+									>
+										{isSubscribed ? 'Confirmation pending' : 'Not subscribed'}
+									</span>
+								)}
 
 								{!isSubscribed && !isSelectable && onSubscribeNewsletter && (
 									<Button
@@ -258,14 +252,6 @@ export const NewsletterPicker: FC<NewsletterPickerProps> = ({
 							</div>
 						) : (
 							<div className="flex flex-col gap-3">
-								<div className="bg-section border border-neutral-medium rounded-[10px] p-4">
-									<p className="body-3 text-neutral-strong">
-										This newsletter is managed as a single subscription. Use the
-										button above to subscribe or unsubscribe from the whole
-										list.
-									</p>
-								</div>
-
 								{category.options.map((option) => {
 									const Icon = iconMap[option.icon];
 

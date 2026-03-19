@@ -10,9 +10,8 @@ import {
 	Mail,
 	Send
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FormLabel } from '@/components/form-label';
-import { GoogleIcon } from '@/components/icons/google-icon';
 import { Button } from '@/components/shadcn/ui/button';
 import {
 	InputGroup,
@@ -21,6 +20,10 @@ import {
 } from '@/components/shadcn/ui/input-group';
 import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import { translateAuthError } from '@/locales/translate-auth-error';
+import {
+	SocialAuthButtons,
+	visibleSocialProviders
+} from './social-auth-buttons';
 import { buildAbsoluteLoginHref } from '../utils/return-to';
 
 interface LoginFormProps {
@@ -29,7 +32,11 @@ interface LoginFormProps {
 	/** Called whenever the login step changes */
 	onStepChange?: (step: string) => void;
 	/** Called when submitEmail returns account_not_found, with the email that was tried */
-	onAccountNotFound?: (email: string) => void;
+	onAccountNotFound?: (
+		email: string
+	) => Promise<'resume-link-sent' | 'registration-flow-not-found' | 'error'>;
+	/** Called when the user should be redirected into the registration flow */
+	onRegisterInstead?: (email: string) => void;
 	returnTo?: string;
 }
 
@@ -37,6 +44,7 @@ export const LoginForm = ({
 	onAuthenticated,
 	onStepChange,
 	onAccountNotFound,
+	onRegisterInstead,
 	returnTo
 }: LoginFormProps) => {
 	const login = useLogin({ callbacks: mutationCallbackOptions });
@@ -44,6 +52,11 @@ export const LoginForm = ({
 	const [emailInput, setEmailInput] = useState('');
 	const [passwordInput, setPasswordInput] = useState('');
 	const [magicCodeInput, setMagicCodeInput] = useState('');
+	const [emailStepAction, setEmailStepAction] = useState<
+		'continue' | 'checking-resume' | 'register'
+	>('continue');
+	const lastSubmittedEmailRef = useRef<string | null>(null);
+	const lastResumedAccountLookupRef = useRef<string | null>(null);
 
 	// Magic code resend timer: handle both duration-in-ms and absolute-timestamp shapes
 	const [magicCodeRemainingMs, setMagicCodeRemainingMs] = useState(0);
@@ -75,15 +88,38 @@ export const LoginForm = ({
 	}, [login.step, onAuthenticated, onStepChange]);
 
 	const handleSubmitEmail = async () => {
-		await login.submitEmail(emailInput);
+		const normalizedEmail = emailInput.trim().toLowerCase();
+		if (!normalizedEmail) return;
+
+		if (lastSubmittedEmailRef.current !== normalizedEmail) {
+			lastResumedAccountLookupRef.current = null;
+		}
+		lastSubmittedEmailRef.current = normalizedEmail;
+		setEmailStepAction('continue');
+
+		await login.submitEmail(normalizedEmail);
 	};
 
 	// Notify parent when account_not_found so it can check for pending registrations
 	useEffect(() => {
-		if (login.errors.email === 'account_not_found') {
-			onAccountNotFound?.(emailInput);
-		}
-	}, [login.errors.email, onAccountNotFound, emailInput]);
+		if (login.errors.email !== 'account_not_found') return;
+
+		const normalizedEmail = lastSubmittedEmailRef.current;
+		if (!normalizedEmail) return;
+		if (lastResumedAccountLookupRef.current === normalizedEmail) return;
+
+		lastResumedAccountLookupRef.current = normalizedEmail;
+		setEmailStepAction('checking-resume');
+
+		void (async () => {
+			const result = (await onAccountNotFound?.(normalizedEmail)) ?? 'error';
+			if (lastSubmittedEmailRef.current !== normalizedEmail) return;
+
+			setEmailStepAction(
+				result === 'registration-flow-not-found' ? 'register' : 'continue'
+			);
+		})();
+	}, [login.errors.email, onAccountNotFound]);
 
 	const handleSubmitPassword = async () => {
 		await login.submitPassword(passwordInput);
@@ -91,6 +127,14 @@ export const LoginForm = ({
 
 	const handleSubmitMagicCode = async () => {
 		await login.submitMagicCode(magicCodeInput);
+	};
+
+	const handleSocialAuth = (provider: string) => {
+		const url = login.getSocialAuthUrl(
+			provider,
+			buildAbsoluteLoginHref(window.location.origin, returnTo, '/')
+		);
+		window.location.href = url;
 	};
 
 	const handleGoBack = () => {
@@ -104,6 +148,19 @@ export const LoginForm = ({
 	const isPasswordStep = login.step === 'password';
 	const isMagicCodeStep = login.step === 'magic-code';
 	const isResetPasswordStep = login.step === 'reset-password';
+	const availableSocialProviders = visibleSocialProviders(
+		login.loginOptions?.social_logins ?? []
+	);
+	const showRegisterInstead =
+		emailStepAction === 'register' &&
+		!!onRegisterInstead &&
+		!!emailInput.trim();
+	const emailStepButtonLabel =
+		emailStepAction === 'checking-resume'
+			? 'Checking for pending registration...'
+			: login.isLoading
+				? 'Loading...'
+				: 'Continue';
 
 	return (
 		<>
@@ -125,7 +182,19 @@ export const LoginForm = ({
 								type="email"
 								placeholder="you@example.com"
 								value={emailInput}
-								onChange={(e) => setEmailInput(e.target.value)}
+								onChange={(e) => {
+									const nextEmail = e.target.value;
+									const normalizedNextEmail = nextEmail.trim().toLowerCase();
+									setEmailInput(nextEmail);
+
+									if (
+										normalizedNextEmail !== lastSubmittedEmailRef.current
+									) {
+										lastSubmittedEmailRef.current = null;
+										lastResumedAccountLookupRef.current = null;
+										setEmailStepAction('continue');
+									}
+								}}
 								required
 								className="text-neutral placeholder:text-neutral-medium"
 							/>
@@ -144,10 +213,27 @@ export const LoginForm = ({
 						size="lg"
 						className="w-full"
 						type="submit"
-						disabled={login.isLoading || !emailInput.trim()}
+						disabled={
+							login.isLoading ||
+							emailStepAction === 'checking-resume' ||
+							!emailInput.trim()
+						}
 					>
-						{login.isLoading ? 'Loading...' : 'Continue'}
+						{emailStepButtonLabel}
 					</Button>
+
+					{showRegisterInstead && (
+						<Button
+							type="button"
+							theme="neutral"
+							variant="outline"
+							size="lg"
+							className="w-full"
+							onClick={() => onRegisterInstead?.(emailInput.trim().toLowerCase())}
+						>
+							Register instead
+						</Button>
+					)}
 
 					<div className="flex items-center justify-center gap-2">
 						<div className="flex-1 h-px bg-neutral-weak" />
@@ -155,24 +241,11 @@ export const LoginForm = ({
 						<div className="flex-1 h-px bg-neutral-weak" />
 					</div>
 
-					<Button
-						type="button"
-						theme="neutral"
-						variant="outline"
-						size="lg"
-						className="w-full"
-						onClick={() => {
-							const url = login.getSocialAuthUrl(
-								'google',
-								buildAbsoluteLoginHref(window.location.origin, returnTo, '/')
-							);
-							window.location.href = url;
-						}}
+					<SocialAuthButtons
+						providers={['google']}
+						onSelect={handleSocialAuth}
 						disabled={login.isLoading}
-					>
-						<GoogleIcon className="size-5" />
-						Continue with Google
-					</Button>
+					/>
 				</form>
 			)}
 
@@ -240,45 +313,21 @@ export const LoginForm = ({
 						</Button>
 					)}
 
-					{login.loginOptions?.social_logins &&
-						login.loginOptions.social_logins.length > 0 && (
-							<>
-								<div className="flex items-center justify-center gap-2">
-									<div className="flex-1 h-px bg-neutral-weak" />
-									<p className="body-2 text-neutral-strong">or continue with</p>
-									<div className="flex-1 h-px bg-neutral-weak" />
-								</div>
+					{availableSocialProviders.length > 0 && (
+						<>
+							<div className="flex items-center justify-center gap-2">
+								<div className="flex-1 h-px bg-neutral-weak" />
+								<p className="body-2 text-neutral-strong">or continue with</p>
+								<div className="flex-1 h-px bg-neutral-weak" />
+							</div>
 
-								<div className="flex flex-col gap-3">
-									{login.loginOptions.social_logins.map((provider) => (
-										<Button
-											key={provider}
-											theme="neutral"
-											variant="outline"
-											size="lg"
-											className="w-full capitalize"
-											onClick={() => {
-												const url = login.getSocialAuthUrl(
-													provider,
-													buildAbsoluteLoginHref(
-														window.location.origin,
-														returnTo,
-														'/'
-													)
-												);
-												window.location.href = url;
-											}}
-											disabled={login.isLoading}
-										>
-											{provider === 'google' && (
-												<GoogleIcon className="size-5" />
-											)}
-											Continue with {provider}
-										</Button>
-									))}
-								</div>
-							</>
-						)}
+							<SocialAuthButtons
+								providers={availableSocialProviders}
+								onSelect={handleSocialAuth}
+								disabled={login.isLoading}
+							/>
+						</>
+					)}
 
 					{login.errors.global && (
 						<p className="body-2 text-red-500">

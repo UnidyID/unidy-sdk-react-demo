@@ -46,7 +46,7 @@ export const ProfileLayout: FC<PropsWithChildren> = ({ children }) => {
 
 	const handleLogout = async () => {
 		await session.logout();
-		router.push('/login');
+		router.replace('/');
 	};
 
 	return (

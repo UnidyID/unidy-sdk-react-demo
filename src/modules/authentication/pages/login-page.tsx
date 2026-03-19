@@ -1,6 +1,10 @@
 'use client';
 
-import { useRegistration, useSession } from '@unidy.io/sdk-react';
+import {
+	useRegistration,
+	useSession,
+	useUnidyClient
+} from '@unidy.io/sdk-react';
 import { formatDuration, intervalToDuration } from 'date-fns';
 import {
 	ArrowLeft,
@@ -30,8 +34,11 @@ import {
 	InputGroupInput
 } from '@/components/shadcn/ui/input-group';
 import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
+import { unidyClient } from '@/deps/unidy/client';
 import { translateAuthError } from '@/locales/translate-auth-error';
 import { LoginForm } from '../components/login-form';
+import { SocialAuthButtons } from '../components/social-auth-buttons';
+import { hydrateAuthFromPayload } from '../utils/hydrate-auth';
 import {
 	buildAbsoluteLoginHref,
 	getReturnToFromSearchParams
@@ -42,6 +49,7 @@ const REGISTRATION_STORAGE_KEY = 'unidy_pending_registration';
 export const LoginPage = () => {
 	const router = useRouter();
 	const searchParams = useSearchParams();
+	const client = useUnidyClient();
 	const session = useSession();
 	const redirectTo = useMemo(
 		() => getReturnToFromSearchParams(searchParams),
@@ -70,13 +78,26 @@ export const LoginPage = () => {
 		useState(false);
 	const didAutoFetchRef = useRef(false);
 
-	// Redirect on successful registration auth & clear localStorage
+	// Finalization can return tokens directly when registration already verified the
+	// email, so hydrate the shared auth storage before redirecting.
 	useEffect(() => {
-		if (registration.registration?.auth) {
-			localStorage.removeItem(REGISTRATION_STORAGE_KEY);
-			router.replace(redirectTo);
-		}
-	}, [registration.registration?.auth, router, redirectTo]);
+		const auth = registration.registration?.auth;
+		if (!auth) return;
+
+		hydrateAuthFromPayload({
+			auth,
+			email: registration.registration?.email ?? registerEmail
+		});
+
+		localStorage.removeItem(REGISTRATION_STORAGE_KEY);
+		router.replace(redirectTo);
+	}, [
+		registration.registration?.auth,
+		registration.registration?.email,
+		registerEmail,
+		router,
+		redirectTo
+	]);
 
 	useEffect(() => {
 		if (session.isAuthenticated) {
@@ -94,10 +115,43 @@ export const LoginPage = () => {
 	// there's a pending registration for that email
 	const handleAccountNotFound = useCallback(
 		async (email: string) => {
-			const sent = await registration.sendResumeLink(email);
-			if (sent) {
+			setPendingRegistrationNotice(false);
+			const [errorCode] = await client.auth.sendResumeLink({ email });
+			if (errorCode === null) {
 				setPendingRegistrationNotice(true);
+				return 'resume-link-sent' as const;
 			}
+
+			const normalizedErrorCode = errorCode as string;
+
+			if (
+				normalizedErrorCode !== 'connection_failed' &&
+				normalizedErrorCode !== 'schema_validation_error' &&
+				normalizedErrorCode !== 'internal_error'
+			) {
+				return 'registration-flow-not-found' as const;
+			}
+
+			return 'error' as const;
+		},
+		[client]
+	);
+
+	const handleRegisterInstead = useCallback(
+		(email: string) => {
+			localStorage.removeItem(REGISTRATION_STORAGE_KEY);
+			setPendingRegistrationNotice(false);
+			setResumeLinkSent(false);
+			setRegisterFirstName('');
+			setRegisterLastName('');
+			setRegisterEmail(email);
+			setRegisterPassword('');
+			setRegisterStep('form');
+			setVerificationCode('');
+			setPasswordError('');
+			didAutoFetchRef.current = false;
+			registration.reset();
+			setActiveTab('register');
 		},
 		[registration]
 	);
@@ -210,6 +264,8 @@ export const LoginPage = () => {
 		registerFirstName.trim() &&
 		registerLastName.trim() &&
 		registerPassword;
+	const isRegistrationEmailVerified =
+		registration.registration?.email_verified === true;
 
 	const handleCreateRegistration = async () => {
 		setPasswordError('');
@@ -251,6 +307,16 @@ export const LoginPage = () => {
 		if (success) {
 			await registration.finalizeRegistration();
 		}
+	};
+
+	const handleRegisterWithSocial = (provider: string) => {
+		const redirectUri = buildAbsoluteLoginHref(
+			window.location.origin,
+			redirectTo,
+			'/'
+		);
+		const url = `${unidyClient.baseUrl}/api/sdk/v1/sign_ins/auth/omniauth/${provider}?sdk_redirect_uri=${encodeURIComponent(redirectUri)}`;
+		window.location.href = url;
 	};
 
 	const handleResendVerificationCode = async () => {
@@ -335,6 +401,7 @@ export const LoginPage = () => {
 								onAuthenticated={handleLoginAuthenticated}
 								onStepChange={setLoginStep}
 								onAccountNotFound={handleAccountNotFound}
+								onRegisterInstead={handleRegisterInstead}
 							/>
 							{pendingRegistrationNotice && (
 								<div className="border border-neutral-medium rounded-[10px] p-4 flex gap-4 items-start bg-neutral-weak mt-4">
@@ -497,6 +564,18 @@ export const LoginPage = () => {
 									</Button>
 
 									<div className="flex items-center justify-center gap-2">
+										<div className="flex-1 h-px bg-neutral-weak" />
+										<p className="body-2 text-neutral-strong">or continue with</p>
+										<div className="flex-1 h-px bg-neutral-weak" />
+									</div>
+
+									<SocialAuthButtons
+										providers={['google']}
+										onSelect={handleRegisterWithSocial}
+										disabled={registration.isLoading}
+									/>
+
+									<div className="flex items-center justify-center gap-2">
 										<p className="body-2 text-neutral-strong">
 											Already have an account?
 										</p>
@@ -534,7 +613,7 @@ export const LoginPage = () => {
 										</InputGroup>
 									</FormLabel>
 
-									{registration.registration?.can_finalize ? (
+									{isRegistrationEmailVerified ? (
 										<>
 											<div className="border border-neutral-medium rounded-[10px] p-4 flex gap-4 items-start bg-neutral-weak">
 												<CheckCircle2 className="size-10 text-theme shrink-0" />
@@ -577,7 +656,7 @@ export const LoginPage = () => {
 													</InputGroupAddon>
 													<InputGroupInput
 														type="text"
-														placeholder="Enter 6-digit code"
+														placeholder="Enter 4-digit code"
 														value={verificationCode}
 														onChange={(e) =>
 															setVerificationCode(e.target.value)
@@ -585,14 +664,15 @@ export const LoginPage = () => {
 														onKeyDown={(e) =>
 															e.key === 'Enter' && handleVerifyEmail()
 														}
-														maxLength={6}
+														inputMode="numeric"
+														maxLength={4}
 														className="text-neutral placeholder:text-neutral-medium"
 													/>
 												</InputGroup>
 											</FormLabel>
 
 											<p className="body-2 text-neutral-strong text-center">
-												A 6-digit verification code has been sent to your email.
+												A 4-digit verification code has been sent to your email.
 											</p>
 
 											{registration.error && (

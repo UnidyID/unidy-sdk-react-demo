@@ -3,7 +3,7 @@
 import { useLogin } from '@unidy.io/sdk-react';
 import { ArrowLeft, Lock, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormLabel } from '@/components/form-label';
 import { Button } from '@/components/shadcn/ui/button';
 import {
@@ -15,11 +15,18 @@ import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import { translateAuthError } from '@/locales/translate-auth-error';
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 
-export const LoginSimpleExample = () => {
+interface LoginSimpleExampleProps {
+	onRegisterInstead?: (email: string) => void;
+}
+
+export const LoginSimpleExample = ({
+	onRegisterInstead
+}: LoginSimpleExampleProps) => {
 	const login = useLogin({ callbacks: mutationCallbackOptions });
 	const router = useRouter();
 	const [emailInput, setEmailInput] = useState('');
 	const [passwordInput, setPasswordInput] = useState('');
+	const lastSubmittedEmailRef = useRef<string | null>(null);
 
 	useEffect(() => {
 		if (login.step === 'authenticated') {
@@ -36,6 +43,10 @@ export const LoginSimpleExample = () => {
 
 	const isEmailStep = login.step === 'idle' || login.step === 'email';
 	const isPasswordStep = login.step === 'password';
+	const showRegisterInstead =
+		login.errors.email === 'account_not_found' &&
+		!!onRegisterInstead &&
+		!!lastSubmittedEmailRef.current;
 
 	const handleBack = () => {
 		login.restart();
@@ -50,7 +61,11 @@ export const LoginSimpleExample = () => {
 					className="contents"
 					onSubmit={(e) => {
 						e.preventDefault();
-						login.submitEmail(emailInput);
+						const normalizedEmail = emailInput.trim().toLowerCase();
+						if (!normalizedEmail) return;
+
+						lastSubmittedEmailRef.current = normalizedEmail;
+						login.submitEmail(normalizedEmail);
 					}}
 				>
 					<FormLabel title="Email Address" required>
@@ -62,7 +77,17 @@ export const LoginSimpleExample = () => {
 								type="email"
 								placeholder="you@example.com"
 								value={emailInput}
-								onChange={(e) => setEmailInput(e.target.value)}
+								onChange={(e) => {
+									const nextEmail = e.target.value;
+									setEmailInput(nextEmail);
+
+									if (
+										nextEmail.trim().toLowerCase() !==
+										lastSubmittedEmailRef.current
+									) {
+										lastSubmittedEmailRef.current = null;
+									}
+								}}
 								required
 								className="text-neutral placeholder:text-neutral-medium"
 							/>
@@ -93,6 +118,22 @@ export const LoginSimpleExample = () => {
 							{login.isLoading ? 'Loading...' : 'Continue'}
 						</Button>
 					</SDKWrapper>
+
+					{showRegisterInstead && (
+						<Button
+							type="button"
+							theme="neutral"
+							variant="outline"
+							size="lg"
+							className="w-full"
+							onClick={() => {
+								if (!lastSubmittedEmailRef.current) return;
+								onRegisterInstead?.(lastSubmittedEmailRef.current);
+							}}
+						>
+							Register instead
+						</Button>
+					)}
 				</form>
 			)}
 

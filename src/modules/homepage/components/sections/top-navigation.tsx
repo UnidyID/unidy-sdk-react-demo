@@ -10,12 +10,14 @@ import {
 import { SDKWrapper } from '@/modules/sdk-element/components/sdk-element';
 import { LogIn, LogOut, User } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { useSession } from '@unidy.io/sdk-react';
 
 export const TopNavigation = () => {
 	const [mounted, setMounted] = useState(false);
+	const router = useRouter();
 	const session = useSession();
 	const returnTo = useCurrentReturnTo('/');
 
@@ -25,6 +27,7 @@ export const TopNavigation = () => {
 
 	const handleLogout = async () => {
 		await session.logout();
+		router.replace('/');
 	};
 
 	return (
