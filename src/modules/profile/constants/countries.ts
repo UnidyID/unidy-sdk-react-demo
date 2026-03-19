@@ -272,5 +272,5 @@ export const getCountryFlagEmoji = (countryCode: string) => {
 export const countryOptions = countries.map(([name, code]) => ({
 	code,
 	name,
-	label: `${getCountryFlagEmoji(code)} ${name}`
+	label: `${name} ${getCountryFlagEmoji(code)}`
 }));
