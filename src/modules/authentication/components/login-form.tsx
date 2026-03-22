@@ -55,6 +55,9 @@ export const LoginForm = ({
 	const [emailStepAction, setEmailStepAction] = useState<
 		'continue' | 'checking-resume' | 'register'
 	>('continue');
+	const [missingFieldValues, setMissingFieldValues] = useState<
+		Record<string, string>
+	>({});
 	const lastSubmittedEmailRef = useRef<string | null>(null);
 	const lastResumedAccountLookupRef = useRef<string | null>(null);
 
@@ -148,6 +151,8 @@ export const LoginForm = ({
 	const isPasswordStep = login.step === 'password';
 	const isMagicCodeStep = login.step === 'magic-code';
 	const isResetPasswordStep = login.step === 'reset-password';
+	const isConnectBrandStep = login.step === 'connect-brand';
+	const isMissingFieldsStep = login.step === 'missing-fields';
 	const availableSocialProviders = visibleSocialProviders(
 		login.loginOptions?.social_logins ?? []
 	);
@@ -614,6 +619,112 @@ export const LoginForm = ({
 							Back
 						</Button>
 					)}
+				</div>
+			)}
+
+			{/* Connect Brand Step */}
+			{isConnectBrandStep && (
+				<div className="flex flex-col gap-6 w-full">
+					<div className="flex flex-col gap-2 text-center">
+						<h2 className="title-1 text-neutral">Connect Your Account</h2>
+						<p className="body-2 text-neutral-strong">
+							An account with this email already exists. Would you like to
+							connect it to your current sign-in?
+						</p>
+					</div>
+
+					{login.errors.global && (
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.global)}
+						</p>
+					)}
+
+					<Button
+						theme="accent"
+						variant="solid"
+						size="lg"
+						className="w-full"
+						onClick={() => login.connectBrand()}
+						disabled={login.isLoading}
+					>
+						{login.isLoading ? 'Connecting...' : 'Connect Account'}
+					</Button>
+
+					<Button
+						theme="neutral"
+						variant="outline"
+						size="md"
+						className="w-full"
+						onClick={() => login.cancelBrandConnect()}
+						disabled={login.isLoading}
+					>
+						Cancel
+					</Button>
+				</div>
+			)}
+
+			{/* Missing Fields Step */}
+			{isMissingFieldsStep && (
+				<div className="flex flex-col gap-6 w-full">
+					<div className="flex flex-col gap-2 text-center">
+						<h2 className="title-1 text-neutral">Complete Your Profile</h2>
+						<p className="body-2 text-neutral-strong">
+							Please fill in the required fields to finish signing in.
+						</p>
+					</div>
+
+					{login.missingFieldDefinitions &&
+						Object.keys(login.missingFieldDefinitions).map((fieldName) => (
+							<FormLabel
+								key={fieldName}
+								title={fieldName.replace(/_/g, ' ')}
+								required
+								className="capitalize"
+							>
+								<InputGroup className="border-neutral-medium rounded-[10px] h-[50px]">
+									<InputGroupInput
+										type="text"
+										value={missingFieldValues[fieldName] ?? ''}
+										onChange={(e) =>
+											setMissingFieldValues((prev) => ({
+												...prev,
+												[fieldName]: e.target.value
+											}))
+										}
+										className="text-neutral placeholder:text-neutral-medium"
+									/>
+								</InputGroup>
+							</FormLabel>
+						))}
+
+					{login.errors.missingFields && (
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.missingFields)}
+						</p>
+					)}
+
+					<Button
+						theme="accent"
+						variant="solid"
+						size="lg"
+						className="w-full"
+						onClick={() => login.submitMissingFields(missingFieldValues)}
+						disabled={login.isLoading}
+					>
+						{login.isLoading ? 'Submitting...' : 'Continue'}
+					</Button>
+
+					<Button
+						theme="neutral"
+						variant="outline"
+						size="md"
+						className="w-full"
+						onClick={() => login.cancelBrandConnect()}
+						disabled={login.isLoading}
+					>
+						<ArrowLeft className="size-4" />
+						Cancel
+					</Button>
 				</div>
 			)}
 		</>
