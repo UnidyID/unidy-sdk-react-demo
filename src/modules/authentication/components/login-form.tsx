@@ -151,7 +151,9 @@ export const LoginForm = ({
 	const isPasswordStep = login.step === 'password';
 	const isMagicCodeStep = login.step === 'magic-code';
 	const isResetPasswordStep = login.step === 'reset-password';
+	// @ts-ignore - will exist in next SDK release
 	const isConnectBrandStep = login.step === 'connect-brand';
+	// @ts-ignore - will exist in next SDK release
 	const isMissingFieldsStep = login.step === 'missing-fields';
 	const availableSocialProviders = visibleSocialProviders(
 		login.loginOptions?.social_logins ?? []
@@ -644,7 +646,7 @@ export const LoginForm = ({
 						variant="solid"
 						size="lg"
 						className="w-full"
-						onClick={() => login.connectBrand()}
+						onClick={() => (login as any).connectBrand()}
 						disabled={login.isLoading}
 					>
 						{login.isLoading ? 'Connecting...' : 'Connect Account'}
@@ -655,7 +657,7 @@ export const LoginForm = ({
 						variant="outline"
 						size="md"
 						className="w-full"
-						onClick={() => login.cancelBrandConnect()}
+						onClick={() => (login as any).cancelBrandConnect()}
 						disabled={login.isLoading}
 					>
 						Cancel
@@ -673,8 +675,8 @@ export const LoginForm = ({
 						</p>
 					</div>
 
-					{login.missingFieldDefinitions &&
-						Object.keys(login.missingFieldDefinitions).map((fieldName) => (
+					{(login as any).missingFieldDefinitions &&
+						Object.keys((login as any).missingFieldDefinitions).map((fieldName) => (
 							<FormLabel
 								key={fieldName}
 								title={fieldName.replace(/_/g, ' ')}
@@ -697,9 +699,9 @@ export const LoginForm = ({
 							</FormLabel>
 						))}
 
-					{login.errors.missingFields && (
+					{(login.errors as any).missingFields && (
 						<p className="body-2 text-red-500">
-							{translateAuthError(login.errors.missingFields)}
+							{translateAuthError((login.errors as any).missingFields)}
 						</p>
 					)}
 
@@ -708,7 +710,7 @@ export const LoginForm = ({
 						variant="solid"
 						size="lg"
 						className="w-full"
-						onClick={() => login.submitMissingFields(missingFieldValues)}
+						onClick={() => (login as any).submitMissingFields(missingFieldValues)}
 						disabled={login.isLoading}
 					>
 						{login.isLoading ? 'Submitting...' : 'Continue'}
@@ -719,7 +721,7 @@ export const LoginForm = ({
 						variant="outline"
 						size="md"
 						className="w-full"
-						onClick={() => login.cancelBrandConnect()}
+						onClick={() => (login as any).cancelBrandConnect()}
 						disabled={login.isLoading}
 					>
 						<ArrowLeft className="size-4" />
