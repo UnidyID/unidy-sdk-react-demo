@@ -12,7 +12,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
 	return (
 		<Providers>
-			<html lang="hr-HR" className={GeistSans.variable}>
+			<html lang="en" className={GeistSans.variable}>
 				<body
 					suppressHydrationWarning
 					className="bg-background min-h-screen flex flex-col group/sdklabels"
