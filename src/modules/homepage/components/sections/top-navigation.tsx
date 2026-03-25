@@ -1,6 +1,6 @@
 'use client';
 
-import { Logo } from '@/components/logo';
+import { BrandLogo } from '@/lib/brand/brand-logo';
 import { Button } from '@/components/shadcn/ui/button';
 import { ThemeToggler } from '@/lib/theme/components/theme-toggler';
 import {
@@ -34,7 +34,7 @@ export const TopNavigation = () => {
 		<header className="bg-foreground backdrop-blur-2xl sticky top-0 z-50 border-b border-neutral-weak flex flex-col items-center justify-center w-full">
 			<div className="flex h-16 items-center justify-between max-w-[1200px] w-full px-4">
 				{/* Logo */}
-				<Logo />
+				<BrandLogo />
 
 				{/* Right Side - Auth Buttons */}
 				<div className="flex gap-3 items-center relative">
