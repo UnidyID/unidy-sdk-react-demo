@@ -25,7 +25,7 @@ export const HeroSection = () => {
 			className="relative flex flex-col items-center px-6 py-[120px] gap-[10px] w-full"
 			style={{
 				backgroundImage:
-					'linear-gradient(163.08198714792195deg, rgba(216, 106, 96, 1) 0%, rgba(199, 42, 28, 1) 50%, rgba(216, 106, 96, 1) 100%)'
+					'linear-gradient(163.08198714792195deg, var(--color-accent-strong) 0%, var(--color-accent) 50%, var(--color-accent-strong) 100%)'
 			}}
 			id="hero"
 		>
