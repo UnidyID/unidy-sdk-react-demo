@@ -4,6 +4,7 @@ import { DialogClose, useDialog } from '@/components/shadcn/ui/dialog';
 import { LoginForm } from '@/modules/authentication/components/login-form';
 import { RegistrationForm } from '@/modules/authentication/components/registration-form';
 import { useCurrentReturnTo } from '@/modules/authentication/utils/return-to';
+import { useBrand } from '@/lib/brand/brand-provider';
 import { CheckCircle2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
@@ -13,6 +14,7 @@ export const LoginModalExample = () => {
 	const { closeDialog } = useDialog();
 	const router = useRouter();
 	const client = useUnidyClient();
+	const brand = useBrand();
 	const returnTo = useCurrentReturnTo('/');
 	const [activeView, setActiveView] = useState<'login' | 'register'>('login');
 	const [registerEmail, setRegisterEmail] = useState('');
@@ -62,6 +64,13 @@ export const LoginModalExample = () => {
 		<div className="flex flex-col md:flex-row md:h-[784px] overflow-hidden relative w-full">
 			{/* Gradient Background Side */}
 			<div className="min-h-[120px] md:h-full md:flex-1 md:shrink-0 relative flex flex-col items-center justify-center gap-6 px-10 py-12 bg-linear-[135deg,var(--color-accent-strong),var(--color-accent)_50%,var(--color-accent-strong)]">
+				{brand?.logoSrc && (
+					<img
+						src={brand.logoSrc}
+						alt={brand.name}
+						className="h-16 w-auto object-contain"
+					/>
+				)}
 				<p className="display-3 text-white text-center">
 					{activeView === 'register' ? 'Create Your Account' : 'Welcome Back'}
 				</p>

@@ -36,6 +36,7 @@ import {
 import { mutationCallbackOptions } from '@/deps/unidy/callbacks';
 import { unidyClient } from '@/deps/unidy/client';
 import { translateAuthError } from '@/locales/translate-auth-error';
+import { useBrand } from '@/lib/brand/brand-provider';
 import { LoginForm } from '../components/login-form';
 import { SocialAuthButtons } from '../components/social-auth-buttons';
 import { hydrateAuthFromPayload } from '../utils/hydrate-auth';
@@ -51,6 +52,7 @@ export const LoginPage = () => {
 	const searchParams = useSearchParams();
 	const client = useUnidyClient();
 	const session = useSession();
+	const brand = useBrand();
 	const redirectTo = useMemo(
 		() => getReturnToFromSearchParams(searchParams),
 		[searchParams]
@@ -340,7 +342,7 @@ export const LoginPage = () => {
 			className="flex flex-col items-center justify-center min-h-screen px-2 md:px-6 py-8"
 			style={{
 				backgroundImage:
-					'linear-gradient(150.64deg, rgba(216, 106, 96, 1) 0%, rgba(199, 42, 28, 1) 50%, rgba(216, 106, 96, 1) 100%)'
+					'linear-gradient(150.64deg, var(--color-accent-strong) 0%, var(--color-accent) 50%, var(--color-accent-strong) 100%)'
 			}}
 		>
 			<div className="flex flex-col items-center gap-8 w-full max-w-[448px] relative">
@@ -355,11 +357,19 @@ export const LoginPage = () => {
 
 				{/* Header */}
 				<div className="flex flex-col items-center gap-4">
-					<div className="size-12 flex items-center justify-center bg-white rounded-full">
-						<Lock className="size-7 text-theme" />
-					</div>
+					{brand?.logoSrc ? (
+						<img
+							src={brand.logoSrc}
+							alt={brand.name}
+							className="h-16 w-auto object-contain"
+						/>
+					) : (
+						<div className="size-12 flex items-center justify-center bg-white rounded-full">
+							<Lock className="size-7 text-theme" />
+						</div>
+					)}
 					<h1 className="display-3 text-center text-accent-contrast">
-						Welcome to FC Unidy
+						Welcome to {brand?.name ?? 'FC Unidy'}
 					</h1>
 					<p className="title-2 text-center text-accent-contrast/60">
 						Sign in to access your account
