@@ -1,0 +1,18 @@
+{
+  "name": "unidy-demo-videos",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:browsers": "playwright install chromium",
+    "video:full": "playwright test specs/demo-full.spec.ts --config=configs/desktop.config.ts",
+    "video:reel1": "playwright test specs/reel-1-login.spec.ts --config=configs/reels.config.ts",
+    "video:reel2": "playwright test specs/reel-2-profile.spec.ts --config=configs/reels.config.ts",
+    "video:reel3": "playwright test specs/reel-3-newsletter.spec.ts --config=configs/reels.config.ts",
+    "video:reels": "playwright test specs/reel-*.spec.ts --config=configs/reels.config.ts",
+    "video:linkedin": "playwright test specs/demo-full.spec.ts --config=configs/linkedin.config.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "playwright": "^1.52.0"
+  }
+}

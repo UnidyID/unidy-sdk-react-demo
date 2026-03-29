@@ -1,5 +1,8 @@
+'use client';
+
 import { LinkSmooth } from '@/components/link-smooth';
 import { cn } from '@/components/shadcn/utils';
+import { useBrand } from '@/lib/brand/brand-provider';
 import { Shield } from 'lucide-react';
 import { type FC } from 'react';
 
@@ -50,6 +53,7 @@ const FooterColumn: FC<FooterColumnProps> = ({ title, links }) => {
 };
 
 export const FooterSection: FC = () => {
+	const brand = useBrand();
 	const productLinks = [
 		{ label: 'Auth SDK', href: '#authentication' },
 		{ label: 'Newsletter SDK', href: '#newsletter' },
@@ -78,12 +82,22 @@ export const FooterSection: FC = () => {
 					{/* Logo and Description */}
 					<div className="flex flex-col items-center md:items-start gap-4 flex-1 min-w-0">
 						<div className="flex gap-2 items-center h-8">
-							<div className="bg-accent rounded-full size-8 flex items-center justify-center shrink-0">
-								<Shield className="size-5 text-accent-contrast" />
-							</div>
-							<span className="text-base font-normal leading-6 text-shade-contrast tracking-[-0.3125px]">
-								FC Unidy
-							</span>
+							{brand?.logoSrc ? (
+								<img
+									src={brand.logoSrc}
+									alt={brand.name}
+									className="h-8 w-auto object-contain"
+								/>
+							) : (
+								<>
+									<div className="bg-accent rounded-full size-8 flex items-center justify-center shrink-0">
+										<Shield className="size-5 text-accent-contrast" />
+									</div>
+									<span className="text-base font-normal leading-6 text-shade-contrast tracking-[-0.3125px]">
+										{brand?.name ?? 'FC Unidy'}
+									</span>
+								</>
+							)}
 						</div>
 						<p className="body-2 text-shade-contrast/60 max-w-[233px]">
 							Easy to integrate authentication and newsletter management for
