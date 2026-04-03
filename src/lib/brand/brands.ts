@@ -18,8 +18,7 @@ export const brands: Record<string, BrandConfig> = {
 	fffa: {
 		id: 'fffa',
 		name: 'FFFA',
-		logoSrc: '/brands/fffa.svg',
-		logoBgColor: '#003ea2',
+		logoSrc: '/brands/fffa-light.png',
 		accentColor: '#003ea2',
 		accentContrast: '#ffffff'
 	}
