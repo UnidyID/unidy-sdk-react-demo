@@ -84,7 +84,7 @@ export const FooterSection: FC = () => {
 						<div className="flex gap-2 items-center h-8">
 							{brand?.logoSrc ? (
 								<img
-									src={brand.logoSrc}
+									src={brand.logoDarkSrc ?? brand.logoSrc}
 									alt={brand.name}
 									className="h-8 w-auto object-contain"
 								/>

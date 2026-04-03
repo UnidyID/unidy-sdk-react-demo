@@ -359,7 +359,7 @@ export const LoginPage = () => {
 				<div className="flex flex-col items-center gap-4">
 					{brand?.logoSrc ? (
 						<img
-							src={brand.logoSrc}
+							src={brand.logoDarkSrc ?? brand.logoSrc}
 							alt={brand.name}
 							className="h-16 w-auto object-contain"
 						/>

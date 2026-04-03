@@ -66,7 +66,7 @@ export const LoginModalExample = () => {
 			<div className="min-h-[120px] md:h-full md:flex-1 md:shrink-0 relative flex flex-col items-center justify-center gap-6 px-10 py-12 bg-linear-[135deg,var(--color-accent-strong),var(--color-accent)_50%,var(--color-accent-strong)]">
 				{brand?.logoSrc && (
 					<img
-						src={brand.logoSrc}
+						src={brand.logoDarkSrc ?? brand.logoSrc}
 						alt={brand.name}
 						className="h-16 w-auto object-contain"
 					/>
