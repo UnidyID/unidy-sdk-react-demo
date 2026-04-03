@@ -9,13 +9,26 @@ export const BrandLogo = () => {
 	if (!brand) return <Logo />;
 
 	if (brand.logoSrc) {
-		return (
+		const img = (
 			<img
 				src={brand.logoSrc}
 				alt={brand.name}
 				className="h-10 w-auto object-contain"
 			/>
 		);
+
+		if (brand.logoBgColor) {
+			return (
+				<div
+					style={{ backgroundColor: brand.logoBgColor }}
+					className="h-10 px-3 rounded flex items-center"
+				>
+					{img}
+				</div>
+			);
+		}
+
+		return img;
 	}
 
 	return <Logo text={brand.name} />;
