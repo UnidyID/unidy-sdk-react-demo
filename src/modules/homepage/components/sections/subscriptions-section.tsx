@@ -14,7 +14,7 @@ import {
 	type StatusFilterValue
 } from '@/modules/tickets/components/status-filter';
 import { LoggedOutPlaceholder } from '../examples/logged-out-placeholder';
-import { TicketsExample } from '../examples/tickets-example';
+import { MembershipsExample } from '../examples/memberships-example';
 
 const integrationCode = `import {
   useSession,
@@ -24,22 +24,18 @@ const integrationCode = `import {
 
 const { isAuthenticated } = useSession();
 const pagination = usePagination({ perPage: 10 });
-const { items, isLoading, getExportLink } = useTicketables({
-  type: 'ticket',
+const { items: subscriptions, getExportLink } = useTicketables({
+  type: 'subscription',
   pagination,
   filter: { orderBy: 'starts_at', orderDirection: 'desc' },
   fetchOnMount: isAuthenticated,
 });
 
-// Download ticket as PDF
-const link = await getExportLink(ticket.id, 'pdf');
-window.open(link.url, '_blank');
-
-// Add ticket to Apple Wallet
-const walletLink = await getExportLink(ticket.id, 'pkpass');
+// Add subscription to Apple Wallet
+const walletLink = await getExportLink(subscription.id, 'pkpass');
 window.open(walletLink.url, '_blank');`;
 
-export const TicketsSection = () => {
+export const SubscriptionsSection = () => {
 	const [mounted, setMounted] = useState(false);
 	const session = useSession();
 
@@ -54,15 +50,15 @@ export const TicketsSection = () => {
 
 	return (
 		<section
-			className="bg-background flex flex-col items-center px-6 py-20 w-full"
-			id="tickets"
+			className="bg-section flex flex-col items-center px-6 py-20 w-full"
+			id="subscriptions"
 		>
 			<div className="flex flex-col gap-12 items-start max-w-[1024px] w-full">
 				{/* Section Heading */}
 				<div className="flex flex-col gap-6 flex-1 min-w-0 w-full">
 					<SectionHeading
-						title="Event Tickets"
-						description="View and manage your event tickets."
+						title="Subscriptions & Memberships"
+						description="View and manage your memberships and active subscriptions."
 					>
 						<IntegrationCode code={integrationCode} language="typescript" />
 					</SectionHeading>
@@ -78,19 +74,22 @@ export const TicketsSection = () => {
 
 					{isLoggedIn ? (
 						<>
-							<TicketsExample statusFilter={statusFilter} perPage={perPage} />
+							<MembershipsExample
+								statusFilter={statusFilter}
+								perPage={perPage}
+							/>
 							<div className="flex justify-center pt-6">
-								<Link href="/profile/tickets">
+								<Link href="/profile/subscriptions">
 									<Button theme="accent" variant="outline" size="md">
 										<ExternalLink className="size-4" />
-										View All Tickets
+										View All Subscriptions
 									</Button>
 								</Link>
 							</div>
 						</>
 					) : (
 						<Card className="mt-6">
-							<LoggedOutPlaceholder message="Please log in to see your list of events and tickets." />
+							<LoggedOutPlaceholder message="Please log in to see your subscriptions and memberships." />
 						</Card>
 					)}
 				</div>
