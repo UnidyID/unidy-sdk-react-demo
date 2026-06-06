@@ -3,6 +3,7 @@
 import {
 	useNewsletterPreferenceCenter,
 	useNewsletterSubscribe,
+	useProfile,
 	useSession
 } from '@unidy.io/sdk-react';
 import {
@@ -90,6 +91,10 @@ export const NewsletterExample = () => {
 	};
 
 	const session = useSession();
+	const { profile } = useProfile({
+		fetchOnMount: session.isAuthenticated,
+		callbacks: fetchCallbackOptions
+	});
 	const [mounted, setMounted] = useState(false);
 	const [email, setEmail] = useState('');
 	const [firstName, setFirstName] = useState('');
@@ -100,6 +105,7 @@ export const NewsletterExample = () => {
 	const [subscribed, setSubscribed] = useState(false);
 
 	const isLoggedIn = mounted && session.isAuthenticated;
+	const loggedInEmail = profile?.email?.value ?? session.email ?? '';
 	const trimmedEmail = email.trim();
 	const trimmedFirstName = firstName.trim();
 	const trimmedLastName = lastName.trim();
@@ -112,10 +118,10 @@ export const NewsletterExample = () => {
 	}, []);
 
 	useEffect(() => {
-		if (isLoggedIn && session.email) {
-			setEmail(session.email);
+		if (isLoggedIn && loggedInEmail) {
+			setEmail(loggedInEmail);
 		}
-	}, [isLoggedIn, session.email]);
+	}, [isLoggedIn, loggedInEmail]);
 
 	const { isLoading, fieldErrors, subscribe, reset } = useNewsletterSubscribe({
 		callbacks: mutationCallbackOptions
@@ -153,7 +159,7 @@ export const NewsletterExample = () => {
 	const handleReset = () => {
 		reset();
 		setSubscribed(false);
-		setEmail(isLoggedIn ? session.email ?? '' : '');
+		setEmail(isLoggedIn ? loggedInEmail : '');
 		setFirstName('');
 		setLastName('');
 		setPhoneNumber('');
