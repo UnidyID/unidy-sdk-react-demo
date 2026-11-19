@@ -151,10 +151,10 @@ export const LoginForm = ({
 	const isPasswordStep = login.step === 'password';
 	const isMagicCodeStep = login.step === 'magic-code';
 	const isResetPasswordStep = login.step === 'reset-password';
-	// @ts-ignore - will exist in next SDK release
 	const isConnectBrandStep = login.step === 'connect-brand';
-	// @ts-ignore - will exist in next SDK release
 	const isMissingFieldsStep = login.step === 'missing-fields';
+	const isUnconfirmedStep = login.step === 'unconfirmed';
+	const isInvitedStep = login.step === 'invited';
 	const availableSocialProviders = visibleSocialProviders(
 		login.loginOptions?.social_logins ?? []
 	);
@@ -661,6 +661,60 @@ export const LoginForm = ({
 						disabled={login.isLoading}
 					>
 						Cancel
+					</Button>
+				</div>
+			)}
+
+			{/* Unconfirmed / Invited Step: the account exists but waits for an email link */}
+			{(isUnconfirmedStep || isInvitedStep) && (
+				<div className="flex flex-col gap-6 w-full">
+					<div className="flex flex-col gap-2 text-center">
+						<h2 className="title-1 text-neutral">
+							{isInvitedStep ? 'Accept Your Invitation' : 'Confirm Your Email'}
+						</h2>
+						<p className="body-2 text-neutral-strong">
+							{isInvitedStep
+								? 'You have been invited. Check your inbox for the invitation link sent to '
+								: 'Your account is not confirmed yet. Check your inbox for the confirmation link sent to '}
+							<strong>{login.email ?? emailInput}</strong>.
+						</p>
+					</div>
+
+					{login.errors.global && (
+						<p className="body-2 text-red-500">
+							{translateAuthError(login.errors.global)}
+						</p>
+					)}
+
+					<Button
+						theme="accent"
+						variant="solid"
+						size="lg"
+						className="w-full"
+						onClick={() => {
+							const email = login.email ?? emailInput;
+							void (isInvitedStep
+								? login.resendInvitation(email)
+								: login.resendConfirmation(email));
+						}}
+						disabled={login.isLoading}
+					>
+						{login.isLoading
+							? 'Sending...'
+							: isInvitedStep
+								? 'Resend Invitation'
+								: 'Resend Confirmation Email'}
+					</Button>
+
+					<Button
+						theme="neutral"
+						variant="outline"
+						size="md"
+						className="w-full"
+						onClick={handleGoBack}
+					>
+						<ArrowLeft className="size-4" />
+						Back
 					</Button>
 				</div>
 			)}
