@@ -3,6 +3,7 @@
 import { useSession } from '@unidy.io/sdk-react';
 import {
 	ArrowDown,
+	CreditCard,
 	Expand,
 	ExternalLink,
 	Lock,
@@ -189,11 +190,11 @@ export const OptionsSection = () => {
 						</Link>
 					</OptionItem>
 
-					{/* Tickets / Subscriptions */}
+					{/* Tickets */}
 					<OptionItem
 						icon={<Ticket className="size-6 text-accent-contrast" />}
-						title="Tickets / Subscriptions"
-						description="Manage tickets & subs"
+						title="Tickets"
+						description="Manage event tickets"
 					>
 						<LinkSmooth href="#tickets">
 							<Button
@@ -218,6 +219,25 @@ export const OptionsSection = () => {
 								Tickets Page
 							</Button>
 						</Link>
+					</OptionItem>
+
+					{/* Subscriptions */}
+					<OptionItem
+						icon={<CreditCard className="size-6 text-accent-contrast" />}
+						title="Subscriptions"
+						description="Manage subscriptions"
+					>
+						<LinkSmooth href="#subscriptions">
+							<Button
+								theme="neutral"
+								variant="ghost"
+								size="md"
+								className="w-full justify-start"
+							>
+								<ArrowDown className="size-4" />
+								Inline Demo
+							</Button>
+						</LinkSmooth>
 
 						<Link href="/profile/subscriptions">
 							<Button

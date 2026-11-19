@@ -10,17 +10,10 @@ import { IntegrationCode } from '@/components/integration-code';
 import { SectionHeading } from '@/components/section-heading';
 import { Button } from '@/components/shadcn/ui/button';
 import {
-	Tabs,
-	TabsContent,
-	TabsList,
-	TabsTrigger
-} from '@/components/shadcn/ui/tabs';
-import {
 	StatusFilter,
 	type StatusFilterValue
 } from '@/modules/tickets/components/status-filter';
 import { LoggedOutPlaceholder } from '../examples/logged-out-placeholder';
-import { MembershipsExample } from '../examples/memberships-example';
 import { TicketsExample } from '../examples/tickets-example';
 
 const integrationCode = `import {
@@ -29,7 +22,6 @@ const integrationCode = `import {
   useTicketables,
 } from '@unidy.io/sdk-react';
 
-// Tickets
 const { isAuthenticated } = useSession();
 const pagination = usePagination({ perPage: 10 });
 const { items, isLoading, getExportLink } = useTicketables({
@@ -45,14 +37,7 @@ window.open(link.url, '_blank');
 
 // Add ticket to Apple Wallet
 const walletLink = await getExportLink(ticket.id, 'pkpass');
-window.open(walletLink.url, '_blank');
-
-// Subscriptions
-const { items: subscriptions, getExportLink: getSubscriptionExportLink } = useTicketables({
-  type: 'subscription',
-  pagination,
-  fetchOnMount: isAuthenticated,
-});`;
+window.open(walletLink.url, '_blank');`;
 
 export const TicketsSection = () => {
 	const [mounted, setMounted] = useState(false);
@@ -76,75 +61,39 @@ export const TicketsSection = () => {
 				{/* Section Heading */}
 				<div className="flex flex-col gap-6 flex-1 min-w-0 w-full">
 					<SectionHeading
-						title="Tickets / Subscriptions"
-						description="View and manage your event tickets, memberships, and active subscriptions."
+						title="Event Tickets"
+						description="View and manage your event tickets."
 					>
 						<IntegrationCode code={integrationCode} language="typescript" />
 					</SectionHeading>
 				</div>
 
-				{/* Tabs */}
-				<Tabs defaultValue="tickets" className="w-full">
-					<div className="flex flex-col gap-4 md:flex-row md:items-center">
-						<TabsList className="flex-1">
-							<TabsTrigger value="tickets">Event Tickets</TabsTrigger>
-							<TabsTrigger value="subscriptions">
-								Subscriptions & Memberships
-							</TabsTrigger>
-						</TabsList>
-						{isLoggedIn && (
+				{/* Content */}
+				<div className="flex flex-col gap-4 w-full">
+					{isLoggedIn && (
+						<div className="flex md:justify-end">
 							<StatusFilter value={statusFilter} onChange={setStatusFilter} />
-						)}
-					</div>
+						</div>
+					)}
 
-					{/* Event Tickets Tab */}
-					<TabsContent value="tickets" className="flex-1 min-w-0 w-full">
-						{isLoggedIn ? (
-							<>
-								<TicketsExample
-									statusFilter={statusFilter}
-									perPage={perPage}
-								/>
-								<div className="flex justify-center pt-6">
-									<Link href="/profile/tickets">
-										<Button theme="accent" variant="outline" size="md">
-											<ExternalLink className="size-4" />
-											View All Tickets
-										</Button>
-									</Link>
-								</div>
-							</>
-						) : (
-							<Card className="mt-6">
-								<LoggedOutPlaceholder message="Please log in to see your list of events and tickets." />
-							</Card>
-						)}
-					</TabsContent>
-
-					{/* Subscriptions & Memberships Tab */}
-					<TabsContent value="subscriptions">
-						{isLoggedIn ? (
-							<>
-								<MembershipsExample
-									statusFilter={statusFilter}
-									perPage={perPage}
-								/>
-								<div className="flex justify-center pt-6">
-									<Link href="/profile/subscriptions">
-										<Button theme="accent" variant="outline" size="md">
-											<ExternalLink className="size-4" />
-											View All Subscriptions
-										</Button>
-									</Link>
-								</div>
-							</>
-						) : (
-							<Card className="mt-6">
-								<LoggedOutPlaceholder message="Please log in to see your subscriptions and memberships." />
-							</Card>
-						)}
-					</TabsContent>
-				</Tabs>
+					{isLoggedIn ? (
+						<>
+							<TicketsExample statusFilter={statusFilter} perPage={perPage} />
+							<div className="flex justify-center pt-6">
+								<Link href="/profile/tickets">
+									<Button theme="accent" variant="outline" size="md">
+										<ExternalLink className="size-4" />
+										View All Tickets
+									</Button>
+								</Link>
+							</div>
+						</>
+					) : (
+						<Card className="mt-6">
+							<LoggedOutPlaceholder message="Please log in to see your list of events and tickets." />
+						</Card>
+					)}
+				</div>
 			</div>
 		</section>
 	);

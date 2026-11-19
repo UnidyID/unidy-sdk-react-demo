@@ -4,6 +4,7 @@ import { HeroSection } from '../components/sections/hero-section';
 import { NewsletterSection } from '../components/sections/newsletter-section';
 import { OptionsSection } from '../components/sections/options-section';
 import { ProfileSection } from '../components/sections/profile-section';
+import { SubscriptionsSection } from '../components/sections/subscriptions-section';
 import { TicketsSection } from '../components/sections/tickets-section';
 import { TopNavigation } from '../components/sections/top-navigation';
 
@@ -25,6 +26,9 @@ export const HomePage = () => {
 				</div>
 				<div id="tickets">
 					<TicketsSection />
+				</div>
+				<div id="subscriptions">
+					<SubscriptionsSection />
 				</div>
 				<FooterSection />
 			</main>
